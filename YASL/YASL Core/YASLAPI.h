@@ -9,6 +9,25 @@
 #ifndef YASL_YASLAPI_h
 #define YASL_YASLAPI_h
 
+#define USECUSTOMLOGS 1
+
+//#define VERBOSE_COMPILATION
+//#define VERBOSE_SYNTAX
+//#define VERBOSE_ASSEMBLY
+
+#ifdef USECUSTOMLOGS
+#define NSLog NSLogShort
+
+#endif
+
+#define NSLogShort(format, ...) \
+{\
+NSMutableString *formattedString = [[NSString stringWithFormat:format, ##__VA_ARGS__] mutableCopy];\
+[formattedString appendString:@"\n"];\
+[(NSFileHandle *)[NSFileHandle fileHandleWithStandardOutput]\
+writeData: [formattedString dataUsingEncoding: NSUTF8StringEncoding]];\
+}
+
 #define DEFAULT_CODEOFFSET 1000
 
 #define THREAD_POOL_SIZE 100

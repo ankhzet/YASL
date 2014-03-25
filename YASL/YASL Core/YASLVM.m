@@ -12,8 +12,6 @@
 
 #import "YASLDisassembler.h"
 
-#define _VERBOSE_COMPILATION
-
 @implementation YASLVM
 
 - (YASLCompiledUnit *)runScript:(YASLCodeSource *)source {

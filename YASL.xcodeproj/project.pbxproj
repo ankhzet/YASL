@@ -165,7 +165,7 @@
 /* End PBXContainerItemProxy section */
 
 /* Begin PBXFileReference section */
-		0A03AC1C18E1E1170095B04D /* YASLEnumDataType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLEnumDataType.h; sourceTree = "<group>"; };
+		0A03AC1C18E1E1170095B04D /* YASLEnumDataType.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = YASLEnumDataType.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
 		0A03AC1D18E1E1170095B04D /* YASLEnumDataType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLEnumDataType.m; sourceTree = "<group>"; };
 		0A1107A4190A6DAC00105743 /* YASL.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = YASL.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		0A1107A7190A6DAC00105743 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = System/Library/Frameworks/Foundation.framework; sourceTree = SDKROOT; };
@@ -307,8 +307,8 @@
 		0A895FF4190EC1FE00BCAC84 /* YASLDataType.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLDataType.m; sourceTree = "<group>"; };
 		0A895FF6190ED1D400BCAC84 /* YASLTranslationNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLTranslationNode.h; sourceTree = "<group>"; };
 		0A895FF7190ED1D400BCAC84 /* YASLTranslationNode.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLTranslationNode.m; sourceTree = "<group>"; };
-		0A895FFE190F019000BCAC84 /* YASLAbstractTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLAbstractTokenizer.h; sourceTree = "<group>"; };
-		0A895FFF190F019000BCAC84 /* YASLAbstractTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAbstractTokenizer.m; sourceTree = "<group>"; };
+		0A895FFE190F019000BCAC84 /* YASLAbstractTokenizer.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = YASLAbstractTokenizer.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		0A895FFF190F019000BCAC84 /* YASLAbstractTokenizer.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = YASLAbstractTokenizer.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		0A896001190F103500BCAC84 /* YASLToken.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLToken.h; sourceTree = "<group>"; };
 		0A896002190F103500BCAC84 /* YASLToken.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLToken.m; sourceTree = "<group>"; };
 		0A896004190F134F00BCAC84 /* YASLTokenParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLTokenParser.h; sourceTree = "<group>"; };
@@ -326,8 +326,8 @@
 		0A896017190F287800BCAC84 /* YASLCommentParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLCommentParser.m; sourceTree = "<group>"; };
 		0A896019190F2EB300BCAC84 /* YASLBNFParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLBNFParser.h; sourceTree = "<group>"; };
 		0A89601A190F2EB300BCAC84 /* YASLBNFParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = YASLBNFParser.m; sourceTree = "<group>"; };
-		0A89601C190F2F0500BCAC84 /* YASLAssembly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLAssembly.h; sourceTree = "<group>"; };
-		0A89601D190F2F0500BCAC84 /* YASLAssembly.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAssembly.m; sourceTree = "<group>"; };
+		0A89601C190F2F0500BCAC84 /* YASLAssembly.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = YASLAssembly.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		0A89601D190F2F0500BCAC84 /* YASLAssembly.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = YASLAssembly.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		0A89601F190F311600BCAC84 /* YASLNonfatalException.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLNonfatalException.h; sourceTree = "<group>"; };
 		0A896020190F311600BCAC84 /* YASLNonfatalException.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLNonfatalException.m; sourceTree = "<group>"; };
 		0A896023190F4FB100BCAC84 /* YASLGrammarNode.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLGrammarNode.h; sourceTree = "<group>"; };
@@ -369,8 +369,8 @@
 		0A900B16191553760069D26F /* YASLAssembler_TypeDeclarationProcessorSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAssembler_TypeDeclarationProcessorSpec.m; sourceTree = "<group>"; };
 		0A900B18191553CE0069D26F /* YASLAssembler_VarDeclarationProcessorSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAssembler_VarDeclarationProcessorSpec.m; sourceTree = "<group>"; };
 		0A900B1A191554180069D26F /* YASLAssembler_ExpressionsProcessorSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAssembler_ExpressionsProcessorSpec.m; sourceTree = "<group>"; };
-		0A900B1C19157FCF0069D26F /* YASLDiscards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLDiscards.h; sourceTree = "<group>"; };
-		0A900B1D19157FCF0069D26F /* YASLDiscards.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLDiscards.m; sourceTree = "<group>"; };
+		0A900B1C19157FCF0069D26F /* YASLDiscards.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; lineEnding = 0; path = YASLDiscards.h; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objcpp; };
+		0A900B1D19157FCF0069D26F /* YASLDiscards.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; lineEnding = 0; path = YASLDiscards.m; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.objc; };
 		0A900B1F191663050069D26F /* YASLSymbolParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLSymbolParser.h; sourceTree = "<group>"; };
 		0A900B20191663050069D26F /* YASLSymbolParser.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLSymbolParser.m; sourceTree = "<group>"; };
 		0A900B2219169AD60069D26F /* YASLTernarExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLTernarExpression.h; sourceTree = "<group>"; };
