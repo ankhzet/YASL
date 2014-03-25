@@ -53,7 +53,7 @@
 
 - (void) assemble:(YASLAssembly *)assembly {
 	YASLTranslationExpression *operand = [self leftOperand];
-	[operand assemble:assembly];
+	[operand assemble:assembly unPointered:NO];
 	if (self.isUnreference) { // x = *expression
 		[assembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];
 	} else { // x = &expression

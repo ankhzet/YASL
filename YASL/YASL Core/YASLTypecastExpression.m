@@ -49,9 +49,13 @@
 
 @implementation YASLTypecastExpression (Assembling)
 
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+	return [[self leftOperand] unPointer:outAssembly];
+}
+
 - (void) assemble:(YASLAssembly *)assembly {
 	YASLTranslationExpression *expression = [self leftOperand];
-	[expression assemble:assembly];
+	[expression assemble:assembly unPointered:NO];
 
 	YASLDataType *sourceType = expression.returnType;
 	if (![sourceType isSubclassOf:self.returnType]) {

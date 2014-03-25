@@ -11,7 +11,7 @@
 
 @implementation YASLAssembler (VarDeclarationProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeVarDeclaration:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeVarDeclaration:(YASLAssemblyNode *)node {
 	YASLDeclarationScope *scope = [self scope];
 	NSArray *declarations = [a pop];
 	YASLDataType *declarationDataType = [a pop];
@@ -82,7 +82,7 @@
 	}
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeInitDeclarator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeInitDeclarator:(YASLAssemblyNode *)node {
 	YASLAssignmentExpression *initializer = [a pop];
 	YASLTranslationDeclarator *declarator = [a popTillChunkMarker];
 	if (!declarator) {
@@ -109,11 +109,11 @@
 	}
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeInitDeclaratorList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeInitDeclaratorList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeAssignmentInitializer:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeAssignmentInitializer:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 
 	YASLAssignmentExpression *initializer = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:YASLExpressionOperatorUnknown];
@@ -122,7 +122,7 @@
 	[a push:initializer];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeInitializerList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeInitializerList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 

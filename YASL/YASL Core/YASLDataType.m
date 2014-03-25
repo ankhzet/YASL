@@ -18,6 +18,7 @@ NSString *const YASLBuiltInTypeNames[] = {
 };
 
 @implementation YASLDataType
+@synthesize manager = _manager;
 
 + (instancetype) typeWithName:(NSString *)name {
 	return [(YASLDataType *)[self alloc] initWithName:name];

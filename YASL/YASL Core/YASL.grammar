@@ -9,13 +9,21 @@ external-declaration = declaration ';'! | function-definition;
 /* ***** Declarations ***** */
 
 /* Struct-type: declares structure.
- 
+
  */
 struct-type = struct '{'! struct-members-list '}'!;
 struct = 'struct'!;
 struct-members-list = struct-member (','! struct-member)* ','?;
 struct-member = type-specifier declarator-list;
 declarator-list = declarator (','! declarator)*;
+
+/* Enum-type: declares enums.
+
+ */
+enum-type = enum '{'! enum-members-list '}'!;
+enum = 'enum'!;
+enum-members-list = enum-member (','! enum-member)* ','!?;
+enum-member = Identifier ('='! Int)?;
 
 /* Declarator: declares variable/parameter
  
@@ -57,7 +65,7 @@ declaration = type-declaration | var-declaration;
  <type-specifier myFunc(<type-specifier> param1; <type-specifier> *param2) {}
 
  */
-type-specifier = built-in-type | struct-type | typedef-type;
+type-specifier = built-in-type | struct-type | enum-type | typedef-type;
 built-in-type = 'void' | 'int' | 'bool' | 'float' | 'char';
 
 type-declaration = typedef type-specifier declarator;
@@ -161,8 +169,8 @@ prop-access-expr = '.'! Identifier;
 struct-access-expr = '->'! Identifier;
 
 
-primary-expression = variable
-| constant
+primary-expression = constant
+| variable
 | String
 | '('! expression ')'!;
 

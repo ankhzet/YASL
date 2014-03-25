@@ -14,4 +14,5 @@
 
 #import "YASLGrammarNode.h"
 #import "YASLGrammarFactory.h"
+#import "YASLAssemblyNode.h"
 

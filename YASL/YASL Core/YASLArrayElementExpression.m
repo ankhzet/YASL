@@ -100,7 +100,7 @@
 }
 
 - (void) assemble:(YASLAssembly *)assembly {
-	[elementAddress assemble:assembly];
+	[elementAddress assemble:assembly unPointered:NO];
 }
 
 @end

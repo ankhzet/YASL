@@ -30,21 +30,21 @@ NSString *const YASLYASLGrammar = @"YASL";
 
 @implementation YASLAssembler (Processor)
 
-- (void) preProcessAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
+- (void) preProcessAssembly:(YASLAssembly *)a nodeStart:(YASLAssemblyNode *)node {
 	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeInCode] ofsettedByParent];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLAssemblyNode *)node {
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeScriptDeclaration:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeScriptDeclaration:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	YASLTranslationUnit *unit = [YASLTranslationUnit unitInScope:[self scope] withName:token.value];
 	[self scope].name = [NSString stringWithFormat:@"unit:%@", token.value];
 	[a push:unit];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeExternalDeclarations:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeExternalDeclarations:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 	NSArray *declarations = [a pop];
 	YASLTranslationUnit *unit = [a pop];

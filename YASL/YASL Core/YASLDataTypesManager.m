@@ -37,6 +37,7 @@
 
 - (void) registerType:(YASLDataType *)type {
 	types[type.name] = type;
+	type.manager = self;
 }
 
 - (YASLDataType *) typeByName:(NSString *)name {
@@ -45,6 +46,10 @@
 		type = [self.parentManager typeByName:name];
 
 	return type;
+}
+
+- (NSEnumerator *) enumTypes {
+	return [[types allValues] objectEnumerator];
 }
 
 @end

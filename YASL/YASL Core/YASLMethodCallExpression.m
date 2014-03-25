@@ -63,7 +63,7 @@
 	if (native) {
 		[assembly push:OPC_(NATIV, IMM_(@(native.GUID)))];
 	} else {
-		[self.methodAddress assemble:assembly];
+		[self.methodAddress assemble:assembly unPointered:NO];
 		[assembly push:OPC_(CALL, REG_(R0))];
 	}
 }

@@ -52,16 +52,16 @@
 - (NSString *) displayLabelAtIP:(YASLInt)ip {
 	NSMutableSet *displayedLabels = [NSMutableSet set];
 
-	NSString *codeIdentifier = [[codeSource.identifier lastPathComponent] stringByPaddingToLength:12 withString:@" " startingAtIndex:0];
+//	NSString *codeIdentifier = [codeSource.identifier lastPathComponent];
 	for (NSArray *refOffs in labelRefs) {
 		YASLCodeAddressReference * ref = refOffs[0];
 		NSUInteger address = [ref complexAddress];
     if (ip == address) {
-			NSString *label = [NSString stringWithFormat:@"%@:",ref.name ? ref.name : [NSString stringWithFormat:@"ref (%u)", address]];
+			NSString *label = [NSString stringWithFormat:@"%@:",ref.name ? ref.name : [NSString stringWithFormat:@":?(%u)", address]];
 			NSString *trimmed = [label stringByTrimmingCharactersInSet:newlines];
 			if ([trimmed hasPrefix:@"Line #"]) {
 				NSInteger line = [[trimmed substringFromIndex:6] integerValue];
-				trimmed = [NSString stringWithFormat:@"[%@:%.4u] %@", codeIdentifier, line, [[self sourceLine:line - 1] stringByTrimmingCharactersInSet:whitespace]];
+				trimmed = [NSString stringWithFormat:@"Line #%.4u:\n   %@", line, [[self sourceLine:line - 1] stringByTrimmingCharactersInSet:whitespace]];
 			}
 			[displayedLabels addObject:trimmed];
 		}
@@ -107,7 +107,7 @@
 		}
 		dump = [[dump stringByPaddingToLength:16 withString:@" " startingAtIndex:0] mutableCopy];
 
-		[result appendFormat:@"  %.6u: %@ %@\n", ip, dump, [instruction description]];
+		[result appendFormat:@"   %.6u: %@ %@\n", ip, dump, [instruction description]];
 		ip = newIP;
 	} while (ip < endOffset);
 

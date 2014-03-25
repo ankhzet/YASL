@@ -35,7 +35,6 @@ describe(@"YASLVM", ^{
 		[vm.cpu run];
 	});
 
-
 	context(@"compilation", ^{
 		YASLVM *vm = [[YASLVMBuilder new] buildVM];
 
@@ -110,11 +109,11 @@ describe(@"YASLVM", ^{
 			@{
 				@"int a[10];\n\
 				for (int i = 0; i < 10; i++){\n\
-					a[9 - i] = i;\n\
+				a[9 - i] = i;\n\
 				};\n\
 				for (int i = 0; i < 10; i++){\n\
-					int r = a[i] * ((i % 2) ? 1 : -1);\n\
-				 	result += r;\n\
+				int r = a[i] * ((i % 2) ? 1 : -1);\n\
+				result += r;\n\
 				}": @(-5),
 				};
 			// -9 8 -7 6 -5 4 -3 2 -1 0
@@ -142,7 +141,50 @@ describe(@"YASLVM", ^{
 					[vm.cpu thread:thread->handle terminate:0];
 
 			}
+			
+		});
 
+		it(@"should compile enums", ^{
+			NSDictionary *sources =
+			@{
+				@"typedef enum {me0, me1 = 1, me2, me3, me4 = 4, me5, me6 = 3, } myEnum;\n\
+				myEnum e1 = me4;\n\
+				result = e1;\n\
+				": @(4),
+				@"typedef enum {me0, me1 = 1, me2, me3, me4 = 4, me5, me6 = 3, } myEnum;\n\
+				result = me6;\n\
+				": @(3),
+				@"typedef enum {me0, me1 = 1, me2, me3, me4 = 4, me5, me6 = 3, } myEnum;\n\
+				myEnum e1 = me1;\n\
+				result = e1 > me6;\n\
+				": @(0),
+				@"typedef enum {me0, me1 = 1, me2, me3, me4 = 4, me5, me6 = 3, } myEnum;\n\
+				myEnum e1 = me1;\n\
+				result = e1 < me6;\n\
+				": @(1),
+				};
+
+			int i = 0;
+			for (NSString *src in [sources allKeys]) {
+				i++;
+				NSString *identifier = [NSString stringWithFormat:@"enum%d", i];
+				NSString *code = [NSString stringWithFormat:@"script %@;\nnative void log(void *arg);\nint main(void *arg){\nint result = 0;\n%@\nreturn result;\n}", identifier, src];
+				NSNumber *value = sources[src];
+
+				YASLCompiledUnit *unit = [vm runScript:[YASLCodeSource codeSource:identifier fromString:code]];
+				[[unit shouldNot] beNil];
+				if (value == (id)[NSNull null]) {
+					[[theValue(unit.stage) shouldNot] equal:theValue(YASLUnitCompilationStageCompiled)];
+					continue;
+				}
+				[[theValue(unit.stage) should] equal:theValue(YASLUnitCompilationStageCompiled)];
+				[vm.cpu run];
+				[[theValue([vm.cpu regValue:YASLRegisterIR0]) should] equal:theValue([value integerValue])];
+				for (YASLThread *thread in [unit enumerateOwners])
+					[vm.cpu thread:thread->handle terminate:0];
+
+			}
+			
 		});
 	});
 

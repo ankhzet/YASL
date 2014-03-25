@@ -65,7 +65,9 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 			[self dropAssociatedCaches:source.identifier];
 			caches[source.identifier] = [NSMutableDictionary dictionary];
 			unit.declarations = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:self.globalDatatypesManager];
-		}
+		} else
+			if (options[kCompilatorPrecompile])
+				@throw [YASLNonfatalException exceptionAtLine:0 andCollumn:0 withMsg:@"Trying to precompile already compiled unit (\"%@\") without clearing cache",source.identifier];
 	}
 	NSMutableDictionary *cache = caches[source.identifier];
 

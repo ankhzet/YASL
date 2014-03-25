@@ -80,7 +80,7 @@
 	YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:operator];
 
 	YASLTranslationExpression *target = [self leftOperand];
-	[target assemble:assembly];
+	[target assemble:assembly unPointered:NO];
 	if ([self nodesCount] <= 1) {
 		YASLOpcodeOperand *targetValue = [REG_(R0) asPointer];
 		if (self.postfix) {

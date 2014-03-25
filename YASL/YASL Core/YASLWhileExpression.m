@@ -55,7 +55,7 @@ NSString *const YASLReservedWordBreak = @"break";
 		[assembly push:OPC_(JMP, continueAddress)];
 
 	[assembly push:iterationLabel];
-	[[self rigthOperand] assemble:assembly];
+	[[self rigthOperand] assemble:assembly unPointered:NO];
 	[assembly push:continueLabel];
 	[[self leftOperand] assemble:assembly unPointered:YES];
 	[assembly push:OPC_(JNZ, iterationAddress)];

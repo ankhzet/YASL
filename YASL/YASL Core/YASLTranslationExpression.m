@@ -195,10 +195,6 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 }
 
 - (void) assemble:(YASLAssembly *)assembly {
-	if (self.sourceLine) {
-		[assembly push:[YASLCodeAddressReference referenceWithName:[NSString stringWithFormat:@"Line #%u", self.sourceLine]]];
-	}
-
 	switch (self.expressionType) {
 		case YASLExpressionTypeBinary: {
 			[[self leftOperand] assemble:assembly unPointered:YES];

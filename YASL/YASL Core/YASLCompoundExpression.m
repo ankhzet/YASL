@@ -39,7 +39,7 @@
 
 - (void) assemble:(YASLAssembly *)assembly {
 	for (YASLTranslationNode *statement in [self nodesEnumerator:NO])
-		[statement assemble:assembly];
+		[statement assemble:assembly unPointered:NO];
 }
 
 @end

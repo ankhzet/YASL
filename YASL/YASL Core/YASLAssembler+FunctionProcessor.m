@@ -15,20 +15,20 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 
 @implementation YASLAssembler (FunctionProcessor)
 
-- (void) preProcessAssembly:(YASLAssembly *)a nodeFunctionDefinition:(YASLGrammarNode *)node {
+- (void) preProcessAssembly:(YASLAssembly *)a nodeFunctionDefinition:(YASLAssemblyNode *)node {
 	[self.declarationScope pushScope];
 	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeOnStack] notOfsettedChildsByLocals];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeFunctionSpecifier:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeFunctionSpecifier:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeNative:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeNative:(YASLAssemblyNode *)node {
 	[a push:@(YASLFunctionSpecifierNative)];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeFunctionDefinition:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeFunctionDefinition:(YASLAssemblyNode *)node {
 	YASLAssembly *nodes = [self reverseFetch:a];
 	NSArray *specifiers = [nodes pop];
 	YASLDataType *returnType = [nodes pop];
@@ -42,50 +42,51 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 
 	BOOL alreadyDeclared = [outerScope isDeclared:declarator.declaratorIdentifier inLocalScope:YES];
 	if (alreadyDeclared) {
-		[self raiseError:@"\"%@\" already declared", declarator.declaratorIdentifier];
-	}
-
-	YASLLocalDeclaration *declaration = [outerScope newLocalDeclaration:declarator.declaratorIdentifier];
-	declaration.dataType = returnType;
-	declaration.declarator = declarator;
-
-	YASLTranslationFunction *function = [YASLTranslationFunction functionInScope:[self scope] withDeclaration:declaration];
-	function.declaratorIdentifier = declarator.declaratorIdentifier;
-
-	if (!isForwardDeclaration) {
-		if ([declaration.dataType baseType] != YASLBuiltInTypeVoid) {
-			YASLLocalDeclaration *result = [bodyScope newLocalDeclaration:[function returnVarIdentifier]];
-			result.dataType = declaration.dataType;
-		}
-		YASLLocalDeclaration *extLabel = [outerScope newLocalDeclaration:[function exitLabelIdentifier]];
-		extLabel.dataType = nil;
-
-		[function addSubNode:body];
+		if (!isForwardDeclaration)
+			[self raiseError:@"\"%@\" already declared", declarator.declaratorIdentifier];
 	} else {
-		if ([specifiers containsObject:@(YASLFunctionSpecifierNative)]) {
-			function.native = [[YASLNativeFunctions sharedFunctions] findByName:function.declaratorIdentifier];
-			if (!function.native)
-				[self raiseError:@"Unknown native function \"%@\"", function.declaratorIdentifier];
-		}
-	}
+		YASLLocalDeclaration *declaration = [outerScope newLocalDeclaration:declarator.declaratorIdentifier];
+		declaration.dataType = returnType;
+		declaration.declarator = declarator;
 
-	[a push:function];
+		YASLTranslationFunction *function = [YASLTranslationFunction functionInScope:[self scope] withDeclaration:declaration];
+		function.declaratorIdentifier = declarator.declaratorIdentifier;
+
+		if (!isForwardDeclaration) {
+			if ([declaration.dataType baseType] != YASLBuiltInTypeVoid) {
+				YASLLocalDeclaration *result = [bodyScope newLocalDeclaration:[function returnVarIdentifier]];
+				result.dataType = declaration.dataType;
+			}
+			YASLLocalDeclaration *extLabel = [outerScope newLocalDeclaration:[function exitLabelIdentifier]];
+			extLabel.dataType = nil;
+
+			[function addSubNode:body];
+		} else {
+			if ([specifiers containsObject:@(YASLFunctionSpecifierNative)]) {
+				function.native = [[YASLNativeFunctions sharedFunctions] findByName:function.declaratorIdentifier];
+				if (!function.native)
+					[self raiseError:@"Unknown native function \"%@\"", function.declaratorIdentifier];
+			}
+		}
+		
+		[a push:function];
+	}
 
 	[self scope].name = [NSString stringWithFormat:@"func:%@", declarator.declaratorIdentifier];
 	[self.declarationScope popScope];
 }
 
-- (void) preProcessAssembly:(YASLAssembly *)a nodeFunctionBody:(YASLGrammarNode *)node {
+- (void) preProcessAssembly:(YASLAssembly *)a nodeFunctionBody:(YASLAssemblyNode *)node {
 	[self.declarationScope pushScope];
 	[self scope].name = [NSString stringWithFormat:@"funcBody"];
 	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeOnStack] ofsettedByParent];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeFunctionBody:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeFunctionBody:(YASLAssemblyNode *)node {
 	[self.declarationScope popScope];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeMethodParamGroup:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeMethodParamGroup:(YASLAssemblyNode *)node {
 	NSArray *group = [a pop];
 	YASLDataType *groupTypeSpecifier = [a pop];
 
@@ -101,7 +102,7 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 	}
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeMethodParamList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeMethodParamList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 	NSArray *params = [a pop];
 	YASLDeclaratorSpecifier *specifier = [YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeFunction param:0 andElems:[[params reverseObjectEnumerator] allObjects]];
@@ -112,7 +113,7 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 
 @implementation YASLAssembler (JumpStatementProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeJumpReturn:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeJumpReturn:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	YASLJumpExpression *returnExpression = [YASLJumpExpression expressionInScope:[self scope] withType:YASLExpressionTypeReturn];
 	[returnExpression addSubNode:expression];

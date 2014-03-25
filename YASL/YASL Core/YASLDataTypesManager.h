@@ -16,6 +16,8 @@
 /*! Returns type with specified name if found, nil otherwise. Searches in parent manager, if not found localy. */
 - (YASLDataType *) typeByName:(NSString *)name;
 
+- (NSEnumerator *) enumTypes;
+
 @end
 
 @interface YASLDataTypesManager : NSObject <YASLDataTypesManagerProtocol>

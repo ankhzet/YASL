@@ -162,7 +162,7 @@ bp+00  00 00 p1
 		[assembly push:OPC_(PUSHV, IMM_(@(localDataSize)))];
 
 	for (YASLTranslationNode *statement in [self nodesEnumerator:NO]) {
-		[statement assemble:assembly];
+		[statement assemble:assembly unPointered:NO];
 	}
 
 

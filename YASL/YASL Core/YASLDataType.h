@@ -9,13 +9,18 @@
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
 
-@interface YASLDataType : NSObject <NSCopying>
+@class YASLDataTypesManager;
+@interface YASLDataType : NSObject <NSCopying> {
+@protected
+	YASLDataTypesManager *_manager;
+}
 
 @property (nonatomic) NSString *name;
 @property (nonatomic) BOOL defined;
 @property (nonatomic) YASLDataType *parent;
 @property (nonatomic) NSArray *specifiers;
 @property (nonatomic) NSUInteger isPointer;
+@property (nonatomic) YASLDataTypesManager *manager;
 
 + (instancetype) typeWithName:(NSString *)name;
 - (id)initWithName:(NSString *)name;

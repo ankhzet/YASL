@@ -29,12 +29,12 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 
 @implementation YASLOperationProductionsAssembler (Processors)
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperand:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperand:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	[a push:token.value];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperation:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperation:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	YASLExpressionOperator operation = [YASLTranslationExpression specifierToOperator:token.value];
 	if ((operation == YASLExpressionOperatorUnknown) && (![token.value isEqualToString:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorUnknown]])) {
@@ -43,7 +43,7 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 	[a push:@(operation)];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeRightOperandProductions:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeRightOperandProductions:(YASLAssemblyNode *)node {
 	NSDictionary *productionResult = [a pop];
 	NSArray *filter = [a pop];
 	NSArray *rightOperands = [a popTillChunkMarker];
@@ -57,7 +57,7 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 	[a push:production];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeCastOperand:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeCastOperand:(YASLAssemblyNode *)node {
 	NSString *operand = [a pop];
 	NSString *cast = [a popTillChunkMarker];
 	if (!cast) {
@@ -68,7 +68,7 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 }
 
 
-- (void) processAssembly:(YASLAssembly *)a nodeLeftOperandProductions:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeLeftOperandProductions:(YASLAssemblyNode *)node {
 	NSArray *productionsList = [a pop];
 	NSArray *filter = [a pop];
 	NSArray *leftOperands = [a popTillChunkMarker];
@@ -81,30 +81,30 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 	[a push:productions];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperationProduction:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperationProduction:(YASLAssemblyNode *)node {
 	NSArray *productionsList = [a pop];
 	NSArray *operations = [a pop];
 	NSDictionary *productions = @{kProductionOperations: operations, kProductions: productionsList};
 	[a push:productions];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperandTypesList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperandTypesList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperationList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperationList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperandProductions:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperandProductions:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeProductions:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeProductions:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeOperationProductions:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeOperationProductions:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 

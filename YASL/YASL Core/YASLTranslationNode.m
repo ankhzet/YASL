@@ -130,6 +130,9 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 }
 
 - (void) assemble:(YASLAssembly *)assembly unPointered:(BOOL)unPointered {
+	if (self.sourceLine) {
+		[assembly push:[YASLCodeAddressReference referenceWithName:[NSString stringWithFormat:@"Line #%u", self.sourceLine]]];
+	}
 	[self assemble:assembly];
 	if (unPointered)
 		[self unPointer:assembly];
@@ -137,7 +140,7 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 - (void) assemble:(YASLAssembly *)assembly {
 	for (YASLTranslationNode *node in [self nodesEnumerator:NO])
-    [node assemble:assembly];
+    [node assemble:assembly unPointered:NO];
 }
 
 @end

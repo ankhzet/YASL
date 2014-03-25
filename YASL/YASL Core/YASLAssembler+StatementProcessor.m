@@ -11,7 +11,7 @@
 
 @implementation YASLAssembler (StatementProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeStatement:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeStatement:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a popTillChunkMarker];
 	if (!expression)
 		return;
@@ -21,13 +21,13 @@
 	[a push:expression];
 }
 
-- (void) preProcessAssembly:(YASLAssembly *)a nodeCompoundStatement:(YASLGrammarNode *)node {
+- (void) preProcessAssembly:(YASLAssembly *)a nodeCompoundStatement:(YASLAssemblyNode *)node {
 	[self.declarationScope pushScope];
 	[self scope].name = [NSString stringWithFormat:@"%@:inner", [self scope].parentScope.name];
 	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeOnStack] ofsettedByParent];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeCompoundStatement:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeCompoundStatement:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 	NSArray *expressions = [a pop];
 	NSMutableArray *foldedExpressions = [@[] mutableCopy];
@@ -42,14 +42,14 @@
 	[self.declarationScope popScope];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeAssignmentOperator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeAssignmentOperator:(YASLAssemblyNode *)node {
 	YASLToken *special = [a popTillChunkMarker];
 	NSString *specifier = special ? special.value : nil;
 	YASLTranslationExpression *expression = [YASLAssignmentExpression expressionInScope:[self scope] withType:YASLExpressionTypeAssignment andSpecifier:specifier];
 	[a push:expression];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeAssignmentExpression:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeAssignmentExpression:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	YASLTranslationExpression *operation = [a popTillChunkMarker];
 	if (operation) {
@@ -66,7 +66,7 @@
 
 @implementation YASLAssembler (SelectionStatementProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeSelectionIf:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeSelectionIf:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 	NSMutableArray *operands = [[a pop] mutableCopy];
 	YASLTranslationExpression *condition = [operands lastObject];
@@ -97,21 +97,21 @@
 }
 
 
-- (void) processAssembly:(YASLAssembly *)a nodeBreak:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeBreak:(YASLAssemblyNode *)node {
 	[self assembly:a nodeBreakContinue:YASLReservedWordBreak];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeContinue:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeContinue:(YASLAssemblyNode *)node {
 	[self assembly:a nodeBreakContinue:YASLReservedWordContinue];
 }
 
-- (void) preProcessAssembly:(YASLAssembly *)a nodeIterationStatement:(YASLGrammarNode *)node {
+- (void) preProcessAssembly:(YASLAssembly *)a nodeIterationStatement:(YASLAssemblyNode *)node {
 	YASLDeclarationScope *scope = [self.declarationScope pushScope];
 	[scope newLocalDeclaration:YASLReservedWordContinue];
 	[scope newLocalDeclaration:YASLReservedWordBreak];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeIterationStatement:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeIterationStatement:(YASLAssemblyNode *)node {
 	[self.declarationScope popScope];
 }
 
@@ -131,7 +131,7 @@
 	[a push:whileExpression];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeStraightWhile:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeStraightWhile:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *statements = [a pop];
 	YASLTranslationExpression *condition = [a popTillChunkMarker];
 	if (!condition) {
@@ -141,13 +141,13 @@
 	[self pushWhileStatement:a withCondition:condition andStatements:statements];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeStraightDo:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeStraightDo:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *condition = [a pop];
 	YASLTranslationExpression *statements = [a popTillChunkMarker];
 	[self pushWhileStatement:a withCondition:condition andStatements:statements];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeStraightFor:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeStraightFor:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *statements = [a pop];
 
 	YASLTranslationExpression *iterator = [a pop];
@@ -171,22 +171,22 @@
 	[a push:forExpression];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeForInitializer:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeForInitializer:(YASLAssemblyNode *)node {
 	id expression = [a popTillChunkMarker];
 	[a push:expression ? expression : [NSNull null]];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeForCondition:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeForCondition:(YASLAssemblyNode *)node {
 	id expression = [a popTillChunkMarker];
 	[a push:expression ? expression : [NSNull null]];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeForIterator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeForIterator:(YASLAssemblyNode *)node {
 	id expression = [a popTillChunkMarker];
 	[a push:expression ? expression : [NSNull null]];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeForStatements:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeForStatements:(YASLAssemblyNode *)node {
 	id expression = [a popTillChunkMarker];
 	[a push:expression ? expression : [NSNull null]];
 }

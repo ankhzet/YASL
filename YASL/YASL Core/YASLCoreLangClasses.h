@@ -18,6 +18,7 @@
 #import "YASLLocalDeclaration.h"
 #import "YASLDataType.h"
 #import "YASLArrayDataType.h"
+#import "YASLEnumDataType.h"
 
 #import "YASLBuiltInTypeVoidInstance.h"
 #import "YASLBuiltInTypeIntInstance.h"

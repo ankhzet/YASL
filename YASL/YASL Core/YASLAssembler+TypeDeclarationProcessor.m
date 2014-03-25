@@ -11,13 +11,13 @@
 
 @implementation YASLAssembler (TypeDeclarationProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeBuiltInType:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeBuiltInType:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	YASLDataType *type = [self.declarationScope typeByName:[token value]];
 	[a push:type];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeTypeDeclaration:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeTypeDeclaration:(YASLAssemblyNode *)node {
 	YASLTranslationDeclarator *declarator = [a pop];
 
 	NSString *declaredTypeName = declarator.declaratorIdentifier;
@@ -43,7 +43,7 @@
 	[self.declarationScope registerType:newType];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeTypedefType:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeTypedefType:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	NSString *typeName = token.value;
 	YASLDataType *type = [self.declarationScope typeByName:typeName];
@@ -55,5 +55,42 @@
 	[a push:type];
 }
 
+@end
+
+@implementation YASLAssembler (EnumTypeProcessor)
+
+- (void) processAssembly:(YASLAssembly *)a nodeEnumMember:(YASLAssemblyNode *)node {
+	YASLToken *value = [a pop];
+	YASLToken *identifier = [a popTillChunkMarker];
+	if (!identifier) {
+		identifier = value;
+		value = nil;
+	}
+
+	[a push:@{@0: identifier.value, @1: value ? @([value asInteger]) : [NSNull null]}];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeEnumMembersList:(YASLAssemblyNode *)node {
+	[a push:[self reverseFetch:a]];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeEnumType:(YASLAssemblyNode *)node {
+	YASLAssembly *members = [a pop];
+	YASLEnumDataType *enumType = [YASLEnumDataType typeWithName:@""];
+	while ([members notEmpty]) {
+		NSDictionary *enumMember = [members pop];
+    NSString *identifier = enumMember[@0];
+		if ([enumType hasEnum:identifier])
+			[self raiseError:@"Enum identifier duplicate: \"%@\"", identifier];
+
+		NSNumber *value = enumMember[@1];
+		if (value == (id)[NSNull null])
+			[enumType addEnum:identifier];
+		else {
+			[enumType addEnum:identifier value:[value unsignedIntegerValue]];
+		}
+	}
+	[a push:enumType];
+}
 
 @end

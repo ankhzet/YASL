@@ -81,6 +81,10 @@
 	return 	[self.currentScope.localDataTypesManager typeByName:name];
 }
 
+- (NSEnumerator *)enumTypes {
+	return [self.currentScope.localDataTypesManager enumTypes];
+}
+
 #pragma mark - Declaration scope interface implementation
 
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {

@@ -11,7 +11,7 @@
 
 @implementation YASLAssembler (DeclaratorProcessor)
 
-- (void) processAssembly:(YASLAssembly *)a nodeDeclarator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeDeclarator:(YASLAssemblyNode *)node {
 	id top = [a top];
 	NSNumber *pointerRef = @0;
 	YASLTranslationDeclarator *declarator;
@@ -24,7 +24,7 @@
 	declarator.isPointer = [pointerRef unsignedIntegerValue];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeDirectDeclarator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeDirectDeclarator:(YASLAssemblyNode *)node {
 	YASLAssembly *fetched = [self reverseFetch:a];
 	YASLToken *identifier = [fetched pop];
 
@@ -39,7 +39,7 @@
 	[a push:declarator];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeArrayDeclarator:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeArrayDeclarator:(YASLAssemblyNode *)node {
 	NSUInteger elements = 0;
 	id top = [a popTill:a.chunkMarker];
 	if (top) {
@@ -53,7 +53,7 @@
 	[a push:specifier];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodeDeclaratorList:(YASLGrammarNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeDeclaratorList:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
 }
 

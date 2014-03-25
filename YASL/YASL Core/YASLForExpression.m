@@ -59,7 +59,7 @@
 	YASLTranslationExpression *statements = [self nthOperand:FOR_STATEMENTS_OPERAND];
 
 	if (initializer) {
-		[initializer assemble:assembly];
+		[initializer assemble:assembly unPointered:NO];
 	}
 
 	[assembly push:iterationLabel];
@@ -68,11 +68,11 @@
 		[assembly push:OPC_(JZ, breakAddress)];
 	}
 	if (statements) {
-		[statements assemble:assembly];
+		[statements assemble:assembly unPointered:NO];
 	}
 	[assembly push:continueLabel];
 	if (iterator) {
-		[iterator assemble:assembly];
+		[iterator assemble:assembly unPointered:NO];
 	}
 	[assembly push:OPC_(JMP, iterationAddress)];
 	[assembly push:breakLabel];
