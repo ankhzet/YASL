@@ -19,8 +19,9 @@
 }
 
 - (NSString *) toString {
-	NSString *type = self.returnType ? [self.returnType description] : @"<?>";
-	return [NSString stringWithFormat:@"%@%@", type, self.value];
+//	NSString *type = self.returnType ? [self.returnType description] : @"<?>";
+//	return [NSString stringWithFormat:@"%@%@", type, self.value];
+	return [NSString stringWithFormat:@"%@", self.value];
 }
 
 #pragma mark - Typecast

@@ -8,6 +8,8 @@
 
 #import <Foundation/Foundation.h>
 
+#import "YASLNativesList.h"
+
 @class YASLNativeFunction, YASLRAM, YASLStack, YASLCPU;
 @interface YASLNativeFunctions : NSObject
 

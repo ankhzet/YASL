@@ -25,6 +25,7 @@
 #import "YASLWhileExpression.h"
 #import "YASLForExpression.h"
 #import "YASLUnrefExpression.h"
+#import "YASLSwitchExpression.h"
 
 #import "YASLExpressionProcessor.h"
 #import "YASLExpressionSolver.h"

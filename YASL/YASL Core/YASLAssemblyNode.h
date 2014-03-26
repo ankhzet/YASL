@@ -7,6 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "YASLAPI.h"
 
 @class YASLGrammarNode, YASLAssembly;
 @interface YASLAssemblyNode : NSObject

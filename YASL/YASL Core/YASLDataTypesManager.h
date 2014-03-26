@@ -22,7 +22,7 @@
 
 @interface YASLDataTypesManager : NSObject <YASLDataTypesManagerProtocol>
 
-@property (nonatomic) YASLDataTypesManager *parentManager;
+@property (nonatomic, weak) YASLDataTypesManager *parentManager;
 
 + (instancetype) datatypesManagerWithParentManager:(YASLDataTypesManager *)parent;
 

@@ -32,5 +32,6 @@ extern NSString *const kCachePrecompiledMachineCode;
 - (id) cache:(NSString *)sourceIdentifier data:(NSString *)cacheIdentifier;
 
 - (NSEnumerator *) enumerateCompiledUnits;
+- (void) dropUnit:(NSString *)sourceIdentifier;
 
 @end

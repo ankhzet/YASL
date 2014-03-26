@@ -55,26 +55,92 @@ void test5() {
 
 int main(void *args) {
 	int r1 = test1();
+	log(r1);
 	int sum1 = test2(2, 3, true);
+	log(sum1);
 	int sub1 = test2(2, 3, false);
+	log(sub1);
 
 	int ifs1 = test3(4, 5, true);
+	log(ifs1);
 	int ifs2 = test3(4, 5, false);
+	log(ifs2);
 
 	bool cycles1 = test4(6, 7);
+	log(cycles1);
 	bool cycles2 = test4(666, 7);
+	log(cycles2);
 
 	a = 100;
 	b = 1000;
 	c = 696;
 	test5();
+	log(a);
 
 	float _sqrt = sqrt(a) + b;
+	log(_sqrt);
 
-	if (a == b - c)
+	if (a == b - c + 1)
 		return 0;
-	else {
-		// raise @"";
-		return 1;
+
+	typedef enum {
+		CaseDefault,
+		CaseFirst,
+		CaseSecond,
+		CaseThird,
+
+		CaseTenth = 10,
+		CaseTwelve = 20,
+		CaseHundred = 100,
+
+		CaseMax = 101
+	} Cases;
+
+	int result = 0;
+	for (Cases i = CaseDefault; i < CaseMax; i++) {
+		switch (i) {
+			case CaseDefault: {
+				result = 15;
+				break;
+			}
+			case CaseFirst:
+				result = 1;
+			case CaseTenth: {
+				result += 10;
+				break;
+			}
+			case CaseHundred: {
+				switch (5) {
+					case 1: {result = 10; break; }
+					case CaseHundred: {result = 112; break; }
+					case 5:
+					case 2: {result = 300; break; }
+				}
+				break;
+			}
+			case CaseTwelve: {
+				switch (7) {
+					case 1: {result = 10; break; }
+					case 111: {result = 112; break; }
+					case 5:
+					case 2: {result = 300; break; }
+				}
+				break;
+			}
+			case 30: {
+				result = 30;
+				break;
+			}
+			case -1:
+			case -2:
+			case -3:
+			default: {
+				result = -1;
+			}
+		}
+		if (result > 0)
+			log(result);
 	}
+
+	return result;
 }

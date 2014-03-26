@@ -81,6 +81,60 @@
 	[a push:expression];
 }
 
+- (void) preProcessAssembly:(YASLAssembly *)a nodeSelectionSwitch:(YASLAssemblyNode *)node {
+	YASLDeclarationScope *scope = [self.declarationScope pushScope];
+	scope.name = @"switch";
+	[scope newLocalDeclaration:YASLReservedWordBreak];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeSelectionSwitch:(YASLAssemblyNode *)node {
+	BOOL hasBreak = [[self scope] isDeclared:YASLReservedWordBreak inLocalScope:YES];
+	if (!(hasBreak))
+		[self raiseError:@"Break label undefined"];
+
+	YASLAssembly *statements = [a pop];
+	YASLTranslationExpression *switchExpr = [a pop];
+	YASLSwitchExpression *switchNode = [YASLSwitchExpression switchExpressionInScope:[self scope]];
+	switchNode.breakLabel = [[self scope] localDeclarationByIdentifier:YASLReservedWordBreak];
+	[switchNode addSubNode:switchExpr];
+
+	NSDictionary *statement;
+	while ((statement = [statements pop])) {
+		YASLTranslationExpression *caseValue = statement[@0];
+		YASLTranslationExpression *caseStatement = statement[@1];
+		YASLCompoundExpression *statementNode = [YASLCompoundExpression compoundExpressionInScope:[self scope]];
+		if (caseValue != (id)[NSNull null])
+			[statementNode addSubNode:caseValue];
+		[statementNode addSubNode:caseStatement];
+		[switchNode addSubNode:statementNode];
+	}
+
+	[a push:switchNode];
+	[self.declarationScope popScope];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeSwitchStatements:(YASLAssemblyNode *)node {
+	[a push:[self reverseFetch:a]];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeSwitchStatement:(YASLAssemblyNode *)node {
+	YASLTranslationExpression *statement = [a pop];
+	YASLTranslationExpression *caseExpr = [a popTillChunkMarker];
+	if (!caseExpr) {
+		caseExpr = statement;
+		statement = [YASLCompoundExpression compoundExpressionInScope:[self scope]];
+	}
+	[a push:@{@0: caseExpr, @1: statement}];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeDefaultSwitchStatement:(YASLAssemblyNode *)node {
+	YASLTranslationExpression *statement = [a popTillChunkMarker];
+	if (!statement) {
+		statement = [YASLCompoundExpression compoundExpressionInScope:[self scope]];
+	}
+	[a push:@{@0: [NSNull null], @1: statement}];
+}
+
 @end
 
 @implementation YASLAssembler (IterationStatementProcessor)

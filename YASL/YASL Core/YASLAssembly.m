@@ -19,19 +19,6 @@
 
 #pragma mark - Instantiation
 
-- (id)init {
-	if (!(self = [super init]))
-		return self;
-
-	stack = [NSMutableArray array];
-	popped = [NSMutableArray array];
-
-//	discards = [YASLDiscards discardsForParent:nil andState:0];
-
-//	self.userData = [NSMutableDictionary dictionary];
-	return self;
-}
-
 - (void) dealloc {
 	[discards detouch];
 }
@@ -108,6 +95,7 @@
 
 - (void) discardAs:(YASLAssembly *)sourceAssembly {
 	[discards noDiscards];
+	[discards detouch];
 	discards = [sourceAssembly->discards copy];
 }
 
@@ -170,6 +158,9 @@
 	if ([discards mustDiscard:object])
 		return;
 
+	if (!stack)
+		stack = [NSMutableArray array];
+
 	[stack addObject:object];
 	if ([popped count]) {
 		[popped removeLastObject];
@@ -186,6 +177,9 @@
 	if ([discards mustDiscard:object])
 		return [self pushBack];
 
+	if (!stack)
+		stack = [NSMutableArray array];
+
 	[stack addObject:object];
 	return object;
 }
@@ -194,6 +188,10 @@
 	id object = [self top];
 	if (object) {
 		[stack removeLastObject];
+
+		if (!popped)
+			popped = [NSMutableArray array];
+
 		[popped addObject:object];
 
 		if ([discards mustDiscard:object])
@@ -215,6 +213,10 @@
 		}
 
 		[stack removeLastObject];
+
+		if (!popped)
+			popped = [NSMutableArray array];
+
 		[popped addObject:object];
 
 		if ([discards mustDiscard:object])

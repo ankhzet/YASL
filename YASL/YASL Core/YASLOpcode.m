@@ -52,6 +52,14 @@
 	return self;
 }
 
+- (id) copyWithZone:(NSZone *)zone {
+	YASLOpcodeOperand *copy = [[self class] new];
+	copy->type = type;
+	copy->reg = reg;
+	copy->immediate = immediate;
+	return copy;
+}
+
 - (id) asPointer {
 	self->type |= YASLOperandTypePointer;
 	return self;

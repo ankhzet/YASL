@@ -102,7 +102,7 @@
 		return NO;
 
 	while ((top = [self.assembly pop]) != secondMov);
-	YASLOpcode *replacement = OPC_(MOV, left2, mustUnref ? [right asPointer] : right);
+	YASLOpcode *replacement = OPC(secondMov->opcode, left2, mustUnref ? [right asPointer] : right);
 	[self.assembly push:replacement];
 	[self.assembly alwaysDiscard:firstMov inGlobalScope:YES];
 	[self.assembly alwaysDiscard:secondMov inGlobalScope:YES];

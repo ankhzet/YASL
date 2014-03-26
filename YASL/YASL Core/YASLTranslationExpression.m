@@ -134,14 +134,18 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 }
 
 - (NSString *) toString {
-	NSString *delim = [NSString stringWithFormat:@" %@ ", self.specifier];
 	NSString *subs = @"";
-	for (YASLTranslationNode *subnode in [self nodesEnumerator:NO]) {
-    subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? delim : @""), [subnode toString]];
+	BOOL unary = [self nodesCount] <= 1;
+	if (!unary) {
+		NSString *delim = [NSString stringWithFormat:@" %@ ", self.specifier];
+		for (YASLTranslationNode *subnode in [self nodesEnumerator:NO]) {
+			subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? delim : @""), [subnode toString]];
+		}
 	}
 	subs = [subs length] ? subs : self.specifier;
 
-	return [NSString stringWithFormat:([self nodesCount] > 1 ? @"%@(%@)" : @"%@%@"), self.returnType, subs];
+	NSString *type = unary ? @"" : [self.returnType description];
+	return [NSString stringWithFormat:(unary ? @"%@%@" : @"%@(%@)"), type, subs];
 }
 
 

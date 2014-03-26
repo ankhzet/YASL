@@ -21,7 +21,6 @@
 	if (!(self = [super init]))
 		return self;
 
-	discardsSet = [NSMutableSet set];
 	return self;
 }
 
@@ -57,6 +56,9 @@
 
 /*! Always ignore specified object, when pushing it onto the stack. If it was pushed before marked for discard - it will be ignored in next -[pop]. */
 - (void) alwaysDiscard:(id)object inGlobalScope:(BOOL)global {
+	if (!discardsSet)
+		discardsSet = [NSMutableSet set];
+
 	[discardsSet addObject:object];
 	if (global)
 		[parent alwaysDiscard:object inGlobalScope:YES];
@@ -79,7 +81,12 @@
 - (YASLDiscards *) foldDiscards {
 	YASLDiscards *p = parent;
 	if (p) {
-		[p->discardsSet unionSet:discardsSet];
+		if (discardsSet) {
+			if (!p->discardsSet) {
+				p->discardsSet = [discardsSet mutableCopy];
+			} else
+				[p->discardsSet unionSet:discardsSet];
+		}
 		return [p foldDiscards];
 	}
 
@@ -111,7 +118,8 @@
 		copy->child->parent = child;
 	}
 
-	copy->discardsSet = [discardsSet mutableCopy];
+	if (discardsSet)
+		copy->discardsSet = [discardsSet mutableCopy];
 	return copy;
 }
 

@@ -15,7 +15,7 @@
 #define OPC(_opcode, _operands...) [YASLOpcode opcode:_opcode withOperands:@[_operands]]
 #define OPC_(_opcode, _operands...) OPC(OPC_##_opcode, _operands)
 
-@interface YASLOpcodeOperand : NSObject {
+@interface YASLOpcodeOperand : NSObject <NSCopying> {
 	@public
 	YASLOperandType type;
 	YASLIndexedRegister reg;

@@ -37,10 +37,8 @@
 
 	if (unit.stage == YASLUnitCompilationStageCompiled) {
 		YASLInt stackOffset = (YASLInt)[self.cpu threadsCount] * DEFAULT_THREAD_STACK_SIZE + DEFAULT_STACK_BASE;
-		YASLLocalDeclaration *mainMethod = [unit findSymbol:@"main"];
-		YASLInt mainSymbol = [mainMethod.reference complexAddress];
 
-		YASLThread *thread = [self.cpu threadCreateWithEntryAt:mainSymbol andState:YASLThreadStateRunning andInitParam:0 waitable:NO];
+		YASLThread *thread = [self.cpu threadCreateWithEntryAt:unit.startOffset andState:YASLThreadStateRunning andInitParam:0 waitable:NO];
 		[thread setReg:YASLRegisterISP value:stackOffset];
 		[thread setReg:YASLRegisterIBP value:stackOffset];
 		[unit usedByThread:thread];
@@ -86,13 +84,35 @@
 }
 
 - (void) registerNativeFunctions {
-	[self registerNativeFunction:@"log" withParamCount:1 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
+	[self registerNativeFunction:YASLNativeVM_log withParamCount:1 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
+	[self registerNativeFunction:YASLNativeVM_unloadScriptAssociatedWith withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_unloadScriptAssociatedWith:params:)];
 }
 
 - (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase {
 	YASLInt i = [native intParam:1 atBase:paramsBase];
 	NSLog(@"Log: %d", i);
 	return 0;
+}
+
+- (YASLInt) n_unloadScriptAssociatedWith:(YASLNativeFunction *)native params:(void *)paramsBase {
+	YASLInt threadHandle = [native intParam:1 atBase:paramsBase];
+	if (!threadHandle)
+		return YASL_INVALID_HANDLE;
+
+	YASLThread *thread = [self.cpu thread:threadHandle];
+	if (!thread)
+		return YASL_INVALID_HANDLE;
+
+	for (YASLCompiledUnit *unit in [self.compiler enumerateCompiledUnits]) {
+		if ([unit isUsedByThread:thread]) {
+			[unit notUsedByThread:thread];
+			BOOL used = [unit usedByThreads];
+			if (!used)
+				[self.compiler dropUnit:unit.source.identifier];
+			return used;
+		}
+	}
+	return YASL_INVALID_HANDLE;
 }
 
 @end

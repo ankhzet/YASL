@@ -87,9 +87,29 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 
 			unit.codeAssembly = [YASLAssembly new];
 			[translated assemble:unit.codeAssembly];
+
+			YASLCodeAddressReference *entryRef = [YASLCodeAddressReference referenceWithName:[unit.source.identifier lastPathComponent]];
+			YASLLocalDeclaration *mainMethod = [unit findSymbol:@"main"];
+
+			YASLNativeFunction *currentThread = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeCPU_currentThread];
+			YASLNativeFunction *unloadScript = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeVM_unloadScriptAssociatedWith];
+			[unit.codeAssembly push:entryRef];
+			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
+			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(currentThread.GUID)))];
+			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
+			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(unloadScript.GUID)))];
+			[unit.codeAssembly push:OPC_(POP, REG_(R0))];
 			[unit.codeAssembly push:OPC_(HALT)];
+
 			unit.codeAssembly = [[YASLAssembly alloc] initReverseAssembly:unit.codeAssembly];
-			[unit.codeAssembly push:OPC_(HALT)];
+			[unit.codeAssembly push:OPC_(NOP)];
+			if (mainMethod) {
+				[unit.codeAssembly push:OPC_(JMP, [mainMethod.reference addNewOpcodeOperandReferent])];
+				[unit.codeAssembly push:OPC_(PUSH, [entryRef addNewOpcodeOperandReferent])];
+			} else {
+				[unit.codeAssembly push:OPC_(JMP, [entryRef addNewOpcodeOperandReferent])];
+			}
+
 			[globalScope.placementManager calcPlacementForScope:globalScope];
 
 			if (options[kCompilatorOptimize]) {
@@ -167,6 +187,11 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 	}
 
 	return unit;
+}
+
+- (void) dropUnit:(NSString *)sourceIdentifier {
+	[units removeObjectForKey:sourceIdentifier];
+	[self dropAssociatedCaches:sourceIdentifier];
 }
 
 - (BOOL) dropAssociatedCaches:(NSString *)sourceIdentifier {

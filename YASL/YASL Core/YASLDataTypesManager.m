@@ -30,12 +30,13 @@
 	if (!(self = [super init]))
 		return self;
 
-	self.parentManager = nil;
-	types = [NSMutableDictionary dictionary];
 	return self;
 }
 
 - (void) registerType:(YASLDataType *)type {
+	if (!types)
+		types = [NSMutableDictionary dictionary];
+
 	types[type.name] = type;
 	type.manager = self;
 }

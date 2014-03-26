@@ -22,8 +22,6 @@
 		return self;
 
 	self.parentScope = nil;
-	_childs = [NSMutableArray array];
-	declarations = [NSMutableDictionary dictionary];
 	return self;
 }
 
@@ -46,12 +44,17 @@
 }
 
 - (void) addChildScope:(YASLDeclarationScope *)child {
+	if (!_childs)
+		_childs = [NSMutableArray array];
 	[(NSMutableArray *)_childs addObject:child];
 }
 
 #pragma mark - Declaration scope interface implementation
 
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {
+	if (!declarations)
+		declarations = [NSMutableDictionary dictionary];
+
 	YASLLocalDeclaration *declaration = [YASLLocalDeclaration localDeclarationWithIdentifier:identifier];
 	declaration.parentScope = self;
 	declaration.index = [declarations count];
@@ -76,10 +79,10 @@
 }
 
 - (NSArray *) localDeclarations {
-	return [[declarations allValues] sortedArrayUsingComparator:^NSComparisonResult(YASLLocalDeclaration *d1, YASLLocalDeclaration *d2) {
+	return declarations ? [[declarations allValues] sortedArrayUsingComparator:^NSComparisonResult(YASLLocalDeclaration *d1, YASLLocalDeclaration *d2) {
 		NSInteger delta = (d1.index - d2.index);
 		return delta ? delta / ABS(delta) : 0;
-	}];
+	}] : @[];
 }
 
 /*

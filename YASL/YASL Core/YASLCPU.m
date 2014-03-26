@@ -117,7 +117,6 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 	_stack.top = &threadData->registers[YASLRegisterISP];
 	if (activeThread->firstRun) {
 		[_stack push:activeThread->param];
-		[_stack push:0];
 		activeThread->firstRun = NO;
 	}
 }
@@ -338,13 +337,18 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 - (void) registerNativeFunctions {
 	[super registerNativeFunctions];
 
-	[self registerNativeFunction:@"sqrt" withParamCount:1 returnType:@"float" withSelector:@selector(n_sqrt:params:)];
+	[self registerNativeFunction:YASLNativeCPU_sqrt withParamCount:1 returnType:YASLBuiltInTypeIdentifierFloat withSelector:@selector(n_sqrt:params:)];
+	[self registerNativeFunction:YASLNativeCPU_currentThread withParamCount:0 returnType:YASLAPITypeHandle withSelector:@selector(n_threadHandle:params:)];
 }
 
 - (YASLInt) n_sqrt:(YASLNativeFunction *)native params:(void *)paramsBase {
 	YASLFloat p1 = [native floatParam:1 atBase:paramsBase];
 	p1 = sqrt(p1);
 	return *(YASLInt *)(&p1);
+}
+
+- (YASLInt) n_threadHandle:(YASLNativeFunction *)native params:(void *)paramsBase {
+	return self.activeThreadHandle;
 }
 
 @end

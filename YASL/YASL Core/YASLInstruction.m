@@ -108,13 +108,27 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 
 - (NSString *) associatedLabel:(YASLInt)ip {
 	NSMutableSet *result = [NSMutableSet set];
+	NSMutableDictionary *groups = [NSMutableDictionary dictionary];
 	for (NSArray *refOffs in labelRefs) {
 		YASLCodeAddressReference * ref = refOffs[0];
     if (ip == ref.address) {
-			[result addObject:[NSString stringWithFormat:@":%@",ref.name ? ref.name : @"?"]];
+			NSString *label = [NSString stringWithFormat:@":%@",ref.name ? ref.name : @"?"];
+			if ([label hasPrefix:@":Line"] || [label hasPrefix:@":case"]) {
+				NSString *prefix = [label substringToIndex:5];
+				NSMutableSet *group = groups[prefix];
+				if (!group)
+					group = groups[prefix] = [NSMutableSet set];
+				[group addObject:[label substringFromIndex:[label rangeOfString:@" "].location + 1]];
+			} else
+				[result addObject:label];
 		}
 	}
-	return [[result allObjects] componentsJoinedByString:@""];
+	NSMutableString *labels = [@"" mutableCopy];
+	for (NSString *group in [groups allKeys]) {
+    [labels appendFormat:@"%@ %@", group, [[groups[group] allObjects] componentsJoinedByString:@","]];
+	}
+	[labels appendString:[[result allObjects] componentsJoinedByString:@""]];
+	return labels;
 }
 
 - (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign {

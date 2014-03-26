@@ -12,6 +12,7 @@
 #import "YASLUnwantedMovCallStrategy.h"
 #import "YASLUnwantedMovMovStrategy.h"
 #import "YASLUnwantedMovPushStrategy.h"
+#import "YASLUnwantedPushPopStrategy.h"
 
 @implementation YASLCodeOptimizer {
 	NSDictionary *opcodeOperandsAccessTypes;
@@ -24,9 +25,10 @@
 		return self;
 
 	optimizationStrategies = @[
-//														 [YASLUnwantedMovCallStrategy class],
-//														 [YASLUnwantedMovMovStrategy class],
-														 [YASLUnwantedMovPushStrategy class]
+														 [YASLUnwantedMovCallStrategy class],
+														 [YASLUnwantedMovMovStrategy class],
+														 [YASLUnwantedMovPushStrategy class],
+														 [YASLUnwantedPushPopStrategy class],
 														 ];
 
 	opcodeTypesCache = @{@NO:[NSMutableDictionary dictionary], @YES: [NSMutableDictionary dictionary]};

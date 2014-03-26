@@ -109,10 +109,21 @@
 }
 
 - (NSUInteger) impacts {
-	if ([self whoImpactsExecutionFlow])
-		return [self getCurentStateAndRestoreBaseState];
+	NSUInteger offset = 0;
+	if ([self whoImpactsExecutionFlow]) {
+		NSUInteger current = [self getCurentStateAndRestoreBaseState];
+		if ([self is:current earlierThan:offset]) {
+			offset = current;
+		}
+	}
+	if ([self whoImpactedByExecutionFlow]) {
+		NSUInteger current = [self getCurentStateAndRestoreBaseState];
+		if ([self is:current earlierThan:offset]) {
+			offset = current;
+		}
+	}
 	[self getCurentStateAndRestoreBaseState];
-	return 0;
+	return offset;
 }
 
 - (YASLOpcode *) whoImpactsExecutionFlow {
@@ -120,6 +131,12 @@
 
 	return [self detectOpcodeWithFilter:^BOOL(YASLOpcode *opcode) {
 		return [impacts containsObject:@(opcode->opcode)];
+	}];
+}
+
+- (YASLOpcode *) whoImpactedByExecutionFlow {
+	return [self detectReferenceFilter:^BOOL(YASLCodeAddressReference *reference) {
+		return ![reference.name hasPrefix:@"Line #"];
 	}];
 }
 
@@ -209,6 +226,22 @@
 	return [self detectOpcodeWithFilter:^BOOL(YASLOpcode *opcode) {
 		return opcode->opcode == opCode;
 	}];
+}
+
+- (YASLOpcode *) detectReferenceFilter:(BOOL(^)(YASLCodeAddressReference *reference))filter {
+	Class referenceClass = [YASLCodeAddressReference class];
+	while ([_assembly notEmpty]) {
+		id top = [_assembly pop];
+		if (![top isKindOfClass:referenceClass])
+			continue;
+
+		if (!filter(top))
+			continue;
+
+		return top;
+	}
+
+	return nil;
 }
 
 - (YASLOpcode *) detectOpcodeWithFilter:(BOOL(^)(YASLOpcode *opcode))filter {

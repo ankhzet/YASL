@@ -104,9 +104,15 @@ statement = compound-statement | jump-statement | selection-statement | iteratio
 expression-statement = expression? ';'!;
 compound-statement = '{'! (statement | declaration ';'!)* '}'!;
 
-selection-statement = selection-if;// | selection-switch;
+proubably-empty-statement = statement | ';'!;
+selection-statement = selection-if | selection-switch;
 selection-if = 'if'! '('! expression ')'! statement selection-else?;
 selection-else = 'else'! statement;
+
+selection-switch = 'switch'! '('! expression ')'! '{'! switch-statements '}'!;
+switch-statements = (switch-statement | default-switch-statement)+;
+switch-statement = 'case'! constant-expression ':'! statement?;
+default-switch-statement = 'default'! ':'! statement?;
 
 jump-statement = (jump-goto | jump-return | continue | break) ';'!;
 jump-goto = 'goto'! Identifier;
@@ -115,11 +121,11 @@ continue = 'continue'!;
 break = 'break'!;
 
 iteration-statement = straight-while | straight-do | straight-for;
-straight-while = 'while'! '('! expression ')'! statement?;
+straight-while = 'while'! '('! expression ')'! proubably-empty-statement;
 straight-do = 'do'! statement? 'while'! '('! expression ')'! ';'!;
 straight-for = 'for'! '('! for-initializer ';'! for-condition ';'! for-iterator ')'! for-statements;
 
-for-statements = statement?;
+for-statements = proubably-empty-statement;
 for-initializer = declaration?;
 for-condition = expression?;
 for-iterator = expression?;

@@ -12,6 +12,7 @@
 #import "NSObject+TabbedDescription.h"
 #import "YASLToken.h"
 #import "YASLNonfatalException.h"
+#import "YASLAPI.h"
 
 NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
