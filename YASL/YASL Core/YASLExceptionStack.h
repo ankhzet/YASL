@@ -18,6 +18,7 @@
 - (void) reRaise;
 
 - (NSUInteger) pushExceptionStackState;
+- (void) popExceptionStack;
 - (void) popExceptionStackState:(NSUInteger)guid;
 
 @end

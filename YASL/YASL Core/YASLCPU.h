@@ -10,10 +10,22 @@
 #import "YASLCodeCommons.h"
 #import "YASLThreadsAPI.h"
 
-@class YASLRAM, YASLStack, YASLEventsAPI;
+@class YASLRAM, YASLStack, YASLEventsAPI, YASLThread, YASLCPU;
+
+@protocol YASLCPUDelegate <NSObject>
+
+- (void) noOp:(YASLCPU *)cpu forTicks:(NSUInteger)ticks;
+- (void) betweenCycles:(YASLCPU *)cpu thread:(YASLThread *)thread;
+
+@end
+
 @interface YASLCPU : YASLThreadsAPI
 @property (nonatomic)	YASLRAM *ram;
 @property (nonatomic)	YASLStack *stack;
+
+@property (nonatomic) BOOL paused;
+
+@property (nonatomic) id<YASLCPUDelegate> delegate;
 
 + (instancetype) cpu;
 

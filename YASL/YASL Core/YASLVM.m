@@ -21,7 +21,8 @@
 		unit = [self.compiler compilationPass:source
 															withOptions:@{
 																						kCompilatorPrecompile:@YES,
-																						kCompilatorOptimize: @YES
+																						kCompilatorOptimize: @YES,
+																						kCompilatorDropCaches: @YES,
 																						}];
 
 		if (unit.stage == YASLUnitCompilationStagePrecompiled) {
@@ -29,7 +30,7 @@
 			[self.compiler compilationPass:source
 												 withOptions:@{
 																			 kCompilatorCompile:@YES,
-																			 kCompilatorPlacementOffset:@(threadOffset)
+																			 kCompilatorPlacementOffset:@(threadOffset),
 																			 }];
 		}
 

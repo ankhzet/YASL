@@ -52,6 +52,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 @implementation YASLCPU
 @synthesize ram = _ram;
 @synthesize stack = _stack;
+@synthesize paused = _paused;
 
 + (instancetype) cpu {
 	return [(YASLCPU *)[self alloc] init];
@@ -115,25 +116,29 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 }
 
 - (void) run {
-	NSUInteger steps = 0;
-	BOOL halted;
+	NSUInteger steps = 0, noop = 0;
 	do {
+		_paused = NO;
 		do {
-			if (steps % 10 == 0) {
-				if ([self switchThreads] == YASL_INVALID_HANDLE) {
-					halted = YES;
-					break;
-				}
-			}
+			if ([self switchThreads] == YASL_INVALID_HANDLE) {
+//					halted = YES;
+				noop++;
+				break;
+			} else
+				noop = 0;
 
 			[self processInstruction];
 			steps = ++self.activeThread->steps;
-			halted = self.halted || threadData->halt;
-		} while (!(halted || (steps % 50 == 0)));
+			_paused = self.halted || threadData->halt;
+		} while (!(_paused || (steps % 50 == 0)));
 
-		//TODO: here must be callback & sleep
-
-	} while (!halted);
+		if (_delegate) {
+			if (noop > 100)
+				[_delegate noOp:self forTicks:noop];
+			else
+				[_delegate betweenCycles:self thread:self.activeThread];
+		}
+	} while (!_paused);
 }
 
 - (void) runTo {
@@ -152,7 +157,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 #pragma mark - Instructions processing
 
 - (void) processInstruction {
-	threadData->halt = false;
+//	threadData->halt = false;
 
 	YASLInt *ip = &threadData->registers[YASLRegisterIIP];
 

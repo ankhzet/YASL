@@ -348,15 +348,15 @@
 			isChunk = YES;
 		}
 
+		if (object == marker) {
+			isChunk = NO;
+			isPost = YES;
+		}
+
 		if (![self mustDiscard:object]) {
 			if (isPre) [pre addObject:object];
 			if (isChunk) [chunk addObject:object];
 			if (isPost) [post addObject:object];
-		}
-
-		if (object == marker) {
-			isChunk = NO;
-			isPost = YES;
 		}
 	}
 

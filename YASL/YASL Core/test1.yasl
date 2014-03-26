@@ -1,163 +1,76 @@
 script test;
 
 native void log(int x);
-native float sqrt(float x);
 
-int test1() {
+typedef enum {
+	EventStateClear   = 0,
+	EventStateSet     = 1,
+	EventStateFailed  = 2,
+	EventStateTimeout = 3,
+} EventState;
+
+native handle createEvent(char *identifier; int initialState; bool autoreset);
+native handle signalEvent(handle event; int state);
+native bool   closeEvent(handle event);
+
+native int waitFor(handle event; int msec; int state);
+
+typedef enum {
+	ThreadStateNotReady   = 1 << 0,
+	ThreadStateRunning    = 1 << 1,
+	ThreadStateSleep      = 1 << 2,
+	ThreadStateTerminated = 1 << 3,
+} ThreadState;
+
+native handle currentThread();
+native handle threadStart(int threadMethod, threadState, parameter);
+native bool   threadSuspend(handle thread; int msec);
+native bool   threadResume(handle thread);
+native bool   threadTerminate(handle thread; int returnCode);
+
+int max(int a, b) {
+	return a > b ? a : b;
+}
+
+int dummyThread(int *param) {
+	handle self = currentThread();
+	log(self);
+	log(param);
+
+	int event = (*param)[0];
+	int sleepFor = (*param)[1];
+	int delta = max(10, sleepFor / 10), i = 0;
+	while (true) {
+		threadSuspend(self, delta);
+		log(self);
+		log(i+=10);
+		if (i > sleepFor) {
+			signalEvent(event, EventStateSet);
+			break;
+		}
+	}
+
+	log(54321);
 	return 1;
 }
 
-int test2(int a, b; bool c) {
-	return c ? a + b : a - b;
-}
+int main(int arg) {
+	char eventName = 'a';
+	handle event = createEvent(&eventName, EventStateClear, true);
 
-int test3(int a, b; bool c) {
-	int d = a + b;
-	if (!c)
-		d += b;
+	int params[] = {event, 12345};
+	handle notifier = threadStart(&dummyThread, ThreadStateRunning, &params);
 
-	if (a > b)
-		d -= a;
-	else
-		d += a;
-
-	d = a * d + (c ? a : b - 1);
-
-	return -d;
-}
-
-bool test4(int a, b) {
-	int c = a * b, d = 0;
-	while (c-- > 0) {
-		d += b;
-		a--;
+	int s = EventStateClear;
+	while ((s = waitFor(event, 1000, EventStateSet)) == EventStateTimeout) {
+		log(1000);
 	}
 
-	for (int i = 0; i < d; i++)
-		b++;
+	log(0);
+	log(0);
+	log(0);
+	log(s);
 
-	for (int j = 1;0;);
-
-	for (;a < c;c--) {
-		a++;
-		b--;
-	}
-
-	return a > b ? d : -d;
-}
-
-int a, b, c;
-
-void test5() {
-	a = b - c;
-}
-
-void test6(int **integers) {
-	for (int i = 0; i < 5; i++)
-		log((*integers)[i]);
-}
-
-int main(void *args) {
-	int r1 = test1();
-	log(r1);
-	int sum1 = test2(2, 3, true);
-	log(sum1);
-	int sub1 = test2(2, 3, false);
-	log(sub1);
-
-	int ifs1 = test3(4, 5, true);
-	log(ifs1);
-	int ifs2 = test3(4, 5, false);
-	log(ifs2);
-
-	bool cycles1 = test4(6, 7);
-	log(cycles1);
-	bool cycles2 = test4(666, 7);
-	log(cycles2);
-
-
-	a = 100;
-	b = 1000;
-	c = 696;
-	test5();
-	log(a);
-
-	float _sqrt = sqrt(a) + b;
-	log(_sqrt);
-
-	if (a == b - c + 1)
-		return 0;
-
-	typedef enum {
-		CaseDefault,
-		CaseFirst,
-		CaseSecond,
-		CaseThird,
-
-		CaseTenth = 10,
-		CaseTwelve = 20,
-		CaseHundred = 100,
-
-		CaseMax = 101
-	} Cases;
-
-	int result = 0;
-	for (Cases i = CaseDefault; i < CaseMax; i++) {
-		switch (i) {
-			case CaseDefault: {
-				result = 15;
-				break;
-			}
-			case CaseFirst:
-				result = 1;
-			case CaseTenth: {
-				result += 10;
-				break;
-			}
-			case CaseHundred: {
-				switch (5) {
-					case 1: {result = 10; break; }
-					case CaseHundred: {result = 112; break; }
-					case 5:
-					case 2: {result = 300; break; }
-				}
-				break;
-			}
-			case CaseTwelve: {
-				switch (7) {
-					case 1: {result = 10; break; }
-					case 111: {result = 112; break; }
-					case 5:
-					case 2: {result = 300; break; }
-				}
-				break;
-			}
-			case 30: {
-				result = 30;
-				break;
-			}
-			case -1:
-			case -2:
-			case -3:
-			default: {
-				result = -1;
-			}
-		}
-		if (result > 0)
-			log(result);
-	}
-
-	int integers[] = {9, 7, 5, 3, 1};
-
-	int integers2[5];
-
-	for (int i = 0; i < 5; i++)
-		integers2[i] = integers[4 - i];
-
-	for (int i = 0; i < 5; i++) {
-		log(integers[i]);
-	}
-
-	test6(&integers);
-	return result;
+	closeEvent(notifier);
+	return 0;
 }

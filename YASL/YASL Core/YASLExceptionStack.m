@@ -66,6 +66,11 @@
 	return guid;
 }
 
+- (void) popExceptionStack {
+	stackStates = nil;
+	exceptionsStack = nil;
+}
+
 - (void) popExceptionStackState:(NSUInteger)guid {
 	NSNumber *state = stackStates[@(guid)];
 	if (!state)

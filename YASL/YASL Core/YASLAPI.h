@@ -43,6 +43,7 @@ writeData: [formattedString dataUsingEncoding: NSUTF8StringEncoding]];\
 #define _YASLBuiltInTypeIdentifierFloat @"float"
 #define _YASLBuiltInTypeIdentifierBool @"bool"
 #define _YASLBuiltInTypeIdentifierChar @"char"
+#define _YASLAPITypeIdentifierHandle @"handle"
 
 typedef int YASLInt;
 typedef YASLInt YASLBool;
@@ -67,7 +68,7 @@ extern NSString *const YASLBuiltInTypeIdentifierFloat;
 extern NSString *const YASLBuiltInTypeIdentifierBool;
 extern NSString *const YASLBuiltInTypeIdentifierChar;
 
-extern NSString *YASLAPITypeHandle;
+extern NSString *const YASLAPITypeHandle;
 
 extern YASLInt YASL_INVALID_HANDLE;
 

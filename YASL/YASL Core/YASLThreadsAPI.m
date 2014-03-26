@@ -10,6 +10,8 @@
 #import "YASLThread.h"
 #import "YASLEventsAPI.h"
 #import "YASLEvent.h"
+#import "YASLNativeFunction.h"
+#import "YASLNativesList.h"
 
 @interface YASLThreadsAPI () {
 	NSMutableArray *threads;
@@ -38,6 +40,10 @@
 	return [enumerable count];
 }
 
+- (NSEnumerator *) enumerateThreads {
+	return [enumerable objectEnumerator];
+}
+
 #pragma mark - Threads creation/suspend/resume/terminate
 
 - (YASLThread *) thread:(YASLInt)handle {
@@ -50,12 +56,14 @@
 	thread->data.registers[YASLRegisterIIP] = entry;
 	thread->param = param;
 	thread.state = state;
-	NSUInteger c = [threads count];
-	while (++c <= thread->handle) {
-		[threads addObject:[NSNull null]];
+	@synchronized(threads) {
+		NSUInteger c = [threads count];
+		while (++c <= thread->handle) {
+			[threads addObject:[NSNull null]];
+		}
+		[threads setObject:thread atIndexedSubscript:thread->handle];
+		[enumerable addObject:thread];
 	}
-	[threads setObject:thread atIndexedSubscript:thread->handle];
-	[enumerable addObject:thread];
 	return thread;
 }
 
@@ -65,38 +73,42 @@
 	[threads replaceObjectAtIndex:handle withObject:[NSNull null]];
 }
 
-- (void) thread:(YASLInt)handle terminate:(YASLInt)exitCode {
+- (YASLInt) thread:(YASLInt)handle terminate:(YASLInt)exitCode {
 	YASLThread *thread = [self thread:handle];
 	if (!(thread && (thread.state != YASLThreadStateTerminated)))
-		return;
+		return false;
 
 	[thread terminateWithExitCode:exitCode];
+	return true;
 }
 
-- (void) thread:(YASLInt)handle suspend:(YASLInt)msec {
+- (YASLInt) thread:(YASLInt)handle suspend:(YASLInt)msec {
 	YASLThread *thread = [self thread:handle];
 	if (!thread)
-		return;
+		return false;
 
 	[thread suspend:msec];
+	return true;
 }
 
-- (void) threadResume:(YASLInt)handle {
+- (YASLInt) threadResume:(YASLInt)handle {
 	YASLThread *thread = [self thread:handle];
 	if (!thread)
-		return;
+		return false;
 
 	[thread resume];
+	return true;
 }
 
 #pragma mark Thread wait-event functionality
 
-- (void) thread:(YASLInt)handle event:(YASLInt)event waitFor:(YASLInt)msec state:(YASLThreadState)state {
+- (YASLInt) thread:(YASLInt)handle event:(YASLInt)event waitFor:(YASLInt)msec state:(YASLThreadState)state {
 	YASLThread *thread = [self thread:handle];
 	if (!(thread && (event != handle)))
-		return;
+		return false;
 
 	[thread event:event waitFor:msec state:state];
+	return true;
 }
 
 #pragma mark - Thread switching
@@ -173,7 +185,7 @@
 					continue;
 
 				thread->waitState = state;
-				threadData->registers[YASLRegisterIR0] = state;
+				thread->data.registers[YASLRegisterIR0] = state;
 				[thread resume];
 
 				if (event && event.autoreset)
@@ -181,7 +193,7 @@
 			}
 		} else {
 			if (thread->waitFor) {
-				threadData->registers[YASLRegisterIR0] = YASLEventStateTimeout;
+				thread->data.registers[YASLRegisterIR0] = YASLEventStateTimeout;
 				thread->waitState = YASLEventStateTimeout;
 			}
 			[thread resume];
@@ -196,6 +208,7 @@
 - (YASLInt) nextCycle {
 	YASLInt selected = YASL_INVALID_HANDLE;
 
+	//TODO: mark for optimization
 	NSMutableArray *pendingClose = [NSMutableArray arrayWithCapacity:[enumerable count]];
 	for (YASLThread *thread in enumerable) {
 		YASLThreadState state = thread.state;
@@ -217,6 +230,55 @@
 
 	// return picked thread handle, if any
 	return selected;
+}
+
+- (void) registerNativeFunctions {
+	[super registerNativeFunctions];
+
+	[self registerNativeFunction:YASLNativeThreadsAPI_waitFor withParamCount:3 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_waitFor:params:)];
+
+	[self registerNativeFunction:YASLNativeThreadsAPI_threadStart withParamCount:3 returnType:YASLAPITypeHandle withSelector:@selector(n_threadStart:params:)];
+
+	[self registerNativeFunction:YASLNativeThreadsAPI_threadSuspend withParamCount:2 returnType:YASLBuiltInTypeIdentifierBool withSelector:@selector(n_threadSuspend:params:)];
+	[self registerNativeFunction:YASLNativeThreadsAPI_threadResume withParamCount:1 returnType:YASLBuiltInTypeIdentifierBool withSelector:@selector(n_threadResume:params:)];
+	[self registerNativeFunction:YASLNativeThreadsAPI_threadTerminate withParamCount:2 returnType:YASLBuiltInTypeIdentifierBool withSelector:@selector(n_threadTerminate:params:)];
+}
+
+- (YASLInt) n_waitFor:(YASLNativeFunction *)native params:(void *)paramsBase {
+	if (!_activeThreadHandle)
+		return YASLEventStateFailed;
+
+	YASLInt eventHandle = [native intParam:1 atBase:paramsBase];
+	YASLInt msec = [native intParam:2 atBase:paramsBase];
+	YASLInt state = [native intParam:3 atBase:paramsBase];
+	[self thread:_activeThreadHandle event:eventHandle waitFor:msec state:state];
+	return msec ? YASLEventStateFailed : _activeThread->waitState;
+}
+
+- (YASLInt) n_threadStart:(YASLNativeFunction *)native params:(void *)paramsBase {
+	YASLInt threadStartIP = [native intParam:1 atBase:paramsBase];
+	YASLInt threadState = [native intParam:2 atBase:paramsBase];
+	YASLInt param = [native intParam:3 atBase:paramsBase];
+	YASLThread *thread = [self threadCreateWithEntryAt:threadStartIP andState:threadState andInitParam:param waitable:YES];
+	return thread ? thread->handle : YASL_INVALID_HANDLE;
+}
+
+- (YASLInt) n_threadSuspend:(YASLNativeFunction *)native params:(void *)paramsBase {
+	return [self thread:[native intParam:1 atBase:paramsBase]
+							suspend:[native intParam:2 atBase:paramsBase]];
+}
+
+- (YASLInt) n_threadResume:(YASLNativeFunction *)native params:(void *)paramsBase {
+	return [self threadResume:[native intParam:1 atBase:paramsBase]];
+}
+
+- (YASLInt) n_threadTerminate:(YASLNativeFunction *)native params:(void *)paramsBase {
+	YASLInt handle = [native intParam:1 atBase:paramsBase];
+	YASLBool terminated = [self thread:handle
+													 terminate:[native intParam:2 atBase:paramsBase]];
+	if (terminated)
+		[[self eventsManager] closeEvent:handle];
+	return terminated;
 }
 
 @end

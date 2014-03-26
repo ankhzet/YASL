@@ -26,13 +26,14 @@
 
 - (YASLThread *) threadCreateWithEntryAt:(YASLInt)entry andState:(YASLThreadState)state andInitParam:(YASLInt)param waitable:(BOOL)waitable;
 - (YASLThread *) thread:(YASLInt)handle;
-- (void) thread:(YASLInt)handle terminate:(YASLInt)exitCode;
-- (void) thread:(YASLInt)handle suspend:(YASLInt)msec;
-- (void) threadResume:(YASLInt)handle;
+- (YASLInt) thread:(YASLInt)handle terminate:(YASLInt)exitCode;
+- (YASLInt) thread:(YASLInt)handle suspend:(YASLInt)msec;
+- (YASLInt) threadResume:(YASLInt)handle;
 
 /*! Called automaticaly when -[switchThreads] switches to new active thread. In class YASLThreadsAPI does nothing. Must be overrided in subclasses, for ex. for setting registers etc. */
 - (void) setActiveThread:(YASLThread *)activeThread;
 - (YASLInt) switchThreads;
 - (NSUInteger) threadsCount;
+- (NSEnumerator *) enumerateThreads;
 
 @end

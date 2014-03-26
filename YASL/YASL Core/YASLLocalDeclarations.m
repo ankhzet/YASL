@@ -87,6 +87,10 @@
 
 #pragma mark - Declaration scope interface implementation
 
+- (YASLLocalDeclaration *) addLocalDeclaration:(YASLLocalDeclaration *)declaration {
+	return [self.currentScope addLocalDeclaration:declaration];
+}
+
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {
 	return [self.currentScope newLocalDeclaration:identifier];
 }

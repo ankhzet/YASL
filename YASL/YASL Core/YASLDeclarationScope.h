@@ -12,6 +12,10 @@
 @protocol YASLDeclarationScopeProtocol <NSObject>
 
 /*!
+ @brief Adds existing declaration to receiver scope, making it local. */
+- (YASLLocalDeclaration *) addLocalDeclaration:(YASLLocalDeclaration *)declaration;
+
+/*!
  @brief Creates new declaration with specified identifier in current scope.
  @return New declaration descriptor instance.
  */

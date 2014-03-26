@@ -38,6 +38,10 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 	[_globalDatatypesManager registerType:[YASLBuiltInTypeFloatInstance new]];
 	[_globalDatatypesManager registerType:[YASLBuiltInTypeBoolInstance new]];
 	[_globalDatatypesManager registerType:[YASLBuiltInTypeCharInstance new]];
+	YASLDataType *handleType = [YASLBuiltInTypeIntInstance new];
+	handleType.name = YASLAPITypeHandle;
+	handleType.parent = [_globalDatatypesManager typeByName:YASLBuiltInTypeIdentifierInt];
+	[_globalDatatypesManager registerType:handleType];
 
 	caches = [NSMutableDictionary dictionary];
 	units = [NSMutableDictionary dictionary];
@@ -90,6 +94,8 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 
 			YASLCodeAddressReference *entryRef = [YASLCodeAddressReference referenceWithName:[unit.source.identifier lastPathComponent]];
 			YASLLocalDeclaration *mainMethod = [unit findSymbol:@"main"];
+			if (!mainMethod)
+				NSLog(@"Failed to link \"main\" symbol");
 
 			YASLNativeFunction *currentThread = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeCPU_currentThread];
 			YASLNativeFunction *unloadScript = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeVM_unloadScriptAssociatedWith];
@@ -183,7 +189,7 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 		}
 	}
 	@catch (NSException *exception) {
-    NSLog(@"Compilation exception: %@\nStack trace:\n%@", [exception description], [[exception callStackSymbols] componentsJoinedByString:@"\n"]);
+    NSLog(@"Compilation exception: %@\n", [exception description]);
 	}
 
 	return unit;

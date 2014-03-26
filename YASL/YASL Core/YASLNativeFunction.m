@@ -52,7 +52,7 @@
 	YASLInt strPtr = *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase];
 	if (strPtr) {
 		char *raw = [_ram dataAt:strPtr];
-		return [NSString stringWithCString:raw encoding:NSASCIIStringEncoding];
+		return [NSString stringWithCString:raw encoding:NSUTF32StringEncoding];
 	} else
 		return nil;
 }

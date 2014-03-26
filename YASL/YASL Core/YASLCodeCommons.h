@@ -23,17 +23,6 @@
 .r2 = _r2,\
 }
 
-typedef NS_ENUM(NSUInteger, YASLRegister) {
-	YASLRegisterR0 = 1 << 0, // base register, for function return results, base instructions operations etc
-	YASLRegisterR1 = 1 << 1, // common register
-	YASLRegisterR2 = 1 << 2, // common register
-	YASLRegisterR3 = 1 << 3, // common register
-	YASLRegisterR4 = 1 << 4, // common register
-	YASLRegisterIP = 1 << 5, // instruction pointer
-	YASLRegisterSP = 1 << 6, // stack pointer
-	YASLRegisterBP = 1 << 7, // base pointer
-};
-
 typedef NS_ENUM(NSUInteger, YASLIndexedRegister) {
 	YASLRegisterIR0 = 0, // base register, for function return results, base instructions operations etc
 	YASLRegisterIMIN= 0,

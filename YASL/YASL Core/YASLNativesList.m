@@ -14,3 +14,8 @@ NSString *const YASLNativeVM_unloadScriptAssociatedWith = @"unloadScriptAssociat
 NSString *const YASLNativeCPU_sqrt = @"sqrt";
 NSString *const YASLNativeCPU_currentThread = @"currentThread";
 
+NSString *const YASLNativeThreadsAPI_waitFor = @"waitFor";
+NSString *const YASLNativeThreadsAPI_threadStart = @"threadStart";
+NSString *const YASLNativeThreadsAPI_threadSuspend = @"threadSuspend";
+NSString *const YASLNativeThreadsAPI_threadResume = @"threadResume";
+NSString *const YASLNativeThreadsAPI_threadTerminate = @"threadTerminate";

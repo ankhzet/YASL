@@ -90,7 +90,7 @@ YASLUnifiedFileType const YASLUnifiedFileTypeGrammar = @"grammar";
 			NSLog(@"Parse exception: %@", e);
 		}
 	} else {
-		[parser popExceptionStackState:0];
+		[parser popExceptionStack];
 	}
 	return grammarRoot;
 }

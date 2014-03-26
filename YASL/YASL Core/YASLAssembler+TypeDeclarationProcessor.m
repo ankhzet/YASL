@@ -14,6 +14,9 @@
 - (void) processAssembly:(YASLAssembly *)a nodeBuiltInType:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
 	YASLDataType *type = [self.declarationScope typeByName:[token value]];
+	if (!type)
+		[self raiseError:@"Unknown type \"%@\"", token.value];
+
 	[a push:type];
 }
 
@@ -49,7 +52,7 @@
 	YASLDataType *type = [self.declarationScope typeByName:typeName];
 	if (!type) {
 		[self raiseError:@"Unknown data type \"%@\"", typeName];
-//		type = [YASLDataType typeWithName:typeName];
+		//		type = [YASLDataType typeWithName:typeName];
 	}
 
 	[a push:type];
@@ -60,14 +63,14 @@
 @implementation YASLAssembler (EnumTypeProcessor)
 
 - (void) processAssembly:(YASLAssembly *)a nodeEnumMember:(YASLAssemblyNode *)node {
-	YASLToken *value = [a pop];
+	YASLTranslationConstant *constant= [a pop];
 	YASLToken *identifier = [a popTillChunkMarker];
 	if (!identifier) {
-		identifier = value;
-		value = nil;
+		identifier = (id)constant;
+		constant = nil;
 	}
 
-	[a push:@{@0: identifier.value, @1: value ? @([value asInteger]) : [NSNull null]}];
+	[a push:@{@0: identifier.value, @1: constant ? @([constant toInteger]) : [NSNull null]}];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeEnumMembersList:(YASLAssemblyNode *)node {

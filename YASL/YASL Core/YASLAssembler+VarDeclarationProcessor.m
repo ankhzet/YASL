@@ -21,7 +21,7 @@
 		YASLTranslationExpression *variable = [YASLTranslationExpression expressionInScope:scope withType:YASLExpressionTypeVariable andSpecifier:declarator.declaratorIdentifier];
 
 
-		YASLDataType *specificType = [declarator declareSpecific:variable withDataType:declarationDataType inScope:self.declarationScope andAssembly:a];
+		YASLDataType *specificType = [declarator declareSpecific:variable withDataType:declarationDataType inScope:self.declarationScope];
 
 		declaration.dataType = specificType;
 		YASLTranslationExpression *initializer = [declarator nthOperand:0];

@@ -7,8 +7,9 @@
 //
 
 #import "YASLTranslationNode.h"
+#import "YASLDataTypesManager.h"
 
-@interface YASLTranslationUnit : YASLTranslationNode
+@interface YASLTranslationUnit : YASLTranslationNode <YASLDataTypesManagerProtocol>
 
 @property (nonatomic) NSString *name;
 

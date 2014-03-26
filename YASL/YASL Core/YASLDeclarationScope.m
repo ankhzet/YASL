@@ -52,13 +52,17 @@
 #pragma mark - Declaration scope interface implementation
 
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {
+	YASLLocalDeclaration *declaration = [YASLLocalDeclaration localDeclarationWithIdentifier:identifier];
+	return [self addLocalDeclaration:declaration];
+}
+
+- (YASLLocalDeclaration *) addLocalDeclaration:(YASLLocalDeclaration *)declaration {
 	if (!declarations)
 		declarations = [NSMutableDictionary dictionary];
 
-	YASLLocalDeclaration *declaration = [YASLLocalDeclaration localDeclarationWithIdentifier:identifier];
 	declaration.parentScope = self;
 	declaration.index = [declarations count];
-	return declarations[identifier] = declaration;
+	return declarations[declaration.identifier] = declaration;
 }
 
 - (YASLLocalDeclaration *) localDeclarationByIdentifier:(NSString *)identifier {

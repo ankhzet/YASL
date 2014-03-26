@@ -29,7 +29,7 @@
 
 	// configure associated event
 	eventManager = manager;
-	event = [eventManager createEventWithName:[NSString stringWithFormat:@"_e_thread_%p", &self]
+	event = [eventManager createEventWithName:[NSString stringWithFormat:@"_e_thread_%p", self]
 															 initialState:YASLEventStateClear
 																	autoreset:YES];
 	if (waitable) {
@@ -75,7 +75,7 @@
 }
 
 - (void) resume {
-	if (!(_state == YASLThreadStateNotReady) || (_state == YASLThreadStateSleep)) {
+	if (!((_state == YASLThreadStateNotReady) || (_state == YASLThreadStateSleep))) {
 		return;
 	}
 
@@ -92,10 +92,10 @@
 		waitState = YASLEventStateFailed;
 	} else {
 		BOOL imediateReturn = msec == 0;
-		waitState = imediateReturn ? waitEvent.state : state;
 		if (!imediateReturn) {
 			[self suspend:msec];
 		}
+		waitState = imediateReturn ? waitEvent.state : state;
 	}
 }
 

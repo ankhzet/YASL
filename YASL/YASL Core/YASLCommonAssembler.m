@@ -157,11 +157,11 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 	}
 
 	[self noDiscards];
-	[self popExceptionStackState:0];
+	[self popExceptionStack];
 	BOOL result = [grammar match:tokensAssembly andAssembly:self];
 
 	if (result && ![tokensAssembly notEmpty]) {
-		[self popExceptionStackState:0];
+		[self popExceptionStack];
 		[self foldDiscards];
 		YASLAssembly *outAssembly = [YASLAssembly new];
 		[outAssembly discardAs:self];
@@ -170,11 +170,12 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 		if (!([self processInAssembly:tokensAssembly toOutAssembly:outAssembly] && [outAssembly notEmpty]))
 			[self raiseError:@"Source assemble failed"];
 
+		[self popExceptionStack];
 		return outAssembly;
 	} else {
 		YASLNonfatalException *e = [self popException], *top = e;
 		if (top) {
-			NSLog(@"Stack trace:\n%@\n", [top callStackSymbols]);
+//			NSLog(@"Stack trace:\n%@\n", [top callStackSymbols]);
 		}
 		do {
 			NSLog(@"Syntax check exception: %@", e);
@@ -238,7 +239,7 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 			processed = [self performPre:NO processorSelectorForNode:node andTokensAssembly:outAssembly];
 		}
 		@catch (NSException *exception) {
-			NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\nStack trace:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly, [exception callStackSymbols]);
+			NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly);
 			return NO;
 		}
 		@finally {

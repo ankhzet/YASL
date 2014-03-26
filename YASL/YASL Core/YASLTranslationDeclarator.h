@@ -23,6 +23,6 @@
 @property (nonatomic) NSUInteger isPointer;
 
 - (void) addSpecifier:(YASLDeclaratorSpecifier *)specifier;
-- (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope andAssembly:(YASLAssembly *)a;
+- (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope;
 
 @end

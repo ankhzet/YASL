@@ -127,7 +127,7 @@ static id kRBraceTerm = @")";
 	}
 
 	YASLGrammar *grammar = [YASLGrammar new];
-	grammar.name = root.name;
+	grammar.name = @":grammar";
 	grammar.rootNode = root;
 	grammar.allRules = rules;
 

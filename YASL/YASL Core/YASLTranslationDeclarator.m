@@ -39,7 +39,7 @@
 
 @implementation YASLTranslationDeclarator
 
-- (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope andAssembly:(YASLAssembly *)a {
+- (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope {
 
 	NSUInteger pointer = self.isPointer;
 	while (pointer-- > 0) {

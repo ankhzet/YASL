@@ -23,7 +23,7 @@ declarator-list = declarator (','! declarator)*;
 enum-type = enum '{'! enum-members-list '}'!;
 enum = 'enum'!;
 enum-members-list = enum-member (','! enum-member)* ','!?;
-enum-member = Identifier ('='! Int)?;
+enum-member = Identifier ('='! constant-expression)?;
 
 /* Declarator: declares variable/parameter
  

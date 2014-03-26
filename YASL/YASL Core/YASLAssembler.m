@@ -32,9 +32,17 @@ NSString *const YASLYASLGrammar = @"YASL";
 
 - (void) preProcessAssembly:(YASLAssembly *)a nodeStart:(YASLAssemblyNode *)node {
 	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeInCode] ofsettedByParent];
+	[self.declarationScope pushScope];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLAssemblyNode *)node {
+	YASLTranslationUnit *unit = [a top];
+	[self scope].name = unit ? unit.name : @"<anonymuous unit>";
+	YASLLocalDeclaration *mainMethod = [[self scope] localDeclarationByIdentifier:@"main"];
+	[self.declarationScope popScope];
+	if (mainMethod) {
+		[[self scope] addLocalDeclaration:mainMethod];
+	}
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeScriptDeclaration:(YASLAssemblyNode *)node {
