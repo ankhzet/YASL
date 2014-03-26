@@ -135,12 +135,16 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 			NSNumber *placementOffset = (NSNumber *)options[kCompilatorPlacementOffset];
 			NSUInteger codeBase = placementOffset ? [placementOffset unsignedIntegerValue] : DEFAULT_CODEOFFSET;
 
-			[globalScope.placementManager offset:(codeBase + unit.codeLength) scope:globalScope];
+			NSUInteger localsOffset = codeBase + unit.codeLength - [globalScope scopeDataSize];
+			[globalScope.placementManager offset:localsOffset scope:globalScope];
 			[globalScope propagateReferences];
 
-			NSSet *labels = caches[source.identifier][kCacheStaticLabels];
+			NSMutableArray *labels = caches[source.identifier][kCacheStaticLabels];
 			for (NSArray *ref in labels) {
 				((YASLCodeAddressReference *)ref[0]).address = codeBase + [ref[1] intValue];
+			}
+			for (YASLLocalDeclaration *local in [globalScope.declarations allValues]) {
+				[labels addObject:@[local.reference, @(localsOffset)]];
 			}
 
 			[unit.codeAssembly restoreFullStack];

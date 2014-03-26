@@ -161,10 +161,10 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 	BOOL result = [grammar match:tokensAssembly andAssembly:self];
 
 	if (result && ![tokensAssembly notEmpty]) {
+		[self popExceptionStackState:0];
 		[self foldDiscards];
 		YASLAssembly *outAssembly = [YASLAssembly new];
 		[outAssembly discardAs:self];
-		[outAssembly setGlobalDiscards:YES];
 		[self noDiscards];
 
 		if (!([self processInAssembly:tokensAssembly toOutAssembly:outAssembly] && [outAssembly notEmpty]))

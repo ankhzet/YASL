@@ -108,7 +108,7 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 - (NSString *) toString {
 	NSString *type = YASLTranslationNodeTypeNames[self.type];
-	type = type ? type : [NSString stringWithFormat:@"TN::%u", self.type];
+	type = type ? type : [NSString stringWithFormat:@"TN::%lu", self.type];
 	NSString *subs = @"";
 	for (YASLTranslationNode *subnode in [self nodesEnumerator:NO]) {
     subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? @",\n" : @""), [[subnode toString] descriptionTabbed:@"  "]];
@@ -131,7 +131,7 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 - (void) assemble:(YASLAssembly *)assembly unPointered:(BOOL)unPointered {
 	if (self.sourceLine) {
-		[assembly push:[YASLCodeAddressReference referenceWithName:[NSString stringWithFormat:@"Line #%u", self.sourceLine]]];
+		[assembly push:[YASLCodeAddressReference referenceWithName:[NSString stringWithFormat:@"Line #%lu", self.sourceLine]]];
 	}
 	[self assemble:assembly];
 	if (unPointered)

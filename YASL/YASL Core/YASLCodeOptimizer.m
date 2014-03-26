@@ -24,8 +24,8 @@
 		return self;
 
 	optimizationStrategies = @[
-														 [YASLUnwantedMovCallStrategy class],
-														 [YASLUnwantedMovMovStrategy class],
+//														 [YASLUnwantedMovCallStrategy class],
+//														 [YASLUnwantedMovMovStrategy class],
 														 [YASLUnwantedMovPushStrategy class]
 														 ];
 
@@ -123,7 +123,7 @@
 			applyes += [strategy optimize];
 		}
 		if (applyes)
-			NSLog(@"Optimizer pass #%u: applied %u minor optimizations", passes, applyes);
+			NSLog(@"Optimizer pass #%lu: applied %lu minor optimizations", passes, applyes);
 	} while (applyes);
 }
 

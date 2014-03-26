@@ -28,6 +28,6 @@
 - (void) setReg:(YASLIndexedRegister)reg valuef:(YASLFloat)value;
 
 - (void) processInstruction;
-- (YASLInt) disassemblyAtIP:(YASLInt)ip Instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2;
+- (YASLInt) disassemblyAtIP:(YASLInt)ip instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2;
 
 @end

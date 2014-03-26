@@ -26,7 +26,7 @@
 }
 
 - (void) detouch {
-	if (child) child->parent = nil;
+	if (child) [child detouch];
 	if (parent) parent->child = nil;
 	child = nil;
 	parent = nil;
@@ -72,7 +72,7 @@
 /*! Clear all discard markers. */
 - (void) noDiscards {
 	[discardsSet removeAllObjects];
-	[child noDiscards];
+	[self dropDiscardsAfterState:0];
 }
 
 /*! Discard markers affects only state, when they had been made, or later. Folding will force current markers to affect any state.  */
@@ -113,6 +113,10 @@
 
 	copy->discardsSet = [discardsSet mutableCopy];
 	return copy;
+}
+
+- (void) dealloc {
+	[self detouch];
 }
 
 - (NSString *) description {

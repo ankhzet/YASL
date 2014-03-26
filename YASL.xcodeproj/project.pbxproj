@@ -54,7 +54,6 @@
 		0A31DA23191C4BD900EF8C55 /* YASLIntExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA22191C4BD900EF8C55 /* YASLIntExpressionProcessor.m */; };
 		0A31DA26191C4CA000EF8C55 /* YASLFloatExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA25191C4CA000EF8C55 /* YASLFloatExpressionProcessor.m */; };
 		0A31DA29191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA28191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.m */; };
-		0A31DA2C191C4CBD00EF8C55 /* YASLCharExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA2B191C4CBD00EF8C55 /* YASLCharExpressionProcessor.m */; };
 		0A31DA2F191C527D00EF8C55 /* YASLAssignmentExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA2E191C527D00EF8C55 /* YASLAssignmentExpression.m */; };
 		0A31DA32191C6DA000EF8C55 /* YASLTypecastExpression.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA31191C6DA000EF8C55 /* YASLTypecastExpression.m */; };
 		0A31DA35191CE41800EF8C55 /* YASLAssembler+FunctionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A31DA34191CE41800EF8C55 /* YASLAssembler+FunctionProcessor.m */; };
@@ -129,6 +128,7 @@
 		0A900B291916B6EB0069D26F /* YASLAssembler_StatementProcessorSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A900B281916B6EB0069D26F /* YASLAssembler_StatementProcessorSpec.m */; };
 		0A900B2C1916E3C80069D26F /* YASLExpressionSolver.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A900B2B1916E3C80069D26F /* YASLExpressionSolver.m */; };
 		0A900B301916E4F30069D26F /* YASLExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A900B2F1916E4F30069D26F /* YASLExpressionProcessor.m */; };
+		0AB50CC818E21C230067568B /* YASLCharExpressionProcessor.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AB50CC718E21C230067568B /* YASLCharExpressionProcessor.m */; };
 		0AB96BD21926705F00C26D6A /* YASLASMOptimizationStrategy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AB96BD11926705F00C26D6A /* YASLASMOptimizationStrategy.m */; };
 		0AB96BD61926722C00C26D6A /* YASLUnwantedMovMovStrategy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AB96BD51926722C00C26D6A /* YASLUnwantedMovMovStrategy.m */; };
 		0AB96BD919267AD300C26D6A /* YASLUnwantedMovPushStrategy.m in Sources */ = {isa = PBXBuildFile; fileRef = 0AB96BD819267AD300C26D6A /* YASLUnwantedMovPushStrategy.m */; };
@@ -243,8 +243,6 @@
 		0A31DA25191C4CA000EF8C55 /* YASLFloatExpressionProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLFloatExpressionProcessor.m; sourceTree = "<group>"; };
 		0A31DA27191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLBoolExpressionProcessor.h; sourceTree = "<group>"; };
 		0A31DA28191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLBoolExpressionProcessor.m; sourceTree = "<group>"; };
-		0A31DA2A191C4CBD00EF8C55 /* YASLCharExpressionProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = YASLCharExpressionProcessor.h; path = ../../YASLCharExpressionProcessor.h; sourceTree = "<group>"; };
-		0A31DA2B191C4CBD00EF8C55 /* YASLCharExpressionProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = YASLCharExpressionProcessor.m; path = ../../YASLCharExpressionProcessor.m; sourceTree = "<group>"; };
 		0A31DA2D191C527D00EF8C55 /* YASLAssignmentExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLAssignmentExpression.h; sourceTree = "<group>"; };
 		0A31DA2E191C527D00EF8C55 /* YASLAssignmentExpression.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAssignmentExpression.m; sourceTree = "<group>"; };
 		0A31DA30191C6DA000EF8C55 /* YASLTypecastExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLTypecastExpression.h; sourceTree = "<group>"; };
@@ -382,6 +380,8 @@
 		0A900B2B1916E3C80069D26F /* YASLExpressionSolver.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLExpressionSolver.m; sourceTree = "<group>"; };
 		0A900B2E1916E4F30069D26F /* YASLExpressionProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLExpressionProcessor.h; sourceTree = "<group>"; };
 		0A900B2F1916E4F30069D26F /* YASLExpressionProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLExpressionProcessor.m; sourceTree = "<group>"; };
+		0AB50CC618E21C230067568B /* YASLCharExpressionProcessor.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLCharExpressionProcessor.h; sourceTree = "<group>"; };
+		0AB50CC718E21C230067568B /* YASLCharExpressionProcessor.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLCharExpressionProcessor.m; sourceTree = "<group>"; };
 		0AB96BD01926705F00C26D6A /* YASLASMOptimizationStrategy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLASMOptimizationStrategy.h; sourceTree = "<group>"; };
 		0AB96BD11926705F00C26D6A /* YASLASMOptimizationStrategy.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLASMOptimizationStrategy.m; sourceTree = "<group>"; };
 		0AB96BD41926722C00C26D6A /* YASLUnwantedMovMovStrategy.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLUnwantedMovMovStrategy.h; sourceTree = "<group>"; };
@@ -1024,8 +1024,8 @@
 				0A31DA25191C4CA000EF8C55 /* YASLFloatExpressionProcessor.m */,
 				0A31DA27191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.h */,
 				0A31DA28191C4CAF00EF8C55 /* YASLBoolExpressionProcessor.m */,
-				0A31DA2A191C4CBD00EF8C55 /* YASLCharExpressionProcessor.h */,
-				0A31DA2B191C4CBD00EF8C55 /* YASLCharExpressionProcessor.m */,
+				0AB50CC618E21C230067568B /* YASLCharExpressionProcessor.h */,
+				0AB50CC718E21C230067568B /* YASLCharExpressionProcessor.m */,
 			);
 			name = "Expression processors";
 			sourceTree = "<group>";
@@ -1353,13 +1353,13 @@
 				0ABA16CA191511F300258867 /* YASLPlacementOnStack.m in Sources */,
 				0A31DA1A191C04F500EF8C55 /* YASLBuiltInTypeFloatInstance.m in Sources */,
 				0AB96BDC19267C1500C26D6A /* YASLUnwantedMovCallStrategy.m in Sources */,
+				0AB50CC818E21C230067568B /* YASLCharExpressionProcessor.m in Sources */,
 				0A6AF32D1924165100CFAF37 /* YASLArrayElementExpression.m in Sources */,
 				0A900B2419169AD60069D26F /* YASLTernarExpression.m in Sources */,
 				0A31DA35191CE41800EF8C55 /* YASLAssembler+FunctionProcessor.m in Sources */,
 				0A31DA26191C4CA000EF8C55 /* YASLFloatExpressionProcessor.m in Sources */,
 				0A110807190BE96700105743 /* YASLEvent.m in Sources */,
 				0A900B2C1916E3C80069D26F /* YASLExpressionSolver.m in Sources */,
-				0A31DA2C191C4CBD00EF8C55 /* YASLCharExpressionProcessor.m in Sources */,
 				0ABA16E31915428900258867 /* YASLAssembler+DeclaratorProcessor.m in Sources */,
 				0A896003190F103500BCAC84 /* YASLToken.m in Sources */,
 				0A1107F9190BC2D700105743 /* YASLNativeInterface.m in Sources */,

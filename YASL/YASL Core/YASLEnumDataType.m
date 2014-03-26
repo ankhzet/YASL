@@ -113,7 +113,7 @@
 		return;
 
 	free = [free sortedArrayUsingComparator:^NSComparisonResult(YASLEnum *e1, YASLEnum *e2) {
-		int delta = e1->index - e2->index;
+		NSInteger delta = e1->index - e2->index;
 		return delta ? delta / ABS(delta) : NSOrderedSame;
 	}];
 	NSUInteger value = 0;

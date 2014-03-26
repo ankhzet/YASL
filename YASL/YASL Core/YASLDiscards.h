@@ -32,6 +32,7 @@
 }
 
 + (instancetype) discardsForParent:(YASLDiscards *)parent andState:(NSUInteger)state;
+- (void) detouch;
 
 - (YASLDiscards *) pushDiscards:(NSUInteger)pushState;
 - (YASLDiscards *) popDiscards:(NSUInteger)tillState;

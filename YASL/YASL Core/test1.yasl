@@ -1,6 +1,7 @@
 script test;
 
-/*native float sqrt(float x);
+native void log(int x);
+native float sqrt(float x);
 
 int test1() {
 	return 1;
@@ -14,14 +15,14 @@ int test3(int a, b; bool c) {
 	int d = a + b;
 	if (!c)
 		d += b;
-		
+
 	if (a > b)
 		d -= a;
 	else
 		d += a;
-		
+
 	d = a * d + (c ? a : b - 1);
-	
+
 	return -d;
 }
 
@@ -31,7 +32,7 @@ bool test4(int a, b) {
 		d += b;
 		a--;
 	}
-	
+
 	for (int i = 0; i < d; i++)
 		b++;
 
@@ -50,22 +51,16 @@ int a, b, c;
 void test5() {
 	a = b - c;
 }
- */
+
 
 int main(void *args) {
-	int c = 5, d = 14;
-	while (c-- > 0)
-		d++;
-
-	return d;
-/*
- int r1 = test1();
+	int r1 = test1();
 	int sum1 = test2(2, 3, true);
 	int sub1 = test2(2, 3, false);
 
 	int ifs1 = test3(4, 5, true);
 	int ifs2 = test3(4, 5, false);
-	
+
 	bool cycles1 = test4(6, 7);
 	bool cycles2 = test4(666, 7);
 
@@ -75,12 +70,11 @@ int main(void *args) {
 	test5();
 
 	float _sqrt = sqrt(a) + b;
-	
+
 	if (a == b - c)
 		return 0;
 	else {
 		// raise @"";
 		return 1;
 	}
-	 */
 }

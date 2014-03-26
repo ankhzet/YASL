@@ -107,14 +107,14 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 }
 
 - (NSString *) associatedLabel:(YASLInt)ip {
-	NSMutableString *result = [@"" mutableCopy];
+	NSMutableSet *result = [NSMutableSet set];
 	for (NSArray *refOffs in labelRefs) {
 		YASLCodeAddressReference * ref = refOffs[0];
     if (ip == ref.address) {
-			[result appendFormat:@":%@",ref.name ? ref.name : @"?"];
+			[result addObject:[NSString stringWithFormat:@":%@",ref.name ? ref.name : @"?"]];
 		}
 	}
-	return result;
+	return [[result allObjects] componentsJoinedByString:@""];
 }
 
 - (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign {
@@ -138,7 +138,7 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 	} else {
 		NSString *operand1 = @"";
 		NSString *operand2 = @"";
-		int operands = instruction->type;
+		int operand = 0;
 		switch (instruction->type) {
 			case YASLOperandCountBinary: {
 				YASLOperandType type = instruction->operand2 & (YASLOperandTypePointer ^ 0xFF);
@@ -147,7 +147,7 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 				BOOL isImmediate = !!(type & YASLOperandTypeImmediate);
 
 				NSString *r2 = isRegister ? REGISTER_NAMES[instruction->r2] : @"";
-				NSString *i2 = isImmediate ? [self immediateStr:0 withPlusSign:isRegister] : @"";
+				NSString *i2 = isImmediate ? [self immediateStr:operand++ withPlusSign:isRegister] : @"";
 				operand2 = [NSString stringWithFormat:@"%@%@", r2, i2];
 				if (isPointer) operand2 = [NSString stringWithFormat:@"[%@]", operand2];
 				operand2 = [NSString stringWithFormat:@", %@", operand2];
@@ -159,7 +159,7 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 				BOOL isImmediate = !!(type & YASLOperandTypeImmediate);
 
 				NSString *r1 = isRegister ? REGISTER_NAMES[instruction->r1] : @"";
-				NSString *i1 = isImmediate ? [self immediateStr:operands - 1 withPlusSign:isRegister] : @"";
+				NSString *i1 = isImmediate ? [self immediateStr:operand++ withPlusSign:isRegister] : @"";
 				operand1 = [NSString stringWithFormat:@"%@%@", r1, i1];
 				if (isPointer) operand1 = [NSString stringWithFormat:@"[%@]", operand1];
 				break;

@@ -14,6 +14,8 @@ extern NSString *const kCompilatorCompile;
 extern NSString *const kCompilatorDropCaches;
 extern NSString *const kCompilatorPlacementOffset;
 
+extern NSString *const kCompilatorOptimize;
+
 extern NSString *const kCacheStaticLabels;
 extern NSString *const kCachePrecompiledMachineCode;
 

@@ -11,7 +11,6 @@
 
 @interface YASLAssembly () {
 	NSMutableArray *stack, *popped;
-//	YASLDiscards *discards;
 }
 
 @end
@@ -27,10 +26,14 @@
 	stack = [NSMutableArray array];
 	popped = [NSMutableArray array];
 
-	discards = [YASLDiscards discardsForParent:nil andState:0];
+//	discards = [YASLDiscards discardsForParent:nil andState:0];
 
-	self.userData = [NSMutableDictionary dictionary];
+//	self.userData = [NSMutableDictionary dictionary];
 	return self;
+}
+
+- (void) dealloc {
+	[discards detouch];
 }
 
 - (void) fillWithArray:(NSEnumerator *)enumerator {
@@ -104,14 +107,14 @@
 @implementation YASLAssembly (Discards)
 
 - (void) discardAs:(YASLAssembly *)sourceAssembly {
-	[discards dropDiscardsAfterState:0];
+	[discards noDiscards];
 	discards = [sourceAssembly->discards copy];
 }
 
 - (void) discardPopped:(YASLAssembly *)sourceAssembly {
 	for (id object in [sourceAssembly enumerator:NO])
 		if (![stack containsObject:object])
-			[discards alwaysDiscard:object inGlobalScope:NO];
+			[self alwaysDiscard:object inGlobalScope:NO];
 
 }
 
@@ -132,6 +135,9 @@
 }
 
 - (void) alwaysDiscard:(id)object inGlobalScope:(BOOL)global {
+	if (!discards)
+		discards = [YASLDiscards discardsForParent:nil andState:0];
+
 	[discards alwaysDiscard:object inGlobalScope:global];
 }
 
@@ -150,7 +156,7 @@
 }
 
 - (id) top {
-	int idx = [stack count];
+	NSInteger idx = [stack count];
 	while (--idx >= 0) {
 		id top = stack[idx];
 		if (![discards mustDiscard:top]) {
@@ -318,7 +324,7 @@
 @implementation  YASLAssembly (StringRepresentation)
 
 - (NSString *) description {
-	return [NSString stringWithFormat:@"A %u->%u: [%@]", [stack count] + [popped count], [popped count], [self stackToString]];
+	return [NSString stringWithFormat:@"A %lu->%lu: [%@]", [stack count] + [popped count], [popped count], [self stackToString]];
 }
 
 - (NSString *) stackToString {

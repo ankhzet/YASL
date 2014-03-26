@@ -17,7 +17,7 @@ typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void 
 /*! Function name. Must be unique. */
 @property (nonatomic) NSString *name;
 /*! Function GUID. Used by assembler to generate function calls. Genereted by native functions holder wher function registered. */
-@property (nonatomic) NSUInteger GUID;
+@property (nonatomic) YASLInt GUID;
 /*! Function parameters count. */
 @property (nonatomic) NSUInteger params;
 /*! Function return type. Nil, if void. */

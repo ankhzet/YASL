@@ -19,13 +19,14 @@
 	if (!(self = [super init]))
 		return self;
 
-	exceptionsStack = [NSMutableArray array];
-	stackStates = [NSMutableDictionary dictionary];
 	stateGUID = 0;
 	return self;
 }
 
 - (void) pushException:(YASLNonfatalException *)exception {
+	if (!exceptionsStack)
+		exceptionsStack = [NSMutableArray array];
+
 	[exceptionsStack addObject:exception];
 	exception.stackGUID = stateGUID;
 }
@@ -57,6 +58,10 @@
 - (NSUInteger) pushExceptionStackState {
 	NSUInteger count = [exceptionsStack count];
 	NSUInteger guid = ++stateGUID;
+
+	if (!stackStates)
+		stackStates = [NSMutableDictionary dictionary];
+
 	stackStates[@(guid)] = @(count);
 	return guid;
 }

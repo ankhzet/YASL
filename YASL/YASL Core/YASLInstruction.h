@@ -29,4 +29,6 @@ extern NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1];
 - (void) setImmediatePtr:(void *)ptr;
 - (void) setLabelRefs:(NSArray *)refs;
 
+- (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign;
+
 @end

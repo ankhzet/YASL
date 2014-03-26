@@ -261,7 +261,7 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 						[self setReg:YASLRegisterIR0 value:returnValue];
 
 					if (function.params)
-						[_stack popSpace:function.params * sizeof(YASLInt)];
+						[_stack popSpace:(YASLInt)(function.params * sizeof(YASLInt))];
 
 					break;
 				}
@@ -308,7 +308,7 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 	}
 }
 
-- (YASLInt) disassemblyAtIP:(YASLInt)ip Instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2 {
+- (YASLInt) disassemblyAtIP:(YASLInt)ip instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2 {
 	threadData->halt = false;
 
 	YASLInt *_ip = &ip;

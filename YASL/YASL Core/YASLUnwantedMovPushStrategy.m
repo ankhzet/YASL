@@ -36,7 +36,7 @@
 - (BOOL) applyStrategy {
 	YASLOpcodeOperand *left = [firstMov leftOperand], *right = [firstMov rightOperand];
 	
-	YASLOpcode *push = [self detectOpcodeInGroup:@[@(OPC_PUSH)] withFirstOperand:left];
+	YASLOpcode *push = [self detectOpcodeInGroup:@[@(OPC_PUSH), @(OPC_CALL)] withFirstOperand:left];
 	NSUInteger pushedAt = [self getCurentStateAndRestoreBaseState];
 	if ((!push) || (left->type != [push leftOperand]->type)) // exact match, no r0 == [r0]
 		return NO;
@@ -51,7 +51,7 @@
 //	NSString *before = [self.assembly stackToStringFrom:firstMov till:push withContext:YES];
 	id top;
 	while ((top = [self.assembly pop]) && (top != push));
-	YASLOpcode *replacement = OPC_(PUSH, right);
+	YASLOpcode *replacement = OPC(push->opcode, right);
 	[self.assembly push:replacement];
 	[self.assembly alwaysDiscard:firstMov inGlobalScope:YES];
 	[self.assembly alwaysDiscard:push inGlobalScope:YES];

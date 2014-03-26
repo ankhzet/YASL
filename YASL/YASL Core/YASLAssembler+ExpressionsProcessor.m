@@ -189,7 +189,7 @@
 	YASLToken *variable = [a pop];
 	YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:variable.value];
 	if (!declaration) {
-		[node.grammarNode raiseMatch:a error:@"Variable \"%@\" undefined",variable.value];
+		[self raiseError:@"Variable \"%@\" undefined",variable.value];
 	}
 	YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:[self scope] withType:YASLExpressionTypeVariable andSpecifier:variable.value];
 	expression.returnType = declaration.dataType;

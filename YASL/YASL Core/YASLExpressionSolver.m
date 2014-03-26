@@ -150,26 +150,28 @@ NSString *const kProductionCastType = @"kProductionCastType";
 }
 
 - (YASLExpressionProcessor *) pickProcessor:(YASLTranslationExpression *)expression {
+	YASLTranslationExpression *leftExpr = [expression leftOperand];
 	NSUInteger operands = [expression nodesCount];
 	switch (operands) {
 		case 2: {
+			YASLTranslationExpression *rightExpr = [expression rigthOperand];
+			NSString *leftOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[leftExpr returnType] baseType]];
+			NSString *rightOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[rightExpr returnType] baseType]];
 			YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier];
-			NSString *leftOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[[expression leftOperand] returnType] baseType]];
-			NSString *rightOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[[expression rigthOperand] returnType] baseType]];
 
 			NSDictionary *operationProduction = [self pickProductionForOperation:operator leftOperand:leftOperandType rightOperand:rightOperandType];
 
-			YASLDataType *returnType = operationProduction[kProductionResultType];
-			YASLDataType *castType = operationProduction[kProductionCastType];
+			YASLDataType *returnType;
+			YASLDataType *castType;
 
 			if (!operationProduction) {
-				returnType = [[expression leftOperand] returnType];
-				castType = [[expression rigthOperand] returnType];
+				returnType = [leftExpr returnType];
+				castType = [rightExpr returnType];
+			} else {
+				returnType = operationProduction[kProductionResultType];
+				castType = operationProduction[kProductionCastType];
 			}
-			//			return nil;
 
-			//		YASLDataType *returnType = operationProduction[kProductionResultType];
-			//		YASLDataType *castType = operationProduction[kProductionCastType];
 			Class processorClass = expressionProcessors[returnType.name];
 			return processorClass
 			? [[processorClass alloc] initWithDataTypesManager:self.declarationScope.globalTypesManager
@@ -179,7 +181,7 @@ NSString *const kProductionCastType = @"kProductionCastType";
 			break;
 		}
 		case 1: {
-			YASLDataType *returnType = [[expression leftOperand] returnType];
+			YASLDataType *returnType = [leftExpr returnType];
 			Class processorClass = expressionProcessors[returnType.name];
 
 			return processorClass

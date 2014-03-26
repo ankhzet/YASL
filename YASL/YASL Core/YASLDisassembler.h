@@ -9,6 +9,25 @@
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
 
+@interface YASLCodeDisassembly : NSObject {
+	@public
+	/*! Starting IP. */
+	YASLInt startIP;
+	/*! Hexadecimal instruction and operands code dump in format XXXX XX XXXXXXXX XXXXXXXX. Four-bytes operands are optional (last two groups). */
+	NSString *codeDump;
+	/*! Instruction dissassembly in ASM, like 'MOV R0, [BP+14]'. */
+	NSString *instructionDisassembly;
+	/*! If instruction belongs to jump group (JMP, JNZ etc), then jumpIP will contain jump address if it is immediate value. */
+	YASLInt jumpIP;
+
+	/*! Labels, that are associated with this IP address. */
+	NSString *labels;
+	/*! Source code lines, if any. Source code line is provided only for first instruction of code, corresponded to that line. */
+	NSString *sourceCode;
+	NSUInteger sourceLine;
+}
+@end
+
 @class YASLCPU, YASLCodeSource;
 @interface YASLDisassembler : NSObject
 
@@ -16,7 +35,7 @@
 
 + (instancetype) disassemblerForCPU:(YASLCPU *)cpu;
 
-- (NSString *) disassembleFrom:(YASLInt)startOffset to:(YASLInt)endOffset;
+- (NSArray *) disassembleFrom:(YASLInt)startOffset to:(YASLInt)endOffset;
 
 - (void) setLabelsRefs:(NSArray *)labels;
 - (void) setCodeSource:(YASLCodeSource *)source;

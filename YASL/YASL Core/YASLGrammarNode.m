@@ -34,7 +34,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	id tokensMarker = [match top];
 
 	NSUInteger assemblyState = [assembly pushState];
-//	NSUInteger errorState = [assembly pushExceptionStackState];
+	NSUInteger errorState = [assembly pushExceptionStackState];
 
 	@try {
 #ifdef VERBOSE_SYNTAX
@@ -53,7 +53,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 		}
 #endif
     if (matches) {
-//			[assembly popExceptionStackState:errorState];
+			[assembly popExceptionStackState:errorState];
 			if (self.discard) {
 				NSArray *tokensArray = [match objectsAbove:[match top] belove:tokensMarker];
 				if ([tokensArray count]) {
@@ -75,7 +75,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 			NSArray *assembliesArray = [assembly objectsAbove:bottommarker belove:topMarker];
 			YASLAssembly *assemblies = nil;
-			int c = [assembliesArray count] - 1;
+			NSInteger c = [assembliesArray count] - 1;
 			if (c > 0) {
 				assembliesArray = [assembliesArray subarrayWithRange:NSMakeRange(1, c)];
 				assemblies = [[YASLAssembly alloc] initWithArray:assembliesArray];
@@ -97,13 +97,14 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
 	}
 	@catch (YASLNonfatalException *exception) {
-		[match popException];
+//		[match popException];
 		[assembly pushException:exception];
 	}
 
 	[match popState:state];
 	[assembly popState:assemblyState];
 	[assembly dropDiscardsAfterState:[match total] - state - 1];
+	[assembly dropPopped];
 
 	return NO;
 }
@@ -125,7 +126,6 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 		exception.atToken = ((YASLToken *)token).value;
 	}
 
-	[match pushException:exception];
 	@throw exception;
 }
 

@@ -21,7 +21,7 @@
 	if (!(self = [super init]))
 		return self;
 
-	_size = MIN(STACK_DEFAULT_SIZE, ram.size);
+	_size = (YASLInt)MIN(STACK_DEFAULT_SIZE, ram.size);
 	_ram = ram;
 	_top = &topDummy;
 	topDummy = 0;

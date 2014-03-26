@@ -7,7 +7,7 @@
 //
 
 #include <objc/objc.h>
-#include <objc/objc-auto.h>
+#include <objc/objc-runtime.h>
 
 id const noARCCreateInstanceOfClass(Class const class) {
 	id instance = class_createInstance(class, 0);

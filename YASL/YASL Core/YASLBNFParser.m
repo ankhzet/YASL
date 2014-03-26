@@ -80,7 +80,6 @@ static id kRBraceTerm = @")";
 	if (!parsed)
 		return parsed;
 
-	//TODO: process all rules
 	NSDictionary *rules = [assembly pop];
 	YASLGrammarNode *root = rules[rootRule];
 	if (!root)
@@ -102,7 +101,7 @@ static id kRBraceTerm = @")";
 
 					YASLGrammarNode *linked;
 					if (builtIn) {
-						NSLog(@"Built-in rule \"%@\"", identifier);
+//						NSLog(@"Built-in rule \"%@\"", identifier);
 						linked = builtIn;
 					} else
 						linked = rules[identifier];
@@ -263,10 +262,10 @@ static id kRBraceTerm = @")";
 	YASLIdentifierNode *identifier = [YASLIdentifierNode new];
 	identifier.identifier = identifierValue;
 
-	if (!assembly.userData[kRuleIdentifiers]) {
-		assembly.userData[kRuleIdentifiers] = [@{} mutableCopy];
-	}
-	assembly.userData[kRuleIdentifiers][identifierValue] = identifier;
+//	if (!assembly.userData[kRuleIdentifiers]) {
+//		assembly.userData[kRuleIdentifiers] = [@{} mutableCopy];
+//	}
+//	assembly.userData[kRuleIdentifiers][identifierValue] = identifier;
 
 	[assembly push:identifier];
 	

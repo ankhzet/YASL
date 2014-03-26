@@ -19,7 +19,10 @@
 
 	if (!unit) {
 		unit = [self.compiler compilationPass:source
-															withOptions:@{ kCompilatorPrecompile:@YES }];
+															withOptions:@{
+																						kCompilatorPrecompile:@YES,
+																						kCompilatorOptimize: @YES
+																						}];
 
 		if (unit.stage == YASLUnitCompilationStagePrecompiled) {
 			YASLInt threadOffset = [self calcCodePlacement:unit.codeLength];
@@ -33,7 +36,7 @@
 	}
 
 	if (unit.stage == YASLUnitCompilationStageCompiled) {
-		YASLInt stackOffset = [self.cpu threadsCount] * DEFAULT_THREAD_STACK_SIZE + DEFAULT_STACK_BASE;
+		YASLInt stackOffset = (YASLInt)[self.cpu threadsCount] * DEFAULT_THREAD_STACK_SIZE + DEFAULT_STACK_BASE;
 		YASLLocalDeclaration *mainMethod = [unit findSymbol:@"main"];
 		YASLInt mainSymbol = [mainMethod.reference complexAddress];
 
@@ -58,7 +61,7 @@
 		r = NSUnionRange(r, NSMakeRange(unit.startOffset, unit.codeLength));
 	}
 
-	return r.location + r.length;
+	return (YASLInt)(r.location + r.length);
 }
 
 - (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source {
@@ -79,8 +82,7 @@
 	YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:self.cpu];
 	[disassembler setLabelsRefs:[self.compiler cache:source.identifier data:kCacheStaticLabels]];
 	[disassembler setCodeSource:source];
-	NSString *disasm = [disassembler disassembleFrom:unit.startOffset to:unit.startOffset + unit.codeLength];
-	return [disasm componentsSeparatedByString:@"\n"];
+	return [disassembler disassembleFrom:unit.startOffset to:unit.startOffset + unit.codeLength];
 }
 
 - (void) registerNativeFunctions {

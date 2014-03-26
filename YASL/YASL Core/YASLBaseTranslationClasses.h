@@ -7,6 +7,7 @@
 //
 
 #import "YASLTranslationUnit.h"
+#import "YASLTranslationNode.h"
 #import "YASLTranslationExpression.h"
 #import "YASLTranslationConstant.h"
 #import "YASLTranslationDeclarator.h"

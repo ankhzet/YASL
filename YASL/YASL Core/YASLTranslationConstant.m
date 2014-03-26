@@ -28,7 +28,7 @@
 - (YASLInt) toInteger {
 	switch ([self.returnType builtInType]) {
 		case YASLBuiltInTypeInt:
-			return [self.value integerValue];
+			return (YASLInt)[self.value integerValue];
 			break;
 		case YASLBuiltInTypeFloat:
 			return [self.value floatValue];
@@ -37,7 +37,7 @@
 			return [self.value boolValue];
 			break;
 		case YASLBuiltInTypeChar:
-			return [self.value unsignedIntegerValue];
+			return (YASLInt)[self.value unsignedIntegerValue];
 			break;
 		default:
 			break;
@@ -68,7 +68,7 @@
 - (YASLBool) toBool {
 	switch ([self.returnType builtInType]) {
 		case YASLBuiltInTypeInt:
-			return [self.value integerValue];
+			return (YASLBool)[self.value integerValue];
 			break;
 		case YASLBuiltInTypeFloat:
 			return [self.value floatValue];
@@ -77,7 +77,7 @@
 			return [self.value boolValue];
 			break;
 		case YASLBuiltInTypeChar:
-			return [self.value unsignedIntegerValue];
+			return (YASLBool)[self.value unsignedIntegerValue];
 			break;
 		default:
 			break;

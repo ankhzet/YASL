@@ -16,9 +16,8 @@
 	YASLDiscards *discards;
 }
 
-@property (nonatomic) NSMutableDictionary *userData;
+//@property (nonatomic) NSMutableDictionary *userData;
 @property (nonatomic) id chunkMarker;
-@property (nonatomic) BOOL globalDiscards;
 
 @end
 

@@ -22,7 +22,7 @@
 - (NSString *) description {
 	switch (self.type) {
 		case YASLTranslationNodeTypeArrayDeclarator:
-			return [NSString stringWithFormat:@"[%u] = {%@}", self.param, [self.elements componentsJoinedByString:@", "]];
+			return [NSString stringWithFormat:@"[%lu] = {%@}", self.param, [self.elements componentsJoinedByString:@", "]];
 			break;
 
 		case YASLTranslationNodeTypeFunction:
