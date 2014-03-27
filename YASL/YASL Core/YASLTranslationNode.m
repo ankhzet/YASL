@@ -29,7 +29,7 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 }
 
 - (id)initInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type {
-	if (!(self = [super init]))
+	if (!(self = [self init]))
 		return self;
 
 	_type = type;

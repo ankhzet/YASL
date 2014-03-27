@@ -10,6 +10,4 @@
 
 @interface YASLUnaryExpression : YASLTranslationExpression
 
-@property (nonatomic) BOOL prefix;
-
 @end

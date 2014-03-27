@@ -58,7 +58,7 @@
 	YASLTranslationExpression *arrayAddres = foldedOperands[0];
 	YASLTranslationExpression *arrayIndex = foldedOperands[1];
 
-	self.returnType = arrayAddres.returnType.parent;
+	self.returnType = arrayAddres.returnType.parent ? arrayAddres.returnType.parent : arrayAddres.returnType;
 
 	NSUInteger offset = [self.returnType sizeOf];
 	YASLTranslationConstant *offsetConstant = [YASLTranslationConstant constantInScope:self.declarationScope withType:[self.declarationScope.localDataTypesManager typeByName:YASLBuiltInTypeIdentifierInt] andValue:@(offset)];

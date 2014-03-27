@@ -52,6 +52,10 @@ void test5() {
 	a = b - c;
 }
 
+void test6(int **integers) {
+	for (int i = 0; i < 5; i++)
+		log((*integers)[i]);
+}
 
 int main(void *args) {
 	int r1 = test1();
@@ -70,6 +74,7 @@ int main(void *args) {
 	log(cycles1);
 	bool cycles2 = test4(666, 7);
 	log(cycles2);
+
 
 	a = 100;
 	b = 1000;
@@ -142,5 +147,17 @@ int main(void *args) {
 			log(result);
 	}
 
+	int integers[] = {9, 7, 5, 3, 1};
+
+	int integers2[5];
+
+	for (int i = 0; i < 5; i++)
+		integers2[i] = integers[4 - i];
+
+	for (int i = 0; i < 5; i++) {
+		log(integers[i]);
+	}
+
+	test6(&integers);
 	return result;
 }

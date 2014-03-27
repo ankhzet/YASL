@@ -95,6 +95,8 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 		if (alreadyDeclared) {
 			[self raiseError:@"\"%@\" already declared", declarator.declaratorIdentifier];
 		}
+
+		groupTypeSpecifier = [declarator declareSpecific:nil withDataType:groupTypeSpecifier inScope:self.declarationScope andAssembly:a];
 		YASLLocalDeclaration *declaration = [self.declarationScope newLocalDeclaration:declarator.declaratorIdentifier];
 		declaration.declarator = declarator;
 		declaration.dataType = groupTypeSpecifier;

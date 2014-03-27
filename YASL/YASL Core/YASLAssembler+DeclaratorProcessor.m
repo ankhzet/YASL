@@ -12,16 +12,18 @@
 @implementation YASLAssembler (DeclaratorProcessor)
 
 - (void) processAssembly:(YASLAssembly *)a nodeDeclarator:(YASLAssemblyNode *)node {
-	id top = [a top];
-	NSNumber *pointerRef = @0;
-	YASLTranslationDeclarator *declarator;
-	if ([top isKindOfClass:[YASLTranslationDeclarator class]]) {
-		declarator = top;
-	} else {
-		pointerRef = [a pop];
-		declarator = [a top];
-	}
+	YASLTranslationDeclarator *declarator = [a pop];
+	NSNumber *pointerRef = [a popTillChunkMarker];
+	if (!pointerRef) pointerRef = @0;
+
 	declarator.isPointer = [pointerRef unsignedIntegerValue];
+	[a push:declarator];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePointer:(YASLAssemblyNode *)node {
+	NSNumber *pointer = [a popTillChunkMarker];
+	NSInteger newValue = pointer ? [pointer integerValue] + 1 : 1;
+	[a push:@(newValue)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeDirectDeclarator:(YASLAssemblyNode *)node {
@@ -49,8 +51,10 @@
 		elements = [(YASLTranslationConstant *)top toInteger];
 	}
 
-	YASLDeclaratorSpecifier *specifier = [YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeArrayDeclarator param:elements andElems:@[]];
-	[a push:specifier];
+	if (elements) {
+		YASLDeclaratorSpecifier *specifier = [YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeArrayDeclarator param:elements andElems:@[]];
+		[a push:specifier];
+	}
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeDeclaratorList:(YASLAssemblyNode *)node {

@@ -36,7 +36,7 @@ NSString *const kProductionTypeCast = @"kProductionTypeCast";
 
 - (void) processAssembly:(YASLAssembly *)a nodeOperation:(YASLAssemblyNode *)node {
 	YASLToken *token = [a pop];
-	YASLExpressionOperator operation = [YASLTranslationExpression specifierToOperator:token.value];
+	YASLExpressionOperator operation = [YASLTranslationExpression specifierToOperator:token.value unary:NO];
 	if ((operation == YASLExpressionOperatorUnknown) && (![token.value isEqualToString:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorUnknown]])) {
 		[self raiseError:@"Unknown operation identifier: \"%@\"",token.value];
 	}

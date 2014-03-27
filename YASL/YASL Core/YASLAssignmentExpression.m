@@ -77,7 +77,7 @@
 
 - (void) assemble:(YASLAssembly *)assembly {
 	YASLExpressionOperator operator = [self expressionOperator];
-	YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:operator];
+	YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:operator typed:[self.returnType baseType]];
 
 	YASLTranslationExpression *target = [self leftOperand];
 	[target assemble:assembly unPointered:NO];

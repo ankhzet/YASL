@@ -36,6 +36,15 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_INV,
 	OPC_NEG,
 
+	// arithmetic fp
+	OPC_ADDF,
+	OPC_SUBF,
+	OPC_MULF,
+	OPC_DIVF,
+	OPC_INCF,
+	OPC_DECF,
+	OPC_NEGF,
+
 	// binary logic
 	OPC_NOT,
 	OPC_OR,
@@ -44,11 +53,14 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_SHL,
 	OPC_SHR,
 
+	// binary logic fp
+	OPC_NOTF,
+	OPC_ORF,
+	OPC_ANDF,
+
 	// stack
 	OPC_PUSH,
-	OPC_PUSHV,
 	OPC_POP,
-	OPC_POPV,
 	OPC_SAVE,		// save registers r1-r2 to stack, from lower to higher, ex: save r1-r3
 	OPC_LOAD,		// restore registers r1-r2 from stack, from higher to lover, ex: load r3-r0
 
@@ -68,6 +80,9 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_JLT,
 	OPC_JGE,
 	OPC_JLE,
+
+	// branching fp
+	OPC_TESTF,
 
 	OPC_CVIF, // convert int > float
 	OPC_CVIB, // convert int > bool

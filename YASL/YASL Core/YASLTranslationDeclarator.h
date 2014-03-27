@@ -15,7 +15,7 @@
 + (instancetype) specifierWithType:(YASLTranslationNodeType)type param:(NSInteger)param andElems:(NSArray *)elems;
 @end
 
-@class YASLAssignmentExpression;
+@class YASLDataType, YASLTranslationExpression, YASLLocalDeclarations;
 @interface YASLTranslationDeclarator : YASLTranslationNode
 
 @property (nonatomic) NSString *declaratorIdentifier;
@@ -23,5 +23,6 @@
 @property (nonatomic) NSUInteger isPointer;
 
 - (void) addSpecifier:(YASLDeclaratorSpecifier *)specifier;
+- (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope andAssembly:(YASLAssembly *)a;
 
 @end

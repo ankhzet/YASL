@@ -53,11 +53,11 @@
 	YASLTranslationConstant *leftOperand = (id)[expression leftOperand];
 	if (![YASLTranslationExpression checkFolding:&leftOperand withSolver:self.solver]) return expression;
 
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier];
 	YASLBuiltInType returnType = [self.returnType builtInType];
 	YASLBuiltInType castType = [self.castType builtInType];
 
 	if ([expression nodesCount] > 1) {
+		YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier unary:NO];
 		YASLTranslationConstant *rightOperand = (id)[expression rigthOperand];
 		if (![YASLTranslationExpression checkFolding:&rightOperand withSolver:self.solver]) return expression;
 
@@ -70,6 +70,7 @@
 				break;
 		}
 	} else {
+		YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier unary:YES];
 		switch (returnType) {
 				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeInt, YASLInt, castType);
 				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeFloat, YASLFloat, castType);

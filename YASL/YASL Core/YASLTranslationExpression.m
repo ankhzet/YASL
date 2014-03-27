@@ -53,10 +53,17 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	return expression;
 }
 
-+ (YASLExpressionOperator) specifierToOperator:(NSString *)specifier {
++ (YASLExpressionOperator) specifierToOperator:(NSString *)specifier unary:(BOOL)unary {
 	for (YASLExpressionOperator o = YASLExpressionOperatorUnknown; o < YASLExpressionOperatorMAX; o++)
-		if ([YASLExpressionOperationSpecifiers[o] isEqualToString:specifier])
+		if ([YASLExpressionOperationSpecifiers[o] isEqualToString:specifier]) {
+			if (unary)
+				switch (o) {
+					case YASLExpressionOperatorInclusiveAnd: return YASLExpressionOperatorRef;
+					case YASLExpressionOperatorMul: return YASLExpressionOperatorUnref;
+					default:;
+				}
 			return o;
+		}
 
 	return YASLExpressionOperatorUnknown;
 }
@@ -66,7 +73,7 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 }
 
 - (YASLExpressionOperator) expressionOperator {
-	return [YASLTranslationExpression specifierToOperator:self.specifier];
+	return [YASLTranslationExpression specifierToOperator:self.specifier unary:self.isUnary];
 }
 
 /*! Try to evaluate this expression. If it consists from constant operands, then result will be evaluated constant value, else returns self. */
@@ -98,6 +105,7 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 		if (folded.expressionType != YASLExpressionTypeConstant)
 			nonConstants++;
 	}
+
 	[self setSubNodes:foldedOperands];
 
 	YASLExpressionProcessor *processor = [solver pickProcessor:self];
@@ -108,6 +116,17 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	// there are non-constant operands
 	if (nonConstants) {
 		self.returnType = processor.returnType;
+		YASLDataType *castType = processor.castType;
+
+		for (int i = 0; i < [self nodesCount]; i++) {
+			YASLTranslationExpression *operand = [self nthOperand:i];
+			if (operand.returnType != castType) {
+				YASLTypecastExpression *typecast = [YASLTypecastExpression typecastInScope:self.declarationScope withType:castType];
+				[typecast addSubNode:operand];
+				[self setNth:i operand:[typecast foldConstantExpressionWithSolver:solver]];
+			}
+		}
+
 		return self;
 	}
 
@@ -153,35 +172,60 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 
 @implementation YASLTranslationExpression (Assembling)
 
-+ (YASLOpcodes) operationToOpcode:(YASLExpressionOperator)operator {
-	switch (operator) {
-		case YASLExpressionOperatorAdd: return OPC_ADD;
-		case YASLExpressionOperatorSub: return OPC_SUB;
-		case YASLExpressionOperatorMul: return OPC_MUL;
-		case YASLExpressionOperatorDiv: return OPC_DIV;
-		case YASLExpressionOperatorRest: return OPC_RST;
++ (YASLOpcodes) operationToOpcode:(YASLExpressionOperator)operator typed:(YASLBuiltInType)type {
+	switch (type) {
+		case YASLBuiltInTypeBool:
+		case YASLBuiltInTypeChar:
+		case YASLBuiltInTypeInt:
+			switch (operator) {
+				case YASLExpressionOperatorAdd: return OPC_ADD;
+				case YASLExpressionOperatorSub: return OPC_SUB;
+				case YASLExpressionOperatorMul: return OPC_MUL;
+				case YASLExpressionOperatorDiv: return OPC_DIV;
+				case YASLExpressionOperatorRest: return OPC_RST;
 
-		case YASLExpressionOperatorSHL: return OPC_SHL;
-		case YASLExpressionOperatorSHR: return OPC_SHR;
+				case YASLExpressionOperatorSHL: return OPC_SHL;
+				case YASLExpressionOperatorSHR: return OPC_SHR;
 
-		case YASLExpressionOperatorLogicOr: return OPC_OR;
-		case YASLExpressionOperatorLogicAnd: return OPC_AND;
+				case YASLExpressionOperatorLogicOr: return OPC_OR;
+				case YASLExpressionOperatorLogicAnd: return OPC_AND;
 
-		case YASLExpressionOperatorInclusiveAnd: return OPC_AND;
-		case YASLExpressionOperatorInclusiveOr: return OPC_OR;
-		case YASLExpressionOperatorExclusiveOr: return OPC_XOR;
+				case YASLExpressionOperatorInclusiveAnd: return OPC_AND;
+				case YASLExpressionOperatorInclusiveOr: return OPC_OR;
+				case YASLExpressionOperatorExclusiveOr: return OPC_XOR;
 
-		case YASLExpressionOperatorDecrement: return OPC_DEC;
-		case YASLExpressionOperatorIncrement: return OPC_INC;
+				case YASLExpressionOperatorDecrement: return OPC_DEC;
+				case YASLExpressionOperatorIncrement: return OPC_INC;
 
-		case YASLExpressionOperatorEqual: return OPC_JZ;
-		case YASLExpressionOperatorNotEqual: return OPC_JNZ;
+				case YASLExpressionOperatorEqual: return OPC_JZ;
+				case YASLExpressionOperatorNotEqual: return OPC_JNZ;
 
-		case YASLExpressionOperatorGreater: return OPC_JGT;
-		case YASLExpressionOperatorGreaterEqual: return OPC_JGE;
-		case YASLExpressionOperatorLess: return OPC_JLT;
-		case YASLExpressionOperatorLessEqual: return OPC_JLE;
+				case YASLExpressionOperatorGreater: return OPC_JGT;
+				case YASLExpressionOperatorGreaterEqual: return OPC_JGE;
+				case YASLExpressionOperatorLess: return OPC_JLT;
+				case YASLExpressionOperatorLessEqual: return OPC_JLE;
 
+				default:
+					break;
+			}
+			break;
+		case YASLBuiltInTypeFloat:
+			switch (operator) {
+				case YASLExpressionOperatorAdd: return OPC_ADDF;
+				case YASLExpressionOperatorSub: return OPC_SUBF;
+				case YASLExpressionOperatorMul: return OPC_MULF;
+				case YASLExpressionOperatorDiv: return OPC_DIVF;
+
+				case YASLExpressionOperatorNot: return OPC_NOTF;
+				case YASLExpressionOperatorLogicOr: return OPC_ORF;
+				case YASLExpressionOperatorLogicAnd: return OPC_ANDF;
+
+				case YASLExpressionOperatorDecrement: return OPC_DECF;
+				case YASLExpressionOperatorIncrement: return OPC_INCF;
+				default:
+					break;
+			}
+			break;
 		default:
 			break;
 	}
@@ -206,7 +250,7 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 			[[self rigthOperand] assemble:assembly unPointered:YES];
 			[assembly push:OPC_(MOV, REG_(R1), REG_(R0))];
 			[assembly push:OPC_(POP, REG_(R0))];
-			YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:[self expressionOperator]];
+			YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:[self expressionOperator] typed:[self.returnType baseType]];
 			switch (opcode) {
 				case OPC_JZ:
 				case OPC_JNZ:
@@ -220,7 +264,18 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 					YASLCodeAddressReference *outRef = [YASLCodeAddressReference new];
 					[trueRef addReferent:labTrue];
 					[outRef addReferent:labOut];
-					[assembly push:OPC_(SUB, REG_(R0), REG_(R1))];
+					YASLTranslationExpression *left = [self leftOperand];
+					switch ([left.returnType baseType]) {
+						case YASLBuiltInTypeInt:
+						case YASLBuiltInTypeBool:
+						case YASLBuiltInTypeChar:
+							[assembly push:OPC_(SUB, REG_(R0), REG_(R1))];
+							break;
+						case YASLBuiltInTypeFloat:
+							[assembly push:OPC_(SUBF, REG_(R0), REG_(R1))];
+							break;
+						default: ;
+					}
 					[assembly push:OPC(opcode, labTrue)];
 					[assembly push:OPC_(XOR, REG_(R0), REG_(R0))];
 					[assembly push:OPC_(JMP, labOut)];

@@ -49,13 +49,6 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 	return temp;
 };
 
-typedef void (^YASLCPUSetOperandBlock)(YASLThreadStruct *threadData, YASLInt *operand, YASLInt value);
-YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLInt *operand, YASLInt value) {
-	*operand = value;
-	threadData->zero = value == 0;
-	threadData->sign = value < 0;
-};
-
 @implementation YASLCPU
 @synthesize ram = _ram;
 @synthesize stack = _stack;
@@ -127,8 +120,10 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 	do {
 		do {
 			if (steps % 10 == 0) {
-				if ([self switchThreads] == YASL_INVALID_HANDLE)
+				if ([self switchThreads] == YASL_INVALID_HANDLE) {
+					halted = YES;
 					break;
+				}
 			}
 
 			[self processInstruction];
@@ -163,8 +158,9 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 
 	YASLCodeInstruction *instr = [_ram dataAt:*ip];
 	*ip += sizeof(YASLCodeInstruction);
+	YASLOpcodes opcode = instr->opcode;
 
-	if (instr->opcode == OPC_NOP) {
+	if (opcode == OPC_NOP) {
 		return;
 	}
 
@@ -182,32 +178,68 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 			break;
 	}
 
-	switch (instr->opcode) {
+	switch (opcode) {
+		case OPC_MOV: {
+			*op1 = *op2;
+			threadData->zero = *op1 == 0;
+			threadData->sign = *op1 < 0;
+		}
 			// arithmetic
-		case OPC_ADD: simpleSetter(threadData, op1, *op1 + *op2); break;
-		case OPC_SUB: simpleSetter(threadData, op1, *op1 - *op2); break;
-		case OPC_MUL: simpleSetter(threadData, op1, *op1 * *op2); break;
-		case OPC_DIV: simpleSetter(threadData, op1, *op1 / *op2); break;
-		case OPC_RST: simpleSetter(threadData, op1, *op1 % *op2); break;
-		case OPC_INC:	simpleSetter(threadData, op1, ++(*op1)); break;
-		case OPC_DEC: simpleSetter(threadData, op1, --(*op1)); break;
-		case OPC_MOV: simpleSetter(threadData, op1, *op2); break;
-		case OPC_INV: simpleSetter(threadData, op1, ~*op1); break;
-		case OPC_NEG: simpleSetter(threadData, op1, -*op1); break;
+		case OPC_ADD: case OPC_SUB: case OPC_MUL: case OPC_DIV: case OPC_RST:
+		case OPC_OR : case OPC_AND: case OPC_XOR: case OPC_SHL: case OPC_SHR:
+		case OPC_INC: case OPC_DEC: case OPC_INV: case OPC_NEG: case OPC_NOT:
+		{
+			switch (opcode) {
+				case OPC_ADD: *op1 = *op1 + *op2; break;
+				case OPC_SUB: *op1 = *op1 - *op2; break;
+				case OPC_MUL: *op1 = *op1 * *op2; break;
+				case OPC_DIV: *op1 = *op1 / *op2; break;
+				case OPC_RST: *op1 = *op1 % *op2; break;
+				case OPC_OR : *op1 = *op1 | *op2; break;
+				case OPC_AND: *op1 = *op1 & *op2; break;
+				case OPC_XOR: *op1 = *op1 ^ *op2; break;
+				case OPC_SHL: *op1 = *op1 << *op2; break;
+				case OPC_SHR: *op1 = *op1 >> *op2; break;
+				case OPC_INC:	*op1 = ++(*op1); break;
+				case OPC_DEC: *op1 = --(*op1); break;
+				case OPC_INV: *op1 = ~*op1; break;
+				case OPC_NEG: *op1 = -*op1; break;
+				case OPC_NOT: *op1 = !*op1; break;
+				default:;
+			}
+			threadData->zero = *op1 == 0;
+			threadData->sign = *op1 < 0;
+			break;
+		}
 
-			// binary logic
-		case OPC_NOT: simpleSetter(threadData, op1, !*op1); break;
-		case OPC_OR : simpleSetter(threadData, op1, *op1 | *op2); break;
-		case OPC_AND: simpleSetter(threadData, op1, *op1 & *op2); break;
-		case OPC_XOR: simpleSetter(threadData, op1, *op1 ^ *op2); break;
-		case OPC_SHL: simpleSetter(threadData, op1, *op1 << *op2); break;
-		case OPC_SHR: simpleSetter(threadData, op1, *op1 >> *op2); break;
+			// arithmetic fp
+		case OPC_ADDF: case OPC_SUBF: case OPC_MULF: case OPC_DIVF:
+		case OPC_ORF : case OPC_ANDF: case OPC_NOTF:
+		case OPC_INCF: case OPC_DECF: case OPC_NEGF:
+		{
+			YASLFloat *fop1 = (YASLFloat *)op1;
+			YASLFloat *fop2 = (YASLFloat *)op2;
+			switch (opcode) {
+				case OPC_ADDF: *fop1 = *fop1 + *fop2; break;
+				case OPC_SUBF: *fop1 = *fop1 - *fop2; break;
+				case OPC_MULF: *fop1 = *fop1 * *fop2; break;
+				case OPC_DIVF: *fop1 = *fop1 / *fop2; break;
+				case OPC_ORF : *fop1 = *fop1 || *fop2; break;
+				case OPC_ANDF: *fop1 = *fop1 && *fop2; break;
+				case OPC_INCF: *fop1 = ++(*fop1); break;
+				case OPC_DECF: *fop1 = --(*fop1); break;
+				case OPC_NEGF: *fop1 = -*fop1; break;
+				case OPC_NOTF: *fop1 = !*fop2; break;
+				default:;
+			}
+			threadData->zero = *fop1 == 0;
+			threadData->sign = *fop1 < 0;
+			break;
+		}
 
 			// stack
 		case OPC_PUSH : [_stack push:*op1]; break;
-		case OPC_POP  : simpleSetter(threadData, op1, [_stack pop]); break;
-		case OPC_PUSHV: [_stack pushSpace:*op1]; break;
-		case OPC_POPV : [_stack popSpace:*op1]; break;
+		case OPC_POP: *op1 = [_stack pop]; break;
 
 		case OPC_SAVE :
 			for (int r = REG_INDEX(instr->r1); r <= REG_INDEX(instr->r2); r++) {
@@ -220,26 +252,88 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 			}
 			break;
 
-		case OPC_CVFI: simpleSetter(threadData, op1, (YASLInt)(*((YASLFloat *)op1))); break;
-		case OPC_CVIF: simpleSetter(threadData, op1, (YASLFloat)(*((YASLInt *)op1))); break;
-		case OPC_CVCF: simpleSetter(threadData, op1, (YASLFloat)(*((YASLChar *)op1))); break;
-		case OPC_CVFC: simpleSetter(threadData, op1, (YASLChar)(*((YASLFloat *)op1))); break;
-		case OPC_CVIB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLInt *)op1))); break;
-		case OPC_CVFB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLFloat *)op1))); break;
-		case OPC_CVCB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLChar *)op1))); break;
+		case OPC_CVFB:
+		case OPC_CVFC:
+		case OPC_CVFI: {
+			YASLFloat f = *(YASLFloat *)op1;
+			switch (opcode) {
+				case OPC_CVFB: {
+					YASLBool b = !!f;
+					*op1 = *((YASLInt *)&b);
+					threadData->zero = b == 0;
+					threadData->sign = false;
+					break;
+				}
+				case OPC_CVFC: {
+					YASLChar c = f;
+					*op1 = *((YASLInt *)&c);
+					threadData->zero = c == 0;
+					threadData->sign = false;
+					break;
+				}
+				case OPC_CVFI: {
+					*op1 = f;
+					threadData->zero = f == 0;
+					threadData->sign = f < 0;
+					break;
+				}
+				default: ;
+			}
+			break;
+		}
+		case OPC_CVIF:
+		case OPC_CVIB: {
+			switch (opcode) {
+				case OPC_CVIF: {
+					YASLFloat f = *op1;
+					*op1 = *((YASLInt *)&f);
+					threadData->zero = f == 0;
+					threadData->sign = f < 0;
+					break;
+				}
+				case OPC_CVIB: {
+					YASLBool b = !!*op1;
+					*op1 = *((YASLInt *)&b);
+					threadData->zero = b == 0;
+					threadData->sign = false;
+					break;
+				}
+				default: ;
+			}
+			break;
+		}
+		case OPC_CVCF:
+		case OPC_CVCB: {
+			YASLChar c = *(YASLChar *)op1;
+			switch (opcode) {
+				case OPC_CVCF: {
+					YASLFloat f = c;
+					*op1 = *((YASLInt *)&f);
+					threadData->zero = f == 0;
+					threadData->sign = f < 0;
+					break;
+				}
+				case OPC_CVCB: {
+					YASLBool b = !!c;
+					*op1 = *((YASLInt *)&b);
+					threadData->zero = b == 0;
+					threadData->sign = false;
+					break;
+				}
+				default: ;
+			}
+			break;
+		}
 
 		default:
-			switch (instr->opcode) {
+			switch (opcode) {
 					// routins
 				case OPC_CALL: {
 					[_stack push:*ip];
 					*ip = *op1;
 					break;
 				}
-				case OPC_RET: {
-					*ip = [_stack pop];
-					break;
-				}
+				case OPC_RET: *ip = [_stack pop]; break;
 				case OPC_RETV: {
 					*ip = [_stack pop];
 					[_stack popSpace:*op1];
@@ -266,39 +360,37 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 				}
 
 					// branching
-				case OPC_JMP: *ip = *op1; break;
-
 				case OPC_TEST: {
 					YASLInt delta = *op1 - *op2;
 					threadData->zero = delta == 0;
 					threadData->sign = delta < 0;
 					break;
 				}
+				case OPC_TESTF: {
+					YASLFloat delta = *(YASLFloat *)op1 - *(YASLFloat *)op2;
+					threadData->zero = delta == 0;
+					threadData->sign = delta < 0;
+					break;
+				}
 
-				case OPC_JZ:
-					if (threadData->zero)
+				case OPC_JMP: *ip = *op1; break;
+				case OPC_JZ: case OPC_JNZ: case OPC_JGT:
+				case OPC_JLT: case OPC_JGE: case OPC_JLE:
+				{
+					BOOL condition = false;
+					switch (opcode) {
+						case OPC_JZ : condition = threadData->zero; break;
+						case OPC_JNZ: condition = !threadData->zero; break;
+						case OPC_JGT: condition = !(threadData->zero || threadData->sign); break;
+						case OPC_JLT: condition = threadData->sign; break;
+						case OPC_JGE: condition = !threadData->sign; break;
+						case OPC_JLE: condition = threadData->zero || threadData->sign; break;
+						default: ;
+					}
+					if (condition)
 						*ip = *op1;
 					break;
-				case OPC_JNZ:
-					if (!threadData->zero)
-						*ip = *op1;
-					break;
-				case OPC_JGT:
-					if (!(threadData->zero || threadData->sign))
-						*ip = *op1;
-					break;
-				case OPC_JLT:
-					if (threadData->sign)
-						*ip = *op1;
-					break;
-				case OPC_JGE:
-					if (!threadData->sign)
-						*ip = *op1;
-					break;
-				case OPC_JLE:
-					if (threadData->zero || threadData->sign)
-						*ip = *op1;
-					break;
+				}
 
 				default:
 					threadData->halt = true;
@@ -344,7 +436,7 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 - (YASLInt) n_sqrt:(YASLNativeFunction *)native params:(void *)paramsBase {
 	YASLFloat p1 = [native floatParam:1 atBase:paramsBase];
 	p1 = sqrt(p1);
-	return *(YASLInt *)(&p1);
+	return *((YASLInt *)(&p1));
 }
 
 - (YASLInt) n_threadHandle:(YASLNativeFunction *)native params:(void *)paramsBase {

@@ -58,9 +58,7 @@
 
 		// stack
 		@(OPC_PUSH):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsStack),
-		@(OPC_PUSHV):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsStack),
 		@(OPC_POP):@(YASLOperandAccessTypeWriteFirst | YASLOperandAccessTypeImpactsStack),
-		@(OPC_POPV):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsStack),
 		@(OPC_SAVE):@(YASLOperandAccessTypeReadAll | YASLOperandAccessTypeImpactsStack),
 		@(OPC_LOAD):@(YASLOperandAccessTypeWriteAll | YASLOperandAccessTypeImpactsStack),
 

@@ -9,7 +9,9 @@
 #import "YASLTypecastExpression.h"
 #import "YASLCoreLangClasses.h"
 
-@implementation YASLTypecastExpression
+@implementation YASLTypecastExpression {
+	BOOL hasCast;
+}
 
 + (instancetype) typecastInScope:(YASLDeclarationScope *)scope withType:(YASLDataType *)type {
 	YASLTypecastExpression *expression = [self expressionInScope:scope withType:YASLExpressionTypeTypecast andSpecifier:type.name];
@@ -50,10 +52,11 @@
 @implementation YASLTypecastExpression (Assembling)
 
 - (BOOL) unPointer:(YASLAssembly *)outAssembly {
-	return [[self leftOperand] unPointer:outAssembly];
+	return hasCast ? NO :[[self leftOperand] unPointer:outAssembly];
 }
 
 - (void) assemble:(YASLAssembly *)assembly {
+	hasCast = NO;
 	YASLTranslationExpression *expression = [self leftOperand];
 	[expression assemble:assembly unPointered:NO];
 
@@ -90,8 +93,11 @@
 				break;
 		}
 
-		if (opcode != OPC_NOP)
+		hasCast = opcode != OPC_NOP;
+		if (hasCast) {
+			[expression unPointer:assembly];
 			[assembly push:OPC(opcode, REG_(R0))];
+		}
 	}
 }
 

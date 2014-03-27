@@ -20,7 +20,7 @@
 }
 
 - (NSUInteger) sizeOf {
-	return [super sizeOf] * _elements;
+	return [self.parent sizeOf] * _elements;
 }
 
 - (void) setElements:(NSUInteger)elements {

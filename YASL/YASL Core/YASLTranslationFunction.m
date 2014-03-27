@@ -159,7 +159,7 @@ bp+00  00 00 p1
   	[assembly push:OPC_(SAVE, lowerReg, REG_(R3))];
 	[assembly push:OPC_(MOV, REG_(BP), REG_(SP))];
 	if (localDataSize)
-		[assembly push:OPC_(PUSHV, IMM_(@(localDataSize)))];
+		[assembly push:OPC_(ADD, REG_(SP), IMM_(@(localDataSize)))];
 
 	for (YASLTranslationNode *statement in [self nodesEnumerator:NO]) {
 		[statement assemble:assembly unPointered:NO];

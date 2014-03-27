@@ -25,19 +25,42 @@
 }
 
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
-	NSMutableArray *foldedOperands = [@[] mutableCopy];
-	int nonConstants = 0;
-	// first, try to fold operands
-	for (YASLTranslationExpression *operand in [self nodesEnumerator:NO]) {
-		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
-    [foldedOperands addObject:folded];
-		if (folded.expressionType != YASLExpressionTypeConstant)
-			nonConstants++;
-	}
-	[self setSubNodes:foldedOperands];
+	NSMutableArray *foldedOperands = [[[self nodesEnumerator:NO] allObjects] mutableCopy];
 
-	self.methodAddress = [self.methodAddress foldConstantExpressionWithSolver:solver];
-	self.returnType = self.methodAddress.returnType;
+	YASLTranslationExpression *method = [self.methodAddress foldConstantExpressionWithSolver:solver];
+  self.methodAddress = method;
+	self.returnType = method.returnType;
+
+
+	if (method.expressionType == YASLExpressionTypeVariable) {
+		YASLLocalDeclaration *functionPrototype = [method.declarationScope localDeclarationByIdentifier:method.specifier];
+		YASLAssembly *specifiers = functionPrototype.declarator.declaratorSpecifiers;
+		NSMutableArray *params = [NSMutableArray array];
+		YASLAssembly *specifiersCopy = [specifiers copy];
+		while ([specifiersCopy notEmpty]) {
+			YASLDeclaratorSpecifier *specifier = [specifiersCopy pop];
+			if (specifier.type == YASLTranslationNodeTypeFunction) {
+				for (YASLLocalDeclaration *param in specifier.elements) {
+					[params addObject:param.dataType];
+				}
+			}
+		}
+		if ([params count] != [foldedOperands count])
+			[self raiseError:@"Method parameters count mismatch, %lu expected, %lu provided", [params count], [foldedOperands count]];
+
+		NSUInteger count = [foldedOperands count];
+		for (int i = 0; i < count; i++) {
+			YASLTranslationExpression *param = foldedOperands[i];
+			YASLDataType *expectedType = params[count - i - 1];
+			if (expectedType != param.returnType) {
+				YASLTypecastExpression *typecast = [YASLTypecastExpression typecastInScope:self.declarationScope withType:expectedType];
+				[typecast addSubNode:param];
+				foldedOperands[i] = [typecast foldConstantExpressionWithSolver:solver];
+			}
+		}
+	}
+
+	[self setSubNodes:foldedOperands];
 
 	return self;
 }

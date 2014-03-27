@@ -17,67 +17,24 @@
 	YASLDataType *declarationDataType = [a pop];
 
 	for (YASLLocalDeclaration *declaration in [declarations reverseObjectEnumerator]) {
-		declaration.dataType = declarationDataType;
 		YASLTranslationDeclarator *declarator = declaration.declarator;
 		YASLTranslationExpression *variable = [YASLTranslationExpression expressionInScope:scope withType:YASLExpressionTypeVariable andSpecifier:declarator.declaratorIdentifier];
-		variable.returnType = declarationDataType;
 
-		if ([declarator.declaratorSpecifiers notEmpty]) {
-			YASLAssembly *specifiers = [declarator.declaratorSpecifiers copy];
-			while ([specifiers notEmpty]) {
-				YASLDeclaratorSpecifier *specifier = [specifiers pop];
-				switch (specifier.type) {
-					case YASLTranslationNodeTypeArrayDeclarator: {
-						NSUInteger count = specifier.param;
-						NSArray *elements = specifier.elements;
-						YASLArrayDataType *arrayDataType = [YASLArrayDataType typeWithName:@""];
-						arrayDataType.parent = declarationDataType;
-						arrayDataType.elements = count;
-						variable.returnType = arrayDataType;
-						declaration.dataType = arrayDataType;
-						if ([elements count]) {
-							YASLDataType *indexDataType = [self.declarationScope.globalTypesManager typeByName:YASLBuiltInTypeIdentifierInt];
-							YASLTranslationNode *elementInits = [YASLTranslationNode nodeInScope:scope withType:YASLTranslationNodeTypeInitializer];
 
-							NSMutableArray *initializers = [NSMutableArray array];
-							NSUInteger index = 0;
-							for (YASLTranslationExpression *initializer in elements) {
-								YASLArrayElementExpression *arrayElement = [YASLArrayElementExpression arrayElementInScope:scope];
-								YASLTranslationConstant *elementIndex = [YASLTranslationConstant constantInScope:scope withType:indexDataType andValue:@(index++)];
-								[arrayElement addSubNode:variable];
-								[arrayElement addSubNode:elementIndex];
+		YASLDataType *specificType = [declarator declareSpecific:variable withDataType:declarationDataType inScope:self.declarationScope andAssembly:a];
 
-								YASLTranslationExpression *expression = [initializer nthOperand:0];
-								[initializer setNth:0 operand:arrayElement];
-								[initializer setNth:1 operand:expression];
-								YASLTranslationExpression *folded = [initializer foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
-								[elementInits addSubNode:folded];
-								[initializers addObject:folded];
-								[a push:folded];
-							}
-							[declarator setSubNodes:@[elementInits]];
-						}
-						break;
-					}
-					case YASLTranslationNodeTypeFunction:
-//						[self raiseError:@"Function declarator implementation"];
-						break;
-
-					default:
-						[self raiseError:@"Unknown declarator type: \"%u\"", specifier.type];
-						break;
-				}
-			}
-		} else {
-			YASLTranslationExpression *initializer = [declarator nthOperand:0];
-			if (initializer) {
+		declaration.dataType = specificType;
+		YASLTranslationExpression *initializer = [declarator nthOperand:0];
+		if (initializer) {
+			if ([initializer isKindOfClass:[YASLTranslationExpression class]]) {
 				YASLTranslationExpression *expression = [initializer leftOperand];
 				[initializer setNth:0 operand:variable];
 				[initializer addSubNode:expression];
 				initializer = (id)[initializer foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
 				[declarator setNth:0 operand:initializer];
 				[a push:initializer];
-			}
+			} else
+				[self raiseError:@"Unknown initializer \"%@\"", [initializer class]];
 		}
 	}
 }
@@ -105,7 +62,7 @@
 		[declarator addSubNode:initializer];
 	} else {
 		NSArray *elements = (id)initializer;
-		[declarator addSpecifier:[YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeArrayDeclarator param:[elements count] andElems:elements]];
+		[declarator addSpecifier:[YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeArrayDeclarator param:[elements count] andElems:[[elements reverseObjectEnumerator] allObjects]]];
 	}
 }
 

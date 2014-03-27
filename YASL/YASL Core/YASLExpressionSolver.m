@@ -157,7 +157,7 @@ NSString *const kProductionCastType = @"kProductionCastType";
 			YASLTranslationExpression *rightExpr = [expression rigthOperand];
 			NSString *leftOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[leftExpr returnType] baseType]];
 			NSString *rightOperandType = [YASLDataType builtInTypeToTypeIdentifier:[[rightExpr returnType] baseType]];
-			YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier];
+			YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier unary:NO];
 
 			NSDictionary *operationProduction = [self pickProductionForOperation:operator leftOperand:leftOperandType rightOperand:rightOperandType];
 
@@ -173,22 +173,22 @@ NSString *const kProductionCastType = @"kProductionCastType";
 			}
 
 			Class processorClass = expressionProcessors[returnType.name];
-			return processorClass
-			? [[processorClass alloc] initWithDataTypesManager:self.declarationScope.globalTypesManager
-																							 forSolver:self
-																						withCastType:castType]
-			: nil;
+			return (processorClass
+							? [[processorClass alloc] initWithDataTypesManager:self.declarationScope.globalTypesManager
+																											 forSolver:self
+																										withCastType:castType]
+							: nil);
 			break;
 		}
 		case 1: {
 			YASLDataType *returnType = [leftExpr returnType];
 			Class processorClass = expressionProcessors[returnType.name];
 
-			return processorClass
-			? [[processorClass alloc] initWithDataTypesManager:self.declarationScope.globalTypesManager
-																							 forSolver:self
-																						withCastType:returnType]
-			: nil;
+			return (processorClass
+							? [[processorClass alloc] initWithDataTypesManager:self.declarationScope.globalTypesManager
+																											 forSolver:self
+																										withCastType:returnType]
+							: nil);
 			break;
 		}
 		default:

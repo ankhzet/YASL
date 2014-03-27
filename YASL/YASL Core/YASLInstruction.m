@@ -31,10 +31,20 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_SHL  ] = @"SHL",
   [OPC_SHR  ] = @"SHR",
 
-  [OPC_POP  ] = @"POP",
+  [OPC_ADDF ] = @"ADDF",
+  [OPC_SUBF ] = @"SUBF",
+  [OPC_MULF ] = @"MULF",
+  [OPC_DIVF ] = @"DIVF",
+  [OPC_INCF ] = @"INCF",
+  [OPC_DECF ] = @"DECF",
+  [OPC_NEGF ] = @"NEGF",
+
+  [OPC_NOTF ] = @"NOTF",
+  [OPC_ANDF ] = @"ANDF",
+  [OPC_ORF  ] = @"DIVF",
+
+	[OPC_POP  ] = @"POP",
   [OPC_PUSH ] = @"PUSH",
-  [OPC_POPV ] = @"POPV",
-  [OPC_PUSHV] = @"PUSHV",
   [OPC_SAVE ] = @"SAVE",
   [OPC_LOAD ] = @"LOAD",
 
@@ -45,6 +55,7 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
 
   [OPC_JMP  ] = @"JMP",
   [OPC_TEST ] = @"TEST",
+  [OPC_TESTF] = @"TESTF",
   [OPC_JZ   ] = @"JZ",
   [OPC_JNZ  ] = @"JNZ",
   [OPC_JGT  ] = @"JGT",

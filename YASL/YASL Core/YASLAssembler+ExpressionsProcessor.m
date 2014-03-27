@@ -160,14 +160,13 @@
 //	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorSymbol];
 	YASLUnaryExpression *unaryExpression = [YASLUnaryExpression expressionInScope:[self scope] withType:YASLExpressionTypeUnary andSpecifier:operatorSymbol];
 	[unaryExpression addSubNode:expression];
-	unaryExpression.prefix = YES;
 	[a push:unaryExpression];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeIncrementDecrementExpression:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	NSString *operatorToken = [a pop];
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken unary:YES];
 	YASLTranslationExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
 	[unaryExpression addSubNode:expression];
 	[a push:unaryExpression];
@@ -176,7 +175,7 @@
 - (void) processAssembly:(YASLAssembly *)a nodePostfixIncrementDecrement:(YASLAssemblyNode *)node {
 	NSString *operatorToken = [a pop];
 	YASLTranslationExpression *expression = [a pop];
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken unary:YES];
 	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
 	[unaryExpression addSubNode:expression];
 	unaryExpression.postfix = YES;

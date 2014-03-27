@@ -8,10 +8,11 @@
 
 #import "YASLTranslationExpression.h"
 
-@class YASLDeclarationScope;
+@class YASLDeclarationScope, YASLLocalDeclaration;
 @interface YASLMethodCallExpression : YASLTranslationExpression
 
 @property (nonatomic) YASLTranslationExpression *methodAddress;
+@property (nonatomic) YASLLocalDeclaration *associatedMethod;
 
 + (instancetype) methodCallInScope:(YASLDeclarationScope *)scope;
 

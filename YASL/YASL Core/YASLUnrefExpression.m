@@ -17,6 +17,14 @@
 	return expression;
 }
 
+- (id)init {
+	if (!(self = [super init]))
+		return self;
+
+	self.isUnary = YES;
+	return self;
+}
+
 - (void) setIsUnreference:(BOOL)isUnreference {
 	_isUnreference = isUnreference;
 	self.specifier = isUnreference ? @"*" : @"&";
@@ -30,7 +38,7 @@
 	YASLTranslationExpression *operand = [[self leftOperand] foldConstantExpressionWithSolver:solver];
 	[self setNth:0 operand:operand];
 
-	YASLDataType *dataType;
+	YASLDataType *dataType = operand.returnType;
 	if (self.isUnreference) { // *expression
 		if (dataType.isPointer) {
 			dataType = operand.returnType.parent;
@@ -51,13 +59,22 @@
 
 @implementation YASLUnrefExpression (Assembling)
 
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+//	if (self.isUnreference) { // x = *expression
+//		[outAssembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];
+//	} else { // x = &expression
+//					 // leave as it is
+//	}
+	return YES;
+}
+
 - (void) assemble:(YASLAssembly *)assembly {
 	YASLTranslationExpression *operand = [self leftOperand];
 	[operand assemble:assembly unPointered:NO];
 	if (self.isUnreference) { // x = *expression
 		[assembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];
 	} else { // x = &expression
-		// leave as it is
+					 // leave as it is
 	}
 }
 
