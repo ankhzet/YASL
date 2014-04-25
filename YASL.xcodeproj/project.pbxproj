@@ -20,7 +20,8 @@
 		0A1107C8190A6DAD00105743 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1107A7190A6DAC00105743 /* Foundation.framework */; };
 		0A1107C9190A6DAD00105743 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1107AB190A6DAD00105743 /* UIKit.framework */; };
 		0A1107D1190A6DAD00105743 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0A1107CF190A6DAD00105743 /* InfoPlist.strings */; };
-		0A1107D3190A6DAD00105743 /* YASLTests.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A1107D2190A6DAD00105743 /* YASLTests.m */; };
+		3EED7CF5F4B448939F7075A0 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B05632ADE4554FCFB85AED72 /* libPods.a */; };
+		FD7FB7E4346944BF88DCA02E /* libPods-YASLTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FCD9C68163BB47D6B46356AE /* libPods-YASLTests.a */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -52,7 +53,10 @@
 		0A1107C6190A6DAD00105743 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		0A1107CE190A6DAD00105743 /* YASLTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "YASLTests-Info.plist"; sourceTree = "<group>"; };
 		0A1107D0190A6DAD00105743 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
-		0A1107D2190A6DAD00105743 /* YASLTests.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = YASLTests.m; sourceTree = "<group>"; };
+		3A904D4307074CC4B934085B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
+		B05632ADE4554FCFB85AED72 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YASLTests.xcconfig"; path = "Pods/Pods-YASLTests.xcconfig"; sourceTree = "<group>"; };
+		FCD9C68163BB47D6B46356AE /* libPods-YASLTests.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-YASLTests.a"; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -63,6 +67,7 @@
 				0A1107AA190A6DAD00105743 /* CoreGraphics.framework in Frameworks */,
 				0A1107AC190A6DAD00105743 /* UIKit.framework in Frameworks */,
 				0A1107A8190A6DAC00105743 /* Foundation.framework in Frameworks */,
+				3EED7CF5F4B448939F7075A0 /* libPods.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -73,6 +78,7 @@
 				0A1107C7190A6DAD00105743 /* XCTest.framework in Frameworks */,
 				0A1107C9190A6DAD00105743 /* UIKit.framework in Frameworks */,
 				0A1107C8190A6DAD00105743 /* Foundation.framework in Frameworks */,
+				FD7FB7E4346944BF88DCA02E /* libPods-YASLTests.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -86,6 +92,8 @@
 				0A1107CC190A6DAD00105743 /* YASLTests */,
 				0A1107A6190A6DAC00105743 /* Frameworks */,
 				0A1107A5190A6DAC00105743 /* Products */,
+				3A904D4307074CC4B934085B /* Pods.xcconfig */,
+				DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */,
 			);
 			sourceTree = "<group>";
 		};
@@ -105,6 +113,8 @@
 				0A1107A9190A6DAD00105743 /* CoreGraphics.framework */,
 				0A1107AB190A6DAD00105743 /* UIKit.framework */,
 				0A1107C6190A6DAD00105743 /* XCTest.framework */,
+				B05632ADE4554FCFB85AED72 /* libPods.a */,
+				FCD9C68163BB47D6B46356AE /* libPods-YASLTests.a */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -112,12 +122,8 @@
 		0A1107AD190A6DAD00105743 /* YASL */ = {
 			isa = PBXGroup;
 			children = (
-				0A1107B6190A6DAD00105743 /* YASLAppDelegate.h */,
-				0A1107B7190A6DAD00105743 /* YASLAppDelegate.m */,
-				0A1107B9190A6DAD00105743 /* Main.storyboard */,
-				0A1107BC190A6DAD00105743 /* YASLViewController.h */,
-				0A1107BD190A6DAD00105743 /* YASLViewController.m */,
-				0A1107BF190A6DAD00105743 /* Images.xcassets */,
+				0A1107DC190A75D900105743 /* GUI */,
+				0A1107DD190A75E100105743 /* YASL Core */,
 				0A1107AE190A6DAD00105743 /* Supporting Files */,
 			);
 			path = YASL;
@@ -137,7 +143,6 @@
 		0A1107CC190A6DAD00105743 /* YASLTests */ = {
 			isa = PBXGroup;
 			children = (
-				0A1107D2190A6DAD00105743 /* YASLTests.m */,
 				0A1107CD190A6DAD00105743 /* Supporting Files */,
 			);
 			path = YASLTests;
@@ -152,6 +157,26 @@
 			name = "Supporting Files";
 			sourceTree = "<group>";
 		};
+		0A1107DC190A75D900105743 /* GUI */ = {
+			isa = PBXGroup;
+			children = (
+				0A1107B6190A6DAD00105743 /* YASLAppDelegate.h */,
+				0A1107B7190A6DAD00105743 /* YASLAppDelegate.m */,
+				0A1107B9190A6DAD00105743 /* Main.storyboard */,
+				0A1107BC190A6DAD00105743 /* YASLViewController.h */,
+				0A1107BD190A6DAD00105743 /* YASLViewController.m */,
+				0A1107BF190A6DAD00105743 /* Images.xcassets */,
+			);
+			name = GUI;
+			sourceTree = "<group>";
+		};
+		0A1107DD190A75E100105743 /* YASL Core */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = "YASL Core";
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -159,9 +184,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A1107D6190A6DAD00105743 /* Build configuration list for PBXNativeTarget "YASL" */;
 			buildPhases = (
+				6426325ADEAE42439B0FECD3 /* Check Pods Manifest.lock */,
 				0A1107A0190A6DAC00105743 /* Sources */,
 				0A1107A1190A6DAC00105743 /* Frameworks */,
 				0A1107A2190A6DAC00105743 /* Resources */,
+				688C7AE40BDD4F6CBAB96042 /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -176,9 +203,11 @@
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0A1107D9190A6DAD00105743 /* Build configuration list for PBXNativeTarget "YASLTests" */;
 			buildPhases = (
+				61FD96C79EAD416E87AEC052 /* Check Pods Manifest.lock */,
 				0A1107C1190A6DAD00105743 /* Sources */,
 				0A1107C2190A6DAD00105743 /* Frameworks */,
 				0A1107C3190A6DAD00105743 /* Resources */,
+				D756980F8E6F4C958FE065FA /* Copy Pods Resources */,
 			);
 			buildRules = (
 			);
@@ -245,6 +274,69 @@
 		};
 /* End PBXResourcesBuildPhase section */
 
+/* Begin PBXShellScriptBuildPhase section */
+		61FD96C79EAD416E87AEC052 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		6426325ADEAE42439B0FECD3 /* Check Pods Manifest.lock */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Check Pods Manifest.lock";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "diff \"${PODS_ROOT}/../Podfile.lock\" \"${PODS_ROOT}/Manifest.lock\" > /dev/null\nif [[ $? != 0 ]] ; then\n    cat << EOM\nerror: The sandbox is not in sync with the Podfile.lock. Run 'pod install' or update your CocoaPods installation.\nEOM\n    exit 1\nfi\n";
+			showEnvVarsInLog = 0;
+		};
+		688C7AE40BDD4F6CBAB96042 /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+		D756980F8E6F4C958FE065FA /* Copy Pods Resources */ = {
+			isa = PBXShellScriptBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputPaths = (
+			);
+			name = "Copy Pods Resources";
+			outputPaths = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "\"${SRCROOT}/Pods/Pods-YASLTests-resources.sh\"\n";
+			showEnvVarsInLog = 0;
+		};
+/* End PBXShellScriptBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
 		0A1107A0190A6DAC00105743 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
@@ -260,7 +352,6 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				0A1107D3190A6DAD00105743 /* YASLTests.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -376,6 +467,7 @@
 		};
 		0A1107D7190A6DAD00105743 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3A904D4307074CC4B934085B /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -389,6 +481,7 @@
 		};
 		0A1107D8190A6DAD00105743 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 3A904D4307074CC4B934085B /* Pods.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_LAUNCHIMAGE_NAME = LaunchImage;
@@ -402,6 +495,7 @@
 		};
 		0A1107DA190A6DAD00105743 /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/YASL.app/YASL";
@@ -425,6 +519,7 @@
 		};
 		0A1107DB190A6DAD00105743 /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */;
 			buildSettings = {
 				ARCHS = "$(ARCHS_STANDARD_INCLUDING_64_BIT)";
 				BUNDLE_LOADER = "$(BUILT_PRODUCTS_DIR)/YASL.app/YASL";
@@ -461,6 +556,7 @@
 				0A1107D8190A6DAD00105743 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 		0A1107D9190A6DAD00105743 /* Build configuration list for PBXNativeTarget "YASLTests" */ = {
 			isa = XCConfigurationList;
@@ -469,6 +565,7 @@
 				0A1107DB190A6DAD00105743 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};

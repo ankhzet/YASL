@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Scheme
+   version = "1.3"
+   LastUpgradeVersion = "0500">
+   <BuildAction
+      buildImplicitDependencies = "YES"
+      parallelizeBuildables = "YES">
+      <BuildActionEntries>
+         <BuildActionEntry
+            buildForProfiling = "YES"
+            buildForTesting = "YES"
+            buildForAnalyzing = "YES"
+            buildForArchiving = "YES"
+            buildForRunning = "YES">
+            <BuildableReference
+               BuildableIdentifier = "primary"
+               BlueprintName = "Pods-YASLTests-Kiwi"
+               BuildableName = "libPods-YASLTests-Kiwi.a"
+               ReferencedContainer = "container:Pods.xcodeproj"
+               BlueprintIdentifier = "31B9E8B6820747498FDF94BB">
+            </BuildableReference>
+         </BuildActionEntry>
+      </BuildActionEntries>
+   </BuildAction>
+   <TestAction
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      buildConfiguration = "Debug"
+      shouldUseLaunchSchemeArgsEnv = "YES"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB">
+      <Testables>
+      </Testables>
+   </TestAction>
+   <LaunchAction
+      allowLocationSimulation = "YES"
+      debugDocumentVersioning = "YES"
+      selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
+      useCustomWorkingDirectory = "NO"
+      ignoresPersistentStateOnLaunch = "NO"
+      buildConfiguration = "Debug"
+      launchStyle = "0"
+      selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB">
+      <AdditionalOptions>
+      </AdditionalOptions>
+   </LaunchAction>
+   <ProfileAction
+      savedToolIdentifier = ""
+      debugDocumentVersioning = "YES"
+      useCustomWorkingDirectory = "NO"
+      buildConfiguration = "Release"
+      shouldUseLaunchSchemeArgsEnv = "YES">
+   </ProfileAction>
+   <AnalyzeAction
+      buildConfiguration = "Debug">
+   </AnalyzeAction>
+   <ArchiveAction
+      buildConfiguration = "Release"
+      revealArchiveInOrganizer = "YES">
+   </ArchiveAction>
+</Scheme>
