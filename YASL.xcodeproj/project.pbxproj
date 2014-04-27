@@ -20,6 +20,12 @@
 		0A1107C8190A6DAD00105743 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1107A7190A6DAC00105743 /* Foundation.framework */; };
 		0A1107C9190A6DAD00105743 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 0A1107AB190A6DAD00105743 /* UIKit.framework */; };
 		0A1107D1190A6DAD00105743 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = 0A1107CF190A6DAD00105743 /* InfoPlist.strings */; };
+		0A1107EB190A951200105743 /* YASLRAMSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A1107EA190A951200105743 /* YASLRAMSpec.m */; };
+		0A1107ED190AA34E00105743 /* YASLStackSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A1107EC190AA34E00105743 /* YASLStackSpec.m */; };
+		0A1107F3190AF27C00105743 /* YASLCPUSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A1107F2190AF27C00105743 /* YASLCPUSpec.m */; };
+		0A11080D190C0BA200105743 /* YASLNativeFunctionSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A11080C190C0BA200105743 /* YASLNativeFunctionSpec.m */; };
+		0A110814190C19D300105743 /* YASLThreadsAPISpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A110813190C19D300105743 /* YASLThreadsAPISpec.m */; };
+		0A11081C190D2F6E00105743 /* YASLInstructionSpec.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A11081B190D2F6E00105743 /* YASLInstructionSpec.m */; };
 		3EED7CF5F4B448939F7075A0 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B05632ADE4554FCFB85AED72 /* libPods.a */; };
 		FD7FB7E4346944BF88DCA02E /* libPods-YASLTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FCD9C68163BB47D6B46356AE /* libPods-YASLTests.a */; };
 /* End PBXBuildFile section */
@@ -53,6 +59,13 @@
 		0A1107C6190A6DAD00105743 /* XCTest.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = XCTest.framework; path = Library/Frameworks/XCTest.framework; sourceTree = DEVELOPER_DIR; };
 		0A1107CE190A6DAD00105743 /* YASLTests-Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = "YASLTests-Info.plist"; sourceTree = "<group>"; };
 		0A1107D0190A6DAD00105743 /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		0A1107EA190A951200105743 /* YASLRAMSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLRAMSpec.m; sourceTree = "<group>"; };
+		0A1107EC190AA34E00105743 /* YASLStackSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLStackSpec.m; sourceTree = "<group>"; };
+		0A1107F2190AF27C00105743 /* YASLCPUSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLCPUSpec.m; sourceTree = "<group>"; };
+		0A11080C190C0BA200105743 /* YASLNativeFunctionSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLNativeFunctionSpec.m; sourceTree = "<group>"; };
+		0A11080E190C0E2E00105743 /* TestUtils.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = TestUtils.h; sourceTree = "<group>"; };
+		0A110813190C19D300105743 /* YASLThreadsAPISpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLThreadsAPISpec.m; sourceTree = "<group>"; };
+		0A11081B190D2F6E00105743 /* YASLInstructionSpec.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLInstructionSpec.m; sourceTree = "<group>"; };
 		3A904D4307074CC4B934085B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		B05632ADE4554FCFB85AED72 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YASLTests.xcconfig"; path = "Pods/Pods-YASLTests.xcconfig"; sourceTree = "<group>"; };
@@ -143,6 +156,12 @@
 		0A1107CC190A6DAD00105743 /* YASLTests */ = {
 			isa = PBXGroup;
 			children = (
+				0A110820190D3B8D00105743 /* Memory managers */,
+				0A11081F190D3B8700105743 /* Stack */,
+				0A11081E190D3B8200105743 /* CPU */,
+				0A11081D190D3B7100105743 /* Native functionality */,
+				0A110822190D3BA100105743 /* Assembler/disassembler */,
+				0A11080E190C0E2E00105743 /* TestUtils.h */,
 				0A1107CD190A6DAD00105743 /* Supporting Files */,
 			);
 			path = YASLTests;
@@ -175,6 +194,55 @@
 			children = (
 			);
 			path = "YASL Core";
+			sourceTree = "<group>";
+		};
+		0A11081D190D3B7100105743 /* Native functionality */ = {
+			isa = PBXGroup;
+			children = (
+				0A11080C190C0BA200105743 /* YASLNativeFunctionSpec.m */,
+			);
+			name = "Native functionality";
+			sourceTree = "<group>";
+		};
+		0A11081E190D3B8200105743 /* CPU */ = {
+			isa = PBXGroup;
+			children = (
+				0A1107F2190AF27C00105743 /* YASLCPUSpec.m */,
+				0A110821190D3B9B00105743 /* Threads */,
+			);
+			name = CPU;
+			sourceTree = "<group>";
+		};
+		0A11081F190D3B8700105743 /* Stack */ = {
+			isa = PBXGroup;
+			children = (
+				0A1107EC190AA34E00105743 /* YASLStackSpec.m */,
+			);
+			name = Stack;
+			sourceTree = "<group>";
+		};
+		0A110820190D3B8D00105743 /* Memory managers */ = {
+			isa = PBXGroup;
+			children = (
+				0A1107EA190A951200105743 /* YASLRAMSpec.m */,
+			);
+			name = "Memory managers";
+			sourceTree = "<group>";
+		};
+		0A110821190D3B9B00105743 /* Threads */ = {
+			isa = PBXGroup;
+			children = (
+				0A110813190C19D300105743 /* YASLThreadsAPISpec.m */,
+			);
+			name = Threads;
+			sourceTree = "<group>";
+		};
+		0A110822190D3BA100105743 /* Assembler/disassembler */ = {
+			isa = PBXGroup;
+			children = (
+				0A11081B190D2F6E00105743 /* YASLInstructionSpec.m */,
+			);
+			name = Assembler/disassembler;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -352,6 +420,12 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				0A11081C190D2F6E00105743 /* YASLInstructionSpec.m in Sources */,
+				0A11080D190C0BA200105743 /* YASLNativeFunctionSpec.m in Sources */,
+				0A1107ED190AA34E00105743 /* YASLStackSpec.m in Sources */,
+				0A110814190C19D300105743 /* YASLThreadsAPISpec.m in Sources */,
+				0A1107F3190AF27C00105743 /* YASLCPUSpec.m in Sources */,
+				0A1107EB190A951200105743 /* YASLRAMSpec.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
