@@ -432,7 +432,11 @@
     } else {
         prefix = isPre ? @"parser:willMatch" :  @"parser:didMatch";
     }
-    return [NSString stringWithFormat:@"%@%C%@:", prefix, (unichar)toupper([parserName characterAtIndex:0]), [parserName substringFromIndex:1]];
+
+		parserName = [parserName stringByReplacingOccurrencesOfString:@"-" withString:@" "];
+		parserName = [[parserName capitalizedString] stringByReplacingOccurrencesOfString:@" " withString:@""];
+
+    return [NSString stringWithFormat:@"%@%@:", prefix, parserName];
 }
 
 @end

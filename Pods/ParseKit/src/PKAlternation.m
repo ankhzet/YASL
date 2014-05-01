@@ -41,14 +41,23 @@
 
 
 - (NSSet *)allMatchesFor:(NSSet *)inAssemblies {
-    NSParameterAssert(inAssemblies);
-    NSMutableSet *outAssemblies = [NSMutableSet set];
-    
-    for (PKParser *p in subparsers) {
-        [outAssemblies unionSet:[p matchAndAssemble:inAssemblies]];
-    }
-    
-    return outAssemblies;
+	NSParameterAssert(inAssemblies);
+//	NSMutableSet *outAssemblies = [NSMutableSet set];
+//
+//	for (PKParser *p in subparsers) {
+//		//			NSLog(@"%@", p);
+//		[outAssemblies unionSet:[p matchAndAssemble:inAssemblies]];
+//	}
+	NSSet *outAssemblies = inAssemblies;
+
+	for (PKParser *p in subparsers) {
+		outAssemblies = [p matchAndAssemble:inAssemblies];
+		if ([outAssemblies count]) {
+			break;
+		}
+	}
+
+  return outAssemblies;
 }
 
 @end

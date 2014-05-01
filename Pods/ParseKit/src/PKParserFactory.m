@@ -371,8 +371,8 @@ void PKReleaseSubparserTree(PKParser *p) {
 
     // add support for tokenizer directives like @commentState.fallbackState
     [t.wordState setWordChars:YES from:'.' to:'.'];
-    [t.wordState setWordChars:NO from:'-' to:'-'];
-    
+//    [t.wordState setWordChars:NO from:'-' to:'-'];
+
     // setup comments
     [t setTokenizerState:t.commentState from:'/' to:'/'];
     [t.commentState addSingleLineStartMarker:@"//"];
