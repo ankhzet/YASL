@@ -1,0 +1,12 @@
+@start = start-rule rule*;
+start-rule = '@' rule;
+rule = Identifier '=' rule-body ';';
+rule-body = alternation;
+alternation = sequence ('|' sequence)*;
+sequence = repetition+;
+repetition = basic ('?' | '+' | '*')?;
+basic = term | '(' alternation ')';
+term = rule-id | literal;
+literal = String discard;
+rule-id = Identifier;
+discard = '!'?;

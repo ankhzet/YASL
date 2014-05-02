@@ -1,153 +1,166 @@
 @start = translation-unit;
 
-translation-unit = external-declaration*;
+translation-unit = script-declaration external-declaration*;
+script-declaration = 'script'! Identifier ';'!;
 
-external-declaration = function-definition | declaration;
+external-declaration = function-definition | declaration ';'!;
 
-function-definition = declaration-specifier* declarator declaration* compound-statement;
+/* ***** Declarations ***** */
 
-declaration-specifier = storage-class-specifier | type-specifier | type-qualifier;
+/* Struct-type: declares structure.
+ 
+ */
+struct-type = struct '{'! struct-members-list '}'!;
+struct = 'struct'!;
+struct-members-list = struct-member (','! struct-member)* ','?;
+struct-member = type-specifier declarator-list;
+declarator-list = declarator (','! declarator)*;
 
-storage-class-specifier = 'auto' | 'register' | 'static' | 'extern' | 'typedef';
+/* Declarator: declares variable/parameter
+ 
+ int *myInt = 10;
+ int myInt;
+ int myint[];
+ void myFunc(int param1, param2; void *param3) {}
 
-type-specifier = void | char | int | float | struct-or-union-specifier | enum-specifier | typedef-name;
+ int <declarator> = 10;
+ int <declarator>;
+ int <declarator>;
 
-struct-or-union-specifier =
-  struct-or-union ( identifier? '{' struct-declaration+ '}' | identifier ('{' struct-declaration+ '}')? );
+ void myFunc(int <declarator>, <declarator>; void <declarator>) {}
+ void <declarator> {}
 
-struct-or-union = 'struct' | 'union';
-
-struct-declaration = specifier-qualifier* struct-declarator-list;
-
-specifier-qualifier = type-specifier | type-qualifier;
-
-struct-declarator-list = struct-declarator | (struct-declarator-list ',' struct-declarator);
-struct-declarator = declarator | (declarator ':' constant-expression) | (':' constant-expression);
+ */
 
 declarator = pointer? direct-declarator;
+direct-declarator = Identifier specific-declarator*;
+pointer = '*'! pointer?;
 
-pointer = '*'! type-qualifier* pointer?;
+specific-declarator = array-declarator | method-param-list-specifier;
+array-declarator = '['! constant-expression? ']'!;
 
-type-qualifier = 'const';
+/* init-declarator: part of the statement, that initializes variables.
+ int myInt = myInt2 = a * b;
 
-direct-declarator = identifier 
-											| '(' declarator ')'
-                      | direct-declarator '[' constant-expression? ']'
-                      | direct-declarator '(' parameter-type-list ')'
-                      | direct-declarator '(' identifier* ')';
+ int myInt <initializer>
+ */
+
+init-declarator = declarator ('='! initializer)?;
+
+init-declarator-list = init-declarator (','! init-declarator)*;
+
+initializer = assignment-expression | initializer-list;
+
+initializer-list = '{'! initializer (','! initializer)* ','? '}'!;
+
+/* Declaration: declaration of variable, type.
+ int myVar;
+ typedef int myType;
+ */
+
+declaration = type-declaration | var-declaration;
+
+/* Type-specifier: specifies type of parameter, variable, typedef-d type.
+ int myVar;
+ typedef int[] myType;
+ void myFunc(int param1; int * param2) {}
+
+ <type-specifier> myVar;
+ typedef <type-specifier> myType;
+ <type-specifier myFunc(<type-specifier> param1; <type-specifier> *param2) {}
+
+ */
+type-specifier = built-in-type | struct-type | typedef-type;
+built-in-type = void-type | int-type | bool-type | float-type | char-type;
+void-type = 'void'!;
+int-type = 'int'!;
+bool-type = 'bool'!;
+float-type = 'float'!;
+char-type = 'char'!;
+
+type-declaration = typedef type-specifier typedef-type;
+typedef = 'typedef'!;
+typedef-type = Identifier;
+
+var-declaration = type-specifier init-declarator-list+;
+
+/* ***** Function definition ***** */
+function-definition = type-specifier declarator compound-statement;
+
+method-param-list-specifier = '('! method-param-list* ')'!;
+method-param-list = method-param-group (';'! method-param-group)*;
+method-param-group = type-specifier declarator-list;
+
+/* Statement: declares statements.
+ */
+
+cast-expression = unary-expression | type-cast;
+type-cast = '('! typedef-type ')'! cast-expression;
+
+unary-expression = postfix-expression
+| (unary-increment | unary-decrement) unary-expression
+| unary-operator cast-expression
+| sizeof-expression;
+
+sizeof-expression = 'sizeof'! (unary-expression | typedef-type);
+
+postfix-expression = primary-expression (array-access-expr
+																				 | assign-access-expr
+																				 | prop-access-expr
+																				 | struct-access-expr
+																				 | unary-increment
+																				 | unary-decrement)*;
+
+array-access-expr = '['! expression ']'!;
+assign-access-expr = '('! assignment-expression* ')'!;
+prop-access-expr = '.'! Identifier;
+struct-access-expr = '-'! '>'! Identifier;
+
+
+primary-expression = variable | constant | '('! expression ')'!;
+
+constant = integer-constant | character-constant | floating-constant | boolean-constant;
+integer-constant = Int;
+character-constant = String;
+floating-constant = Float;
+boolean-constant = Bool;
+//enumeration-constant = Identifier;
+
+variable = Identifier;
 
 constant-expression = conditional-expression;
 
-conditional-expression = logical-or-expression | ternar-expression;
-ternar-expression = logical-or-expression '?'! expression ':'! conditional-expression;
-
-logical-or-expression = logical-and-expression | logical-or-expression '||'! logical-and-expression;
-logical-and-expression = inclusive-or-expression | logical-and-expression '&&'! inclusive-or-expression;
-inclusive-or-expression = exclusive-or-expression | inclusive-or-expression '|'! exclusive-or-expression;
-exclusive-or-expression = and-expression | exclusive-or-expression '^'! and-expression;
-and-expression = equality-expression | and-expression '&'! equality-expression;
-
-equality-expression = relational-expression | equality-expression (('=' | '!') '=') relational-expression;
-relational-expression = shift-expression | relational-expression (('<' | '>') '='?) shift-expression;
-shift-expression = additive-expression | shift-expression ('<<' | '>>') additive-expression
-additive-expression = multiplicative-expression | additive-expression ('+' | '-') multiplicative-expression;
-multiplicative-expression = cast-expression | multiplicative-expression ('*' | '/' | '%') cast-expression;
-
-cast-expression = unary-expression | type-cast;
-type-cast = '('! type-name ')'! cast-expression;
-
-unary-expression = postfix-expression
-                     | '++' unary-expression
-                     | '--' unary-expression
-                     | unary-operator cast-expression
-                     | 'sizeof' unary-expression
-                     | 'sizeof' type-name;
-
-postfix-expression = primary-expression
-                       | postfix-expression '[' expression ']'
-                       | postfix-expression '(' assignment-expression* ')'
-                       | postfix-expression '.' identifier
-                       | postfix-expression '->' identifier
-                       | postfix-expression '++'
-                       | postfix-expression '--';
-
-primary-expression = identifier
-                       | constant
-                       | string
-                       | '('! expression ')'!;
-
-constant = integer-constant
-             | character-constant
-             | floating-constant
-             | enumeration-constant;
-
-expression = assignment-expression | expression ',' assignment-expression;
+expression = assignment-expression (','! assignment-expression)*;
 
 assignment-expression = conditional-expression | unary-expression assignment-operator assignment-expression;
+
+conditional-expression = bool-true | bool-false;
 
 assignment-operator = ('*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '^' | '|') '=';
 
 unary-operator = '&' | '*' | '+' | '-' | '~' | '!';
 
-type-name = specifier-qualifier+ abstract-declarator?;
+unary-increment = '+' '+';
+unary-decrement = '-' '-';
 
-parameter-type-list = parameter-list | parameter-list ',' '...';
+bool-true = 'true'!;
+bool-false = 'false'!;
 
-parameter-list = parameter-declaration | parameter-list ',' parameter-declaration;
+/* ***** Statements ***** */
 
-parameter-declaration = declaration-specifier+ declarator | declaration-specifier+ abstract-declarator | declaration-specifier+;
+compound-statement = '{'! ((declaration ';'!) | statement)* '}'!;
+statement = 'statement' ';'!;
 
-abstract-declarator = pointer | pointer direct-abstract-declarator | direct-abstract-declarator;
 
-direct-abstract-declarator =  '('! abstract-declarator ')'!
-                               | direct-abstract-declarator? '[' constant-expression? ']'
-                               | direct-abstract-declarator? '(' parameter-type-list? ')';
+/*
 
-enum-specifier = 'enum'! (identifier '{'! enumerator-list '}'! | '{' enumerator-list '}' | identifier);
+ typedef int myint;
 
-enumerator-list = enumerator | enumerator-list ','! enumerator;
+ int myint;
+ int myint = 10;
 
-enumerator = identifier | identifier '='! constant-expression;
+ int *myint;
 
-typedef-name = identifier;
+ int *myint(int var1, var2; int var3) {
 
-declaration = declaration-specifier+ init-declarator*;
-
-init-declarator = declarator | declarator '='! initializer;
-
-initializer = assignment-expression | '{'! initializer-list '}'! | '{'! initializer-list ','! '}'!;
-
-initializer-list = initializer | initializer-list ','! initializer;
-
-compound-statement = '{'! declaration* statement* '}'!;
-
-statement = labeled-statement
-              | expression-statement
-              | compound-statement
-              | selection-statement
-              | iteration-statement
-              | jump-statement;
-
-labeled-statement = straight-labeled-statement | case-statement | switch-default-statement;
-straight-labeled-statement = identifier ':' statement;
-case-statement = 'case'! constant-expression ':'! statement;
-switch-default-statement = 'default'! ':'! statement;
-
-expression-statement = expression? ';'!;
-
-selection-statement = selection-if | selection-switch;
-selection-if = 'if'! '('! expression ')'! statement ('else' statement)?;
-selection-switch = 'switch'! '('! expression ')'! statement;
-
-iteration-statement = straight-while | straight-do | straight-for;
-straight-while = 'while'! '('! expression ')'! statement;
-straight-do = 'do'! statement 'while'! '('! expression ')'!;
-straight-for = 'for'! '('! expression? ';' expression? ';' expression? ')'! statement;
-
-jump-statement = (jump-goto | jump-return | continue | break) ';'!;
-jump-goto = 'goto'! identifier;
-jump-return = 'return'! expression?;
-continue = 'continue'!;
-break = 'break'!;
-
-grammar-comment = 'This grammar was adapted from Section A13 of The C programming language, 2nd edition, by Brian W. Kernighan and Dennis M. Ritchie,Prentice Hall, 1988.';
+ }
