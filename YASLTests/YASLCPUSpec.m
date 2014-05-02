@@ -34,9 +34,10 @@ describe(@"YASLCPU", ^{
 		beforeEach(^{
 			cpu = [YASLCPU cpuWithRAMSize:256];
 			ram = cpu->ram;
+			memset([ram dataAt:0], 0, 256);
 			stack = cpu->stack;
-			stack.base = 16;
-			stack.size = ram.size - stack.base;
+			stack.base = ram.size - stack.size;
+			stack.size = 64;
 			[cpu setReg:YASLRegisterIIP value:0];
 		});
 
@@ -240,18 +241,40 @@ describe(@"YASLCPU", ^{
 		it(@"should process OPC_NATIV instruction", ^{
 			YASLNativeFunction *native = [[YASLNativeFunctions sharedFunctions] findByName:@"sqrt"];
 
+			YASLFloat sqr = 0.16f;
+
 			YASLInt ramOffset = 0;
 			CPU_PUTINSTR(ramOffset, OPC_NATIV,
 									 YASLOperandCountUnary,
 									 YASLOperandTypeImmediate, 0,
 									 0, 0
-									 ); // OPC_NATIV ->current_thread
+									 ); // OPC_NATIV ::sqrt (immediate on stack)
 			CPU_PUTVAL(ramOffset, native.GUID);
-			[stack pushf:0.16f];
+			[stack pushf:sqr];
+
+			// another way
+			CPU_PUTINSTR(ramOffset, OPC_PUSH,
+									 YASLOperandCountUnary,
+									 YASLOperandTypeImmediate, 0,
+									 0, 0
+									 ); // PUSH 0.16
+			CPU_PUTVAL(ramOffset, *((YASLInt *)&sqr));
+
+			CPU_PUTINSTR(ramOffset, OPC_NATIV,
+									 YASLOperandCountUnary,
+									 YASLOperandTypeImmediate, 0,
+									 0, 0
+									 ); // OPC_NATIV ::sqrt (immediate on stack)
+			CPU_PUTVAL(ramOffset, native.GUID);
 
 			[cpu setReg:YASLRegisterIR0 value:0];
 			[cpu processInstruction];
-//			[[@((YASLFloat)[cpu regValue:YASLRegisterIR0]) should] equal:@(0.4f)];
+			[[@([cpu regValuef:YASLRegisterIR0]) should] equal:@(0.4f)];
+
+			[cpu setReg:YASLRegisterIR0 value:0];
+			[cpu processInstruction]; // PUSH 0.16
+			[cpu processInstruction]; // NATIV ::sqrt
+			[[@([cpu regValuef:YASLRegisterIR0]) should] equal:@(0.4f)];
 
 		});
 
