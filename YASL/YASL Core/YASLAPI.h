@@ -9,21 +9,19 @@
 #ifndef YASL_YASLAPI_h
 #define YASL_YASLAPI_h
 
-#define CONSTANT static
-
 typedef int YASLInt;
 typedef YASLInt YASLBool;
 typedef float YASLFloat;
 
-CONSTANT NSString *YASLAtomicTypeInt = @"int";
-CONSTANT NSString *YASLAtomicTypeString = @"string";
-CONSTANT NSString *YASLAtomicTypeFloat = @"float";
-CONSTANT NSString *YASLAtomicTypeBool = @"bool";
+extern NSString *YASLAtomicTypeInt;
+extern NSString *YASLAtomicTypeString;
+extern NSString *YASLAtomicTypeFloat;
+extern NSString *YASLAtomicTypeBool;
 
-CONSTANT NSString *YASLAPITypeHandle = @"handle";
+extern NSString *YASLAPITypeHandle;
 
-CONSTANT YASLInt YASL_INVALID_HANDLE = -1;
+extern YASLInt YASL_INVALID_HANDLE;
 
-CONSTANT YASLInt WEI_INFINITE = -1;
+extern YASLInt WEI_INFINITE;
 
 #endif

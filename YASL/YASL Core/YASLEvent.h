@@ -16,19 +16,24 @@ typedef NS_ENUM(YASLInt, YASLEventState) {
 	YASLEventStateTimeout= 3,
 };
 
-@class YASLEventsAPI;
+@class YASLEvent;
+
+@protocol YASLEventManagerDelegate <NSObject>
+- (void) closeEvent:(YASLInt)eventHandle;
+@end
+
 @interface YASLEvent : NSObject
 
 @property (nonatomic) NSString *name;
 @property (nonatomic) YASLInt handle;
-@property (nonatomic, weak, readonly) YASLEventsAPI *manager;
+@property (nonatomic, weak, readonly) id<YASLEventManagerDelegate> manager;
 
 @property (nonatomic) YASLInt state;
 @property (nonatomic) BOOL autoreset;
 
 @property (nonatomic) NSUInteger links;
 
-+ (instancetype) eventWithEventManager:(YASLEventsAPI *)manager;
++ (instancetype) eventWithEventManager:(id<YASLEventManagerDelegate>)manager;
 
 - (void) close;
 

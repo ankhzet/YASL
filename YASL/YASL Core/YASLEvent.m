@@ -7,15 +7,14 @@
 //
 
 #import "YASLEvent.h"
-#import "YASLEventsAPI.h"
 
 @implementation YASLEvent
 
-+ (instancetype) eventWithEventManager:(YASLEventsAPI *)manager {
++ (instancetype) eventWithEventManager:(id<YASLEventManagerDelegate>)manager {
 	return [[self alloc] initWithEventManager:manager];
 }
 
-- (id)initWithEventManager:(YASLEventsAPI *)manager {
+- (id)initWithEventManager:(id<YASLEventManagerDelegate>)manager {
 	if (!(self = [super init]))
 		return self;
 

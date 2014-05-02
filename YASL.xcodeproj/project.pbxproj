@@ -71,6 +71,7 @@
 		0A8960551912875B00BCAC84 /* BNF.grammar in Resources */ = {isa = PBXBuildFile; fileRef = 0A8960541912875B00BCAC84 /* BNF.grammar */; };
 		0A8960581912B06800BCAC84 /* YASLExceptionStack.m in Sources */ = {isa = PBXBuildFile; fileRef = 0A8960571912B06800BCAC84 /* YASLExceptionStack.m */; };
 		0A89605A1912B39900BCAC84 /* yasl_full.grammar in Resources */ = {isa = PBXBuildFile; fileRef = 0A8960591912B39900BCAC84 /* yasl_full.grammar */; };
+		0ABA16A71913298800258867 /* YASLAPI.m in Sources */ = {isa = PBXBuildFile; fileRef = 0ABA16A61913298800258867 /* YASLAPI.m */; };
 		3EED7CF5F4B448939F7075A0 /* libPods.a in Frameworks */ = {isa = PBXBuildFile; fileRef = B05632ADE4554FCFB85AED72 /* libPods.a */; };
 		FD7FB7E4346944BF88DCA02E /* libPods-YASLTests.a in Frameworks */ = {isa = PBXBuildFile; fileRef = FCD9C68163BB47D6B46356AE /* libPods-YASLTests.a */; };
 /* End PBXBuildFile section */
@@ -199,6 +200,7 @@
 		0A8960561912B06800BCAC84 /* YASLExceptionStack.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = YASLExceptionStack.h; sourceTree = "<group>"; };
 		0A8960571912B06800BCAC84 /* YASLExceptionStack.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLExceptionStack.m; sourceTree = "<group>"; };
 		0A8960591912B39900BCAC84 /* yasl_full.grammar */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = yasl_full.grammar; sourceTree = "<group>"; xcLanguageSpecificationIdentifier = xcode.lang.c; };
+		0ABA16A61913298800258867 /* YASLAPI.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; path = YASLAPI.m; sourceTree = "<group>"; };
 		3A904D4307074CC4B934085B /* Pods.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = Pods.xcconfig; path = Pods/Pods.xcconfig; sourceTree = "<group>"; };
 		B05632ADE4554FCFB85AED72 /* libPods.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = libPods.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		DB0001E4D3F34C5CAD943194 /* Pods-YASLTests.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-YASLTests.xcconfig"; path = "Pods/Pods-YASLTests.xcconfig"; sourceTree = "<group>"; };
@@ -328,6 +330,7 @@
 			isa = PBXGroup;
 			children = (
 				0A110808190BEAB900105743 /* YASLAPI.h */,
+				0ABA16A61913298800258867 /* YASLAPI.m */,
 				0A110809190C005900105743 /* YASLStrings.h */,
 				0A11080A190C005900105743 /* YASLStrings.m */,
 				0A895FEE190EC1CD00BCAC84 /* Memory */,
@@ -779,6 +782,7 @@
 				0A89604A1910345800BCAC84 /* YASLCommonAssembler.m in Sources */,
 				0A89604D191040FF00BCAC84 /* YASLAnyNode.m in Sources */,
 				0A89604719102C8E00BCAC84 /* YASLBNFParserException.m in Sources */,
+				0ABA16A71913298800258867 /* YASLAPI.m in Sources */,
 				0A89603A190F609B00BCAC84 /* YASLIdentifierNode.m in Sources */,
 				0A896006190F134F00BCAC84 /* YASLTokenParser.m in Sources */,
 				0A11081A190D270C00105743 /* YASLInstruction.m in Sources */,

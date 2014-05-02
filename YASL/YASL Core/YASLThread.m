@@ -12,6 +12,7 @@
 
 @interface YASLThread () {
 	__weak YASLEvent *event;
+	__weak YASLEventsAPI *eventManager;
 }
 
 @end
@@ -22,11 +23,12 @@
 	return [(YASLThread *)[self alloc] init:waitable withEventManager:eventManager];
 }
 
-- (id)init:(BOOL)waitable withEventManager:(YASLEventsAPI *)eventManager {
+- (id)init:(BOOL)waitable withEventManager:(YASLEventsAPI *)manager {
 	if (!(self = [super init]))
 		return self;
 
 	// configure associated event
+	eventManager = manager;
 	event = [eventManager createEventWithName:[NSString stringWithFormat:@"_e_thread_%p", &self]
 															 initialState:YASLEventStateClear
 																	autoreset:YES];
@@ -83,7 +85,7 @@
 
 - (void) event:(YASLInt)eventHandle waitFor:(YASLInt)msec state:(YASLThreadState)state {
 	waitFor = eventHandle;
-	YASLEvent *waitEvent = eventHandle ? [event.manager findByHandle:eventHandle] : nil;
+	YASLEvent *waitEvent = eventHandle ? [eventManager findByHandle:eventHandle] : nil;
 
 	if (!waitEvent) {
 		waitState = YASLEventStateFailed;

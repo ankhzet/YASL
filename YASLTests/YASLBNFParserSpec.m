@@ -28,6 +28,7 @@
 
 - (void) processAssembly:(YASLAssembly *)a nodeTerm:(YASLGrammarNode *)node {
 	id token = [a pop];
+	token = nil;
 }
 
 @end

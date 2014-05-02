@@ -8,10 +8,10 @@
 
 #import <Foundation/Foundation.h>
 #import "YASLNativeInterface.h"
-#import "YASLAPI.h"
+#import "YASLEvent.h"
 
 @class YASLEvent;
-@interface YASLEventsAPI : YASLNativeInterface
+@interface YASLEventsAPI : YASLNativeInterface <YASLEventManagerDelegate>
 
 /*!
  Find existing event by its handle identifier or unique name.

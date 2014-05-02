@@ -7,7 +7,6 @@
 //
 
 #import "YASLEventsAPI.h"
-#import "YASLEvent.h"
 #import "YASLNativeFunction.h"
 
 NSString *NATIVE_EVENT_OPEN = @"";
