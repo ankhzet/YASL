@@ -7,6 +7,7 @@
 //
 
 #import "YASLExceptionStack.h"
+#import "YASLNonfatalException.h"
 
 @implementation YASLExceptionStack {
 	NSMutableArray *stack;
@@ -20,8 +21,16 @@
 	return self;
 }
 
+- (void) pushException:(YASLNonfatalException *)exception {
+	[stack addObject:exception];
+}
+
+- (void) reRaise {
+	@throw [self popException];
+}
+
 /*! Returns and deletes from stack last thrown syntax exception. */
-- (NSException *) popException {
+- (YASLNonfatalException *) popException {
 	id e = [stack lastObject];
 	if (e)
 		[stack removeLastObject];
@@ -35,17 +44,17 @@
 	NSString *formatted = [[NSString alloc] initWithFormat:msg arguments:args];
   va_end(args);
 
-	NSException *exception = [self prepareExceptionObject:formatted];
-	[stack addObject:exception];
+	YASLNonfatalException *exception = [self prepareExceptionObject:formatted];
+	[self pushException:exception];
 	@throw exception;
 }
 
-- (NSUInteger) pushStackState {
+- (NSUInteger) pushExceptionStackState {
 	return [stack count];
 }
 
-- (void) popStackState:(NSUInteger)state {
-	if (state < [stack count]) {
+- (void) popExceptionStackState:(NSUInteger)state {
+	if ((int)state < (int)[stack count] - 1) {
 		[stack removeObjectsInRange:NSMakeRange(state, [stack count] - state)];
 	}
 }
@@ -54,8 +63,8 @@
 
 @implementation YASLExceptionStack (Protected)
 
-- (NSException *) prepareExceptionObject:(NSString *)msg {
-	return [NSException exceptionWithName:NSStringFromClass([self class]) reason:msg userInfo:nil];
+- (YASLNonfatalException *) prepareExceptionObject:(NSString *)msg {
+	return (id)[YASLNonfatalException exceptionWithName:NSStringFromClass([self class]) reason:msg userInfo:nil];
 }
 
 @end

@@ -85,7 +85,7 @@ YASLUnifiedFileType const YASLUnifiedFileTypeGrammar = @"grammar";
 	YASLBNFParser *parser = [[YASLBNFParser alloc] initWithSource:source];
 	YASLGrammar *grammarRoot = [parser buildGrammar];
 	if (!grammarRoot) {
-		NSException *e;
+		YASLNonfatalException *e;
 		while ((e = [parser popException])) {
 			NSLog(@"Parse exception: %@", e);
 		}

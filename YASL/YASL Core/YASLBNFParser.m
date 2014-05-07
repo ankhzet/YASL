@@ -308,7 +308,7 @@ static id kRBraceTerm = @")";
 - (BOOL) trySelector:(SEL)selector andAssembly:(YASLAssembly *)assembly {
 	NSUInteger oldCurrentToken = [self currentToken];
 	NSUInteger oldAssemblyState = [assembly pushState];
-	NSUInteger oldExceptionStackState = [self pushStackState];
+	NSUInteger oldExceptionStackState = [self pushExceptionStackState];
 	@try {
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
@@ -317,7 +317,7 @@ static id kRBraceTerm = @")";
 
 		if (result != kBoolNo) {
 //			NSLog(@"parsed [%@]", [assembly top]);
-			[self popStackState:oldExceptionStackState];
+			[self popExceptionStackState:oldExceptionStackState];
 			return YES;
 		}
 	}

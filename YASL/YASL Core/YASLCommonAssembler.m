@@ -79,10 +79,15 @@ NSString *const kProcessorSelectorSignature = @"processAssembly:node%@:";
 		[self linkProcessorSelectorWithName:node.name];
 	}
 
+	[self popExceptionStackState:0];
 	BOOL result = [grammar match:tokensAssembly andAssembly:self];
 
 	if (result) {
 		if ([tokensAssembly notEmpty]) {
+			YASLNonfatalException *e = [self popException];
+			do {
+				NSLog(@"Syntax check exception: %@", e);
+			} while ((e = [self popException]));
 			return nil;
 		}
 

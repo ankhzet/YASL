@@ -10,6 +10,8 @@
 #import "YASLAssembly.h"
 #import "YASLAssemblyNode.h"
 #import "NSObject+TabbedDescription.h"
+#import "YASLToken.h"
+#import "YASLNonfatalException.h"
 
 NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
@@ -68,12 +70,35 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 			[assembly push:an];
 			return YES;
 		}
+		} else
+			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
 	}
 	@catch (NSException *exception) {
+	@catch (YASLNonfatalException *exception) {
+		[assembly pushException:exception];
+		[match popException];
+//		NSLog(@"Assemble error: %@", exception);
 	}
 	[match popState:state];
 
 	return NO;
+}
+
+- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
+	va_list args;
+  va_start(args, msg);
+	NSString *formatted = [[NSString alloc] initWithFormat:msg arguments:args];
+  va_end(args);
+
+	YASLNonfatalException *exception = [match prepareExceptionObject:formatted];
+	YASLToken *token = [match top];
+	if (token) {
+		exception.atLine = token.line;
+		exception.atCollumn = token.collumn;
+	}
+
+	[match pushException:exception];
+	@throw exception;
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {

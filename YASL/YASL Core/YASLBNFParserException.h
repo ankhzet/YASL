@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Ankh. All rights reserved.
 //
 
-#import "YASLTokenizerException.h"
+#import "YASLNonfatalException.h"
 
-@interface YASLBNFParserException : YASLTokenizerException
+@interface YASLBNFParserException : YASLNonfatalException
 
 @end

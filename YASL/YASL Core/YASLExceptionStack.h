@@ -8,19 +8,22 @@
 
 #import <Foundation/Foundation.h>
 
+@class YASLNonfatalException;
 @interface YASLExceptionStack : NSObject
 
 - (void) raiseError:(NSString *)msg, ...;
 
-- (NSException *) popException;
+- (void) pushException:(YASLNonfatalException *)exception;
+- (YASLNonfatalException *) popException;
+- (void) reRaise;
 
-- (NSUInteger) pushStackState;
-- (void) popStackState:(NSUInteger)state;
+- (NSUInteger) pushExceptionStackState;
+- (void) popExceptionStackState:(NSUInteger)state;
 
 @end
 
 @interface YASLExceptionStack (Protected)
 
-- (NSException *) prepareExceptionObject:(NSString *)msg;
+- (YASLNonfatalException *) prepareExceptionObject:(NSString *)msg;
 
 @end
