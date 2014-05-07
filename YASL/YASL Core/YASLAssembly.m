@@ -11,6 +11,7 @@
 
 @interface YASLAssembly () {
 	NSMutableArray *stack, *popped;
+//	YASLDiscards *discards;
 }
 
 @end
@@ -25,6 +26,9 @@
 
 	stack = [NSMutableArray array];
 	popped = [NSMutableArray array];
+
+	discards = [YASLDiscards discardsForParent:nil andState:0];
+
 	self.userData = [NSMutableDictionary dictionary];
 	return self;
 }
@@ -93,17 +97,90 @@
 	return copy;
 }
 
+@end
+
+#pragma mark - Discards
+
+@implementation YASLAssembly (Discards)
+
+- (void) discardAs:(YASLAssembly *)sourceAssembly {
+	[discards dropDiscardsAfterState:0];
+	discards = [sourceAssembly->discards copy];
+}
+
+- (void) discardPopped:(YASLAssembly *)sourceAssembly {
+	for (id object in [sourceAssembly enumerator:NO])
+		if (![stack containsObject:object])
+			[discards alwaysDiscard:object inGlobalScope:NO];
+
+}
+
+- (void) pushDiscards:(NSUInteger)state {
+	discards = [discards pushDiscards:state];
+}
+
+- (void) noDiscards {
+	[discards noDiscards];
+}
+
+- (void) foldDiscards {
+	discards = [discards foldDiscards];
+}
+
+- (BOOL) mustDiscard:(id)object {
+	return [discards mustDiscard:object];
+}
+
+- (void) alwaysDiscard:(id)object inGlobalScope:(BOOL)global {
+	[discards alwaysDiscard:object inGlobalScope:global];
+}
+
+- (void) dropDiscardsAfterState:(NSUInteger)state {
+	YASLDiscards *d = discards;
+	NSMutableSet *s = [NSMutableSet set];
+	while (d) {
+		[s unionSet:d->discardsSet];
+		d = d->parent;
+	}
+	discards = [discards dropDiscardsAfterState:state];
+
+	d = discards;
+	NSMutableSet *s2 = [NSMutableSet set];
+	while (d) {
+		[s2 unionSet:d->discardsSet];
+		d = d->parent;
+	}
+
+	[s minusSet:s2];
+	if ([s count])
+		[s removeAllObjects];
+}
+
+@end
+
 #pragma mark - Stack
+
+@implementation YASLAssembly (Stack)
 
 - (BOOL) notEmpty {
 	return [stack count];
 }
 
 - (id) top {
-	return [stack lastObject];
+	int idx = [stack count];
+	while (--idx >= 0) {
+		id top = stack[idx];
+		if (![discards mustDiscard:top]) {
+			return top;
+		}
+	}
+	return nil;
 }
 
 - (void) push:(id)object {
+	if ([discards mustDiscard:object])
+		return;
+
 	[stack addObject:object];
 	if ([popped count]) {
 		[popped removeLastObject];
@@ -115,7 +192,32 @@
 	if (object) {
 		[stack removeObject:object];
 		[popped addObject:object];
+
+		if ([discards mustDiscard:object])
+			return [self pop];
 	}
+
+	return object;
+}
+
+- (id) popTillChunkMarker {
+	return [self popTill:_chunkMarker];
+}
+
+- (id) popTill:(id)marker {
+	id object = [self top];
+	if (object) {
+		if (object == marker) {
+			return nil;
+		}
+
+		[stack removeObject:object];
+		[popped addObject:object];
+
+		if ([discards mustDiscard:object])
+			return [self popTill:marker];
+	}
+
 	return object;
 }
 
@@ -123,6 +225,7 @@
 	if (noPopped) {
 		[stack removeAllObjects];
 		[popped removeAllObjects];
+		[self dropDiscardsAfterState:0];
 	} else
 		while ([self pop]);
 }
@@ -149,7 +252,18 @@
 	for (id o in [r reverseObjectEnumerator]) {
     [t addObject:o];
 	}
-	return [p arrayByAddingObjectsFromArray:t];
+	p = [p arrayByAddingObjectsFromArray:t];
+
+	if ([discards hasDiscards]) {
+		t = [NSMutableArray arrayWithCapacity:[p count]];
+		for (id o in p) {
+			if (![discards mustDiscard:o]) {
+				[t addObject:o];
+			}
+		}
+		p = t;
+	}
+	return p;
 }
 
 - (NSArray *) objectsAbove:(id)aboveMarker belove:(id)beloveMarkev {
@@ -164,11 +278,23 @@
 	return above;
 }
 
-- (void) discardPopped {
+- (void) dropPopped {
 	[popped removeAllObjects];
 }
 
+- (NSEnumerator *) enumerator:(BOOL)reverse {
+	return reverse ? [stack reverseObjectEnumerator] : [stack objectEnumerator];
+}
+
+@end
+
 #pragma mark - State
+
+@implementation YASLAssembly (State)
+
+- (NSUInteger) total {
+	return [stack count] + [popped count];
+}
 
 - (NSUInteger) pushState {
 	return [stack count];
@@ -188,10 +314,6 @@
 
 - (void) restoreFullStack {
 	[self popState:[stack count] + [popped count]];
-}
-
-- (NSEnumerator *) enumerator:(BOOL)reverse {
-	return reverse ? [stack reverseObjectEnumerator] : [stack objectEnumerator];
 }
 
 @end

@@ -12,9 +12,9 @@
 @interface YASLAssemblyNode : NSObject
 
 @property (nonatomic) YASLGrammarNode *grammarNode;
-@property (nonatomic) YASLAssembly *tokensAssembly;
-@property (nonatomic) id topToken;
-@property (nonatomic) id bottomToken;
+//@property (nonatomic) YASLAssembly *tokensAssembly;
+//@property (nonatomic) id topToken;
+//@property (nonatomic) id bottomToken;
 @property (nonatomic) NSRange tokensRange;
 @property (nonatomic) YASLAssembly *assembly;
 

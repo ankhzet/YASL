@@ -7,7 +7,7 @@
 //
 
 #import "YASLTokenizer.h"
-#import "YASLTokenizerException.h"
+#import "YASLNonfatalException.h"
 
 #import "YASLTokenParser.h"
 #import "YASLIdentifierParser.h"
@@ -15,6 +15,7 @@
 #import "YASLStringParser.h"
 #import "YASLGreedyParser.h"
 #import "YASLCommentParser.h"
+#import "YASLSymbolParser.h"
 
 @interface YASLTokenizer () {
 	NSUInteger pos, len;
@@ -46,6 +47,7 @@
 									 [YASLNumericParser new],
 									 [YASLStringParser new],
 									 [YASLCommentParser new],
+									 [YASLSymbolParser new],
 									 [YASLGreedyParser new],
 									 ];
 
@@ -214,13 +216,21 @@
 			if ([self eof]) {
 				break;
 			} else
-				@throw [YASLTokenizerException exceptionAtLine:prevToken.line andCollumn:prevToken.collumn withMsg:@"Can't parse source at offset %u", oldPos];
+				@throw [YASLNonfatalException exceptionAtLine:prevToken.line andCollumn:prevToken.collumn withMsg:@"Can't parse source at offset %u", oldPos];
 		}
 	}
 
 	fetched = fetch;
 	[self firstToken];
 	return fetched;
+}
+
+- (NSArray *) toValueArray:(NSArray *)tokens {
+	NSMutableArray *result = [NSMutableArray arrayWithCapacity:[tokens count]];
+	for (YASLToken *token in tokens) {
+    [result addObject:token.value];
+	}
+	return result;
 }
 
 - (NSArray *) allTokens {
@@ -260,7 +270,7 @@
 #pragma mark - Exceptions handling
 
 - (NSException *) prepareExceptionObject:(NSString *)msg {
-	return [YASLTokenizerException exceptionAtLine:self.token.line andCollumn:self.token.collumn withMsg:msg];
+	return [YASLNonfatalException exceptionAtLine:self.token.line andCollumn:self.token.collumn withMsg:msg];
 }
 
 @end

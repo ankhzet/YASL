@@ -22,6 +22,7 @@
 
 - (NSArray *) tokenizeAll;
 - (NSArray *) allTokens;
+- (NSArray *) toValueArray:(NSArray *)tokens;
 
 - (void) firstToken;
 - (NSUInteger) currentToken;

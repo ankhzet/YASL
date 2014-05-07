@@ -43,10 +43,11 @@ describe(@"YASLTokenizer", ^{
 		NSString *source = @"sa sdas 'asdas' sadsa \" asd asdas das 'sdasdasdsadsa\" 'asdadasd\"asdasd' ad";
 		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
 
-		NSArray *tokens = [tokenizer tokenizeAll];
+		NSArray *tokens = [tokenizer toValueArray:[tokenizer tokenizeAll]];
 
 		[[tokens shouldNot] beNil];
 		[[tokens should] haveCountOf:7];
+		[[tokens should] equal:@[@"sa", @"sdas", @"asdas", @"sadsa", @" asd asdas das 'sdasdasdsadsa", @"asdadasd\"asdasd", @"ad"]];
 	});
 
 	it(@"should parse booleans", ^{
@@ -74,10 +75,41 @@ describe(@"YASLTokenizer", ^{
 		";
 		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
 
-		NSArray *tokens = [tokenizer tokenizeAll];
+		NSArray *tokens = [tokenizer toValueArray:[tokenizer tokenizeAll]];
 
 		[[tokens shouldNot] beNil];
 		[[tokens should] haveCountOf:11];
+	});
+
+	it(@"should parse symbols", ^{
+		NSString *source1 = @"\
+		a = b + c - d * e ++ f -- g == h != i >= j <= k << l >> m & n && o | p || q ^ r < s > t % u / w ( x ) y [ z ]\
+		";
+		NSString *source2 = @"=+-*++--==!=>=<=<<>>&&&|||^<>%/()[]";
+
+		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source1];
+		NSArray *tokens1 = [tokenizer toValueArray:[tokenizer tokenizeAll]];
+		tokenizer.source = source2;
+		NSArray *tokens2 = [tokenizer toValueArray:[tokenizer tokenizeAll]];
+
+		[[tokens1 shouldNot] beNil];
+		[[tokens1 should] haveCountOf:50];
+		[[tokens1 should] equal:
+		 @[
+			 @"a", @"=", @"b", @"+", @"c", @"-", @"d", @"*", @"e", @"++", @"f", @"--", @"g",
+			 @"==", @"h", @"!=", @"i", @">=", @"j", @"<=", @"k", @"<<", @"l", @">>", @"m",
+			 @"&", @"n", @"&&", @"o", @"|", @"p", @"||", @"q", @"^", @"r", @"<", @"s", @">",
+			 @"t", @"%", @"u", @"/", @"w", @"(", @"x", @")", @"y", @"[", @"z", @"]",
+			 ]];
+
+		[[tokens2 shouldNot] beNil];
+		[[tokens2 should] haveCountOf:25];
+		[[tokens2 should] equal:
+		 @[
+			 @"=", @"+", @"-", @"*", @"++", @"--", @"==", @"!=", @">=", @"<=", @"<<", @">>",
+			 @"&&", @"&", @"||", @"|", @"^", @"<", @">", @"%", @"/", @"(", @")", @"[", @"]",
+			 ]];
+
 	});
 });
 

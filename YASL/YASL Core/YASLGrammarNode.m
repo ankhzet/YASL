@@ -31,55 +31,71 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 - (BOOL) match:(YASLAssembly *)match andAssembly:(YASLAssembly *)assembly {
 	NSUInteger state = [match pushState];
+	id tokensMarker = [match top];
+
 	NSUInteger assemblyState = [assembly pushState];
-	id marker = [match top];
+	NSUInteger errorState = [assembly pushExceptionStackState];
+
 	@try {
-    if ([self matches:match for:assembly]) {
-			if (!self.name) {
-				return YES;
+		if (self.name) {
+			NSLog(@"%@:", self.name);
+		}
+		BOOL matches = [self matches:match for:assembly];
+		if (self.name) {
+			NSString *matchedTokensStr = [match stackToStringFrom:tokensMarker till:[match top]];
+			if ([matchedTokensStr length]) {
+				NSDictionary *YN = @{@YES: @"+", @NO: @" "};
+				NSLog(@"%@%@: %@\n%@\n", YN[@(matches)], self.name, matchedTokensStr, match);
 			}
-			YASLAssembly *tokensAssembly = assembly.userData[kAssemblyDataTokensAssembly];
-			if (!tokensAssembly) {
-				tokensAssembly = assembly.userData[kAssemblyDataTokensAssembly] = [match copy];
-				[tokensAssembly restoreFullStack];
+		}
+    if (matches) {
+			[assembly popExceptionStackState:errorState];
+			if (self.discard) {
+				NSArray *tokensArray = [match objectsAbove:[match top] belove:tokensMarker];
+				if ([tokensArray count]) {
+//					NSLog(@"discard: %@ -> %@", tokensArray, assembly->discards);
+					[assembly pushDiscards:[match total] - state];
+					for (id object in tokensArray)
+						[assembly alwaysDiscard:object inGlobalScope:NO];
+//					NSLog(@"discard: %@ -> %@", tokensArray, assembly->discards);
+				}
 			}
 
-//			NSArray *tokensArray = [match objectsAbove:[match top] belove:marker];
+			if (!self.name)
+				return YES;
+
+			id topMarker = [NSObject new];
+			[assembly push:topMarker];
+			[assembly popState:assemblyState];
+			id bottommarker = [assembly top];
+
+			NSArray *assembliesArray = [assembly objectsAbove:bottommarker belove:topMarker];
+			YASLAssembly *assemblies = nil;
+			int c = [assembliesArray count] - 1;
+			if (c > 0) {
+				assembliesArray = [assembliesArray subarrayWithRange:NSMakeRange(1, c)];
+				assemblies = [[YASLAssembly alloc] initWithArray:assembliesArray];
+			}
 
 			YASLAssemblyNode *an = [YASLAssemblyNode new];
-			[assembly push:an];
-			[assembly popState:assemblyState];
-			NSArray *assembliesArray = [assembly objectsAbove:[assembly top] belove:an];
-			YASLAssembly *assemblies = nil;
-			if ([assembliesArray count] > 1) {
-				assembliesArray = [assembliesArray mutableCopy];
-				[((NSMutableArray *)assembliesArray) removeObject:[assembliesArray firstObject]];
-				assemblies = [[YASLAssembly alloc] initWithArray:assembliesArray];
-//				[assemblies pop];
-//				[assemblies discardPopped];
-			}
-
 			an.grammarNode = self;
 			an.assembly = assemblies;
-			an.tokensAssembly = tokensAssembly;
-			an.topToken = [match top];
-			an.bottomToken = marker;
 			an.tokensRange = NSMakeRange(state, state - [match pushState]);
-//			NSLog(@"%@\n%@\n\n", [tokensAssembly stackToStringFrom:an.bottomToken till:an.topToken], [[YASLAssembly alloc] initReverseArray:tokensArray]);
-			[assembly discardPopped];
+			[assembly dropPopped];
 			[assembly push:an];
 			return YES;
-		}
 		} else
 			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
 	}
-	@catch (NSException *exception) {
 	@catch (YASLNonfatalException *exception) {
 		[assembly pushException:exception];
 		[match popException];
 //		NSLog(@"Assemble error: %@", exception);
 	}
+
 	[match popState:state];
+	[assembly popState:assemblyState];
+	[assembly dropDiscardsAfterState:[match total] - state - 1];
 
 	return NO;
 }

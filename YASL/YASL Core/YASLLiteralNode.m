@@ -21,7 +21,7 @@
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
-	YASLToken *token = (!self.discard) ? [match pop] : [match top];
+	YASLToken *token = [match pop];
 	return [token.value isEqualToString:self.literal];
 }
 
