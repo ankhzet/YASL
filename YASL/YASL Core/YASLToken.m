@@ -53,9 +53,6 @@ NSString *const YASLTokenKindNames[YASLTokenKindMAX] = {
 		case YASLTokenKindIdentifier:
 			return [self asBool] ? 1 : 0;
 			break;
-		case YASLTokenKindInteger:
-			return [self asBool] ? 1 : 0;
-			break;
 		default:
 			return [_value intValue];
 	}

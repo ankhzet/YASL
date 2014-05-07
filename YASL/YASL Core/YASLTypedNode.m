@@ -19,7 +19,7 @@
 	return self;
 }
 
-- (NSString *) description {
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
 	return [NSString stringWithFormat:@"{%@}", [YASLToken tokenKindName:self.type]];
 }
 

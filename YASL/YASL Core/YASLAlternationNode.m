@@ -10,8 +10,12 @@
 
 @implementation YASLAlternationNode
 
-- (NSString *) description {
-	return [NSString stringWithFormat:@"(%@)", [self.subnodes componentsJoinedByString:@" | "]];
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	NSString *description = @"";
+	for (YASLGrammarNode *node in self.subnodes) {
+		description = [NSString stringWithFormat:@"%@%@%@", description, [description length] ? @"\n| " : @"", [node description:circular]];
+	}
+	return [NSString stringWithFormat:@"(\n  %@\n)", description];
 }
 
 //

@@ -137,15 +137,14 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 		return;
 	}
 
-	YASLInt *op1 = NULL, *op2 = NULL;
+	YASLInt tmp1 = 0xF0, tmp2 = 0x0F;
+	YASLInt *op1 = &tmp1, *op2 = &tmp2;
 	switch (instr->type) {
 		case YASLOperandCountBinary: {
-			YASLInt tmp;
-			op2 = SimpleGetOperandBlock(self, ip, &tmp, instr->operand2, instr->r2);
+			op2 = SimpleGetOperandBlock(self, ip, &tmp1, instr->operand2, instr->r2);
 		}
 		case YASLOperandCountUnary: {
-			YASLInt tmp;
-			op1 = SimpleGetOperandBlock(self, ip, &tmp, instr->operand1, instr->r1);
+			op1 = SimpleGetOperandBlock(self, ip, &tmp2, instr->operand1, instr->r1);
 			break;
 		}
 		default:

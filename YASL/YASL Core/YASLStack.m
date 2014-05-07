@@ -46,11 +46,11 @@
 	return *((YASLFloat *)[_ram dataAt:_top + _base]);
 }
 
-- (void) pushSpace:(NSUInteger)count {
+- (void) pushSpace:(YASLInt)count {
 	_top += sizeof(YASLInt) * count;
 }
 
-- (void) popSpace:(NSUInteger)count {
+- (void) popSpace:(YASLInt)count {
 	_top -= sizeof(YASLInt) * count;
 }
 

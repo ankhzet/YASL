@@ -19,6 +19,12 @@ typedef BOOL (^YASLGrammarNodeWalkBlock) (id userData, YASLGrammarNode *node);
 /*! String node type representation. */
 - (NSString *) nodeType;
 
+- (NSString *) description:(NSMutableSet *)circular;
+/*! Node description, based on its type and its subnodes. As nodes can be recursively connected, this method is not recursion-safe. */
+- (NSString *) unsafeDescription:(NSMutableSet *)circular;
+
+- (BOOL) hasChild:(YASLGrammarNode *)child;
+
 /*! Subnode walk. */
 - (BOOL) walkTreeWithBlock:(YASLGrammarNodeWalkBlock)walkBlock andUserData:(id)userdata;
 

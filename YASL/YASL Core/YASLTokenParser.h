@@ -20,8 +20,8 @@ typedef unichar (^YASLTokenParseBlock)(YASLTokenParser *parser, YASLTokenParseDa
 
 @interface YASLTokenParser : NSObject
 
-@property (nonatomic) NSCharacterSet *charset;
-@property (nonatomic) NSCharacterSet *beginsWith;
+@property (nonatomic) NSMutableCharacterSet *charset;
+@property (nonatomic) NSMutableCharacterSet *beginsWith;
 
 - (BOOL) handles:(unichar)charachter;
 

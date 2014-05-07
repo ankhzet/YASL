@@ -18,17 +18,22 @@
 	return self;
 }
 
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	NSString *description = @"";
+	for (YASLGrammarNode *node in self.subnodes) {
+		description = [NSString stringWithFormat:@"%@%@%@", description, [description length] ? @"\n" : @"", [node description:circular]];
+	}
+	return [NSString stringWithFormat:@"\n%@", description];
+}
+
 - (void) addSubNode:(YASLGrammarNode *)subnode {
 	[_subnodes addObject:subnode];
 }
 
 - (BOOL) hasChild:(YASLGrammarNode *)child {
-	if ([self.subnodes containsObject:child])
-		return YES;
-
-	Class composite = [YASLCompositeNode class];
+	NSLog(@"hasChild: %p -> %p", self, child);
 	for (YASLGrammarNode *node in self.subnodes)
-		if ([node isKindOfClass:composite] && [(YASLCompositeNode *)node hasChild:child])
+		if ((node == child) || [node hasChild:child])
 			return YES;
 
 	return NO;

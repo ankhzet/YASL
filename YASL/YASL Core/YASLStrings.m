@@ -12,7 +12,7 @@
 @implementation YASLStrings
 
 - (YASLInt) putStr:(NSString *)string onRam:(YASLRAM *)ram atOffset:(YASLInt)offset {
-	YASLInt len = [string length];
+	YASLInt len = (YASLInt)[string length];
 	const char *raw = [string cStringUsingEncoding:NSASCIIStringEncoding];
 
 	void *ptr = [ram dataAt:offset];

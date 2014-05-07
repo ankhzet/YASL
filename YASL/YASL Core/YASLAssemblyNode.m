@@ -15,7 +15,7 @@
 @implementation YASLAssemblyNode
 
 - (NSString *) descriptionTabbed:(NSString *)tab {
-	NSString *stack = [self.tokensAssembly stackToStringFrom:self.bottomToken till:self.topToken];
+	NSString *stack = @"";//[self.tokensAssembly stackToStringFrom:self.bottomToken till:self.topToken];
 	NSString *assembly = self.assembly ? [self.assembly descriptionTabbed:[NSObject progressTab:tab]] : @"";
 	assembly = self.assembly ? [NSString stringWithFormat:@"\n%@", assembly] : assembly;
 	return [[NSString stringWithFormat:@"\nAN %@: [%@]%@\n", self.grammarNode.name, stack, assembly] descriptionTabbed:tab];

@@ -11,6 +11,6 @@
 @interface YASLIdentifierNode : YASLGrammarNode
 
 @property (nonatomic) NSString *identifier;
-@property (nonatomic, weak) YASLGrammarNode *link;
+@property (nonatomic) YASLGrammarNode *link;
 
 @end

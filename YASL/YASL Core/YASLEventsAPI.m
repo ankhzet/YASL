@@ -32,7 +32,7 @@ NSString *NATIVE_EVENT_OPEN = @"";
 #pragma mark - Base functionality
 
 - (YASLInt) genGUID {
-	return [events count];
+	return (YASLInt)[events count];
 }
 
 - (YASLEvent *) findByHandle:(YASLInt)handle {
@@ -89,7 +89,7 @@ NSString *NATIVE_EVENT_OPEN = @"";
 		[self deleteEvent:event];
 	}
 
-	return links;
+	return (YASLInt)links;
 }
 
 - (void) deleteEvent:(YASLEvent *)event {

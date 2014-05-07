@@ -9,6 +9,7 @@
 #import "YASLGrammarNode.h"
 #import "YASLAssembly.h"
 #import "YASLAssemblyNode.h"
+#import "NSObject+TabbedDescription.h"
 
 NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
@@ -16,6 +17,10 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 - (NSString *) nodeType {
 	return NSStringFromClass([self class]);
+}
+
+- (BOOL) hasChild:(YASLGrammarNode *)child {
+	return NO;
 }
 
 - (BOOL) walkTreeWithBlock:(YASLGrammarNodeWalkBlock)walkBlock andUserData:(id)userdata {
@@ -78,6 +83,28 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 - (id) copyWithZone:(NSZone *)zone {
 	return self;
+}
+
+- (NSString *) description {
+	NSMutableSet *circular = [NSMutableSet set];
+	return [self description:circular];
+}
+
+- (NSString *) description:(NSMutableSet *)circular {
+	NSString *description = nil;
+	if ([circular member:self]) {
+		description = [NSString stringWithFormat:@"<%@:recursion>", self.name ? self.name : [self nodeType]];
+	} else {
+		[circular addObject:self];
+		description = [self unsafeDescription:circular];
+		[circular removeObject:self];
+	}
+
+	return [[[NSString stringWithFormat:@"%@%@", description, self.discard ? @"!" : @""] descriptionTabbed:@"  "] stringByTrimmingCharactersInSet:[NSCharacterSet whitespaceCharacterSet]];
+}
+
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	return [NSString stringWithFormat:@"(%@)", [self nodeType]];
 }
 
 @end

@@ -41,7 +41,7 @@
 		return self;
 
 	NSUInteger state = [source pushState];
-	[self fillWithArray:[source enumerator:NO]];
+	[self fillWithArray:[source enumerator:YES]];
 	[source popState:state];
 
 	return self;
@@ -207,7 +207,7 @@
 }
 
 - (NSString *) stackToStringFrom:(id)from till:(id)marker {
-	NSString *r = @"";
+	NSMutableString *r = [@"" mutableCopy];
 	NSMutableArray *stackReverse = [NSMutableArray arrayWithCapacity:[stack count]];
 	for (id o in [stack reverseObjectEnumerator]) {
     [stackReverse addObject:o];
@@ -225,26 +225,25 @@
 		if (marker == obj)
 			break;
 
-    r = [NSString stringWithFormat:@"%@%@%@", r, [r length] ? @"\u00B7" : @"", obj];
+		[r appendFormat:@"%@%@", [r length] ? @"\u00B7" : @"", obj];
 	}
 	return r;
 }
 
 - (NSString *) stackToString:(BOOL)noPopped till:(id)marker {
-	NSString *l = @"", *r = @"";
+	NSString *l = [@"" mutableCopy], *r = [@"" mutableCopy];
 	if (!noPopped) {
 		for (id obj in popped) {
-			l = [NSString stringWithFormat:@"%@%@%@", l, [l length] ? @"\u00B7" : @"", obj];
+			[(NSMutableString *)l appendFormat:@"%@%@", [l length] ? @"\u00B7" : @"", obj];
 		}
-		l = [NSString stringWithFormat:@"%@^", l];
 	}
 	for (id obj in [stack reverseObjectEnumerator]) {
 		if (marker == obj)
 			break;
 
-    r = [NSString stringWithFormat:@"%@%@%@", r, [r length] ? @"\u00B7" : @"", obj];
+    [(NSMutableString *)r appendFormat:@"%@%@", [r length] ? @"\u00B7" : @"", obj];
 	}
-	return [NSString stringWithFormat:@"%@%@", l, r];
+	return [NSString stringWithFormat:@"%@^%@", l, r];
 }
 
 @end

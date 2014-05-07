@@ -56,7 +56,7 @@
 }
 
 - (id) initWithSource:(NSString *)source {
-	if (![self init])
+	if (!(self = [self init]))
 		return self;
 
 	self.source = source;

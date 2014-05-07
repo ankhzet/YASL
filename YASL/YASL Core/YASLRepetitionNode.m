@@ -16,8 +16,12 @@ NSString *const YASLRepetitionSpecifierNames[YASLRepetitionSpecifierMAX] = {
 
 @implementation YASLRepetitionNode
 
-- (NSString *) description {
-	return [NSString stringWithFormat:@"{%@}%@", self.linked, YASLRepetitionSpecifierNames[self.specifier]];
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	return [NSString stringWithFormat:@"{%@\n}%@", [self.linked description:circular], YASLRepetitionSpecifierNames[self.specifier]];
+}
+
+- (BOOL) hasChild:(YASLGrammarNode *)child {
+	return (self.linked == child) || ([self.linked hasChild:child]);
 }
 
 + (YASLRepetitionSpecifier) parseSpecifier:(NSString *)specifier {

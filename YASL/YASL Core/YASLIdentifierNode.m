@@ -13,14 +13,24 @@
 
 @implementation YASLIdentifierNode
 
-- (NSString *) description {
-	if (self.link && [self.link isKindOfClass:[YASLCompositeNode class]]) {
-		YASLCompositeNode *compositeLink = (id)self.link;
-		if (![compositeLink hasChild:self])
-			return [NSString stringWithFormat:@"('%@' \n -> %@\n)", self.identifier, self.link];
+- (void) dealloc {
+	self.link = nil;
+}
+
+- (NSString *) nodeType {
+	return [NSString stringWithFormat:@"%@:%@", [super nodeType], [self identifier]];
+}
+
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	if (self.link) {
+		return [NSString stringWithFormat:@"(<%@> ::= %@)", self.identifier, [self.link description:circular]];
 	}
 
-	return [NSString stringWithFormat:@"%@", self.identifier];
+	return [NSString stringWithFormat:@"\n%@", self.identifier];
+}
+
+- (BOOL) hasChild:(YASLGrammarNode *)child {
+	return (self.link == child) || [self.link hasChild:child];
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {

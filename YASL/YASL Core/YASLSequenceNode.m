@@ -10,10 +10,6 @@
 
 @implementation YASLSequenceNode
 
-- (NSString *) description {
-	return [NSString stringWithFormat:@"%@", [self.subnodes componentsJoinedByString:@" "]];
-}
-
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
 	for (YASLGrammarNode *node in self.subnodes) {
     BOOL state = [node match:match andAssembly:assembly];

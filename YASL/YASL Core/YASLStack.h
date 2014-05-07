@@ -15,9 +15,9 @@
 @interface YASLStack : NSObject
 
 @property (nonatomic) YASLRAM *ram;
-@property (nonatomic) NSUInteger size;
-@property (nonatomic) NSUInteger top;
-@property (nonatomic) NSUInteger base;
+@property (nonatomic) YASLInt size;
+@property (nonatomic) YASLInt top;
+@property (nonatomic) YASLInt base;
 
 + (instancetype) stackForRAM:(YASLRAM *)ram;
 
@@ -25,12 +25,12 @@
  @brief Push integer to the stack.
  */
 - (void) push:(YASLInt)value;
-- (void) pushSpace:(NSUInteger)count;
+- (void) pushSpace:(YASLInt)count;
 /*!
  @brief Push integer from stack.
  */
 - (YASLInt) pop;
-- (void) popSpace:(NSUInteger)count;
+- (void) popSpace:(YASLInt)count;
 
 - (void) pushf:(YASLFloat)value;
 - (YASLFloat) popf;

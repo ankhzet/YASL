@@ -32,13 +32,14 @@ describe(@"YASLCPU", ^{
 		__block YASLStack *stack = nil;
 
 		beforeEach(^{
-			cpu = [YASLCPU cpuWithRAMSize:256];
+			cpu = [YASLCPU cpuWithRAMSize:512];
 			ram = cpu->ram;
-			memset([ram dataAt:0], 0, 256);
+			memset([ram dataAt:0], 0, 512);
 			stack = cpu->stack;
+			stack.size = 128;
 			stack.base = ram.size - stack.size;
-			stack.size = 64;
 			[cpu setReg:YASLRegisterIIP value:0];
+			[cpu setReg:YASLRegisterISP value:stack.base];
 		});
 
 		it(@"should process different operand types & placement", ^{

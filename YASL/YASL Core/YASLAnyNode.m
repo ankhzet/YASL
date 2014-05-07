@@ -11,8 +11,11 @@
 
 @implementation YASLAnyNode
 
+- (NSString *) nodeType {
+	return [NSString stringWithFormat:@"%@:%@", [super nodeType], [self description]];
+}
 
-- (NSString *) description {
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
 	return @"Any";
 }
 

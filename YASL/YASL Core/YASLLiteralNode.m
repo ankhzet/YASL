@@ -12,8 +12,12 @@
 
 @implementation YASLLiteralNode
 
-- (NSString *) description {
-	return [NSString stringWithFormat:@"'%@'%@", self.literal, self.discard ? @"!" : @""];
+- (NSString *) nodeType {
+	return [NSString stringWithFormat:@"%@:%@", [super nodeType], [self description]];
+}
+
+- (NSString *) unsafeDescription:(NSMutableSet *)circular {
+	return [NSString stringWithFormat:@"'%@'", self.literal];
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
