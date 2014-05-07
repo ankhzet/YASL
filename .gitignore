@@ -4,3 +4,5 @@
 Pods/Pods.xcodeproj/xcuserdata/ankh.xcuserdatad/xcschemes/xcschememanagement.plist
 
 Pods/Pods.xcodeproj/xcuserdata/ankh.xcuserdatad/xcschemes/xcschememanagement.plist
+
+*.plist

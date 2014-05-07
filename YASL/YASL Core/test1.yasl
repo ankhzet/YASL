@@ -1,0 +1,67 @@
+script "test";
+
+int test1() {
+	return 1;
+}
+
+int test2(int a, b; bool c) {
+	return c ? a + b : a - b;
+}
+
+int test3(int a, b; bool c) {
+	int d = a + b;
+	if (!c)
+		d += b;
+		
+	if (a > b)
+		d -= a;
+	else
+		d += a;
+		
+	d = a * d + c ? a : b - 1;
+	
+	return -d;
+}
+
+bool test4(int a, b) {
+	int c = a * b, d = 0;
+	while (c-- > 0) {
+		d += b;
+		a--;
+	}
+	
+	for (int i = 0; i < d; i++)
+		b++;
+
+	return a > b ? d : -d;
+}
+
+int a, b, c;
+
+void test5() {
+	a = b - c;
+}
+
+int main(void *args) {
+	int r1 = test1();
+	int sum1 = test2(2, 3, true);
+	int sub1 = test2(2, 3, false);
+
+	int ifs1 = test3(4, 5, true);
+	int ifs2 = test3(4, 5, false);
+	
+	bool cycles1 = test4(6, 7);
+	bool cycles2 = test4(666, 7);
+
+	a = 100;
+	b = 1000;
+	c = 696;
+	test5();
+	
+	if (a == b - c)
+		return 0;
+	else {
+		// raise @"";
+		return 1;
+	}
+}

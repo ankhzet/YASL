@@ -1,19 +1,19 @@
-/**/@start = translation-unit;
+@start = translation-unit;
 
-/**/translation-unit = script-declaration external-declaration*;
-/**/script-declaration = 'script'! String ';'!;
+translation-unit = script-declaration external-declaration*;
+script-declaration = 'script'! String ';'!;
 
-/**/external-declaration = function-definition | declaration ';'!;
+external-declaration = function-definition | declaration ';'!;
 
-/**/function-definition = declaration-specifier* declarator declaration* compound-statement;
+function-definition = declaration-specifier* declarator declaration* compound-statement;
 
-/**/pointer = '*'! pointer?;
+pointer = '*'! pointer?;
 
 /* *** Expressions *** */
 
-/**/constant-expression = conditional-expression;
+constant-expression = conditional-expression;
 
-/**/conditional-expression = logical-or-expression | ternar-expression;
+conditional-expression = logical-or-expression | ternar-expression;
 ternar-expression = logical-or-expression '?'! expression ':'! conditional-expression;
 
 logical-or-expression = logical-and-expression ('||'! logical-and-expression)*;

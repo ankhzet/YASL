@@ -14,3 +14,18 @@
 	#import <UIKit/UIKit.h>
 	#import <Foundation/Foundation.h>
 #endif
+
+#define USECUSTOMLOGS 1
+
+#ifdef USECUSTOMLOGS
+#define NSLog NSLogShort
+
+#endif
+
+#define NSLogShort(format, ...) \
+{\
+NSMutableString *formattedString = [[NSString stringWithFormat:format, ##__VA_ARGS__] mutableCopy];\
+[formattedString appendString:@"\n"];\
+[[NSFileHandle fileHandleWithStandardOutput]\
+ writeData: [formattedString dataUsingEncoding: NSUTF8StringEncoding]];\
+}
