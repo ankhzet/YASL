@@ -8,11 +8,16 @@
 
 #import "YASLAssembly.h"
 
-@class YASLGrammarNode;
+@class YASLGrammar;
 @interface YASLCommonAssembler : YASLAssembly
 
-- (BOOL) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammarNode *)grammar;
+@end
 
-- (YASLAssembly *) processAssembly;
+@interface YASLCommonAssembler (AssemblingAndProcessing)
+
+/*! Assemble tokenized source with specified grammar.
+ @return Resulting assembly.
+ */
+- (YASLAssembly *) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar;
 
 @end

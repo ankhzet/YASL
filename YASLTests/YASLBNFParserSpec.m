@@ -9,6 +9,7 @@
 
 #import "Kiwi.h"
 #import "YASLBNFParser.h"
+#import "YASLGrammar.h"
 #import "YASLGrammarNode.h"
 #import "YASLSequenceNode.h"
 #import "YASLAssembly.h"
@@ -75,40 +76,36 @@ describe(@"YASLBNFParser", ^{
 
 		YASLBNFParser *parser = [[YASLBNFParser alloc] initWithSource:grammarSrc];
 
-		YASLGrammarNode *grammar = [parser buildGrammar];
+		YASLGrammar *grammar = [parser buildGrammar];
 		[[grammar shouldNot] beNil];
-		[[grammar should] beKindOfClass:[YASLSequenceNode class]];
-		[[((YASLSequenceNode *)grammar).subnodes should] haveCountOf:2];
+		[[grammar should] beKindOfClass:[YASLGrammar class]];
+		[[[grammar.allRules allKeys] should] haveCountOf:11];
 	});
 
 	it(@"should properly parse & process grammars with grammar factory", ^{
-		YASLGrammarNode *grammarRoot = [YASLGrammarFactory loadGrammar:@"BNF"];
+		YASLGrammar *grammarRoot = [YASLGrammarFactory loadGrammar:@"BNF"];
 
 		[[grammarRoot shouldNot] beNil];
-		[[grammarRoot should] beKindOfClass:[YASLGrammarNode class]];
+		[[grammarRoot should] beKindOfClass:[YASLGrammar class]];
 		[[grammarRoot.name should] equal:@"start"];
 
-		YASLGrammarNode *grammarRoot2 = [YASLGrammarFactory loadGrammar:@"BNF"];
+		YASLGrammar *grammarRoot2 = [YASLGrammarFactory loadGrammar:@"BNF"];
 
 		[[grammarRoot2 should] beIdenticalTo:grammarRoot];
 
 		YASLBNFParser *sourceParser = [[YASLBNFParser alloc] initWithSource:grammarSrc2];
 
 		BNFTest *processor = [BNFTest new];
-		BOOL state = [processor assembleSource:sourceParser withGrammar:grammarRoot];
+		YASLAssembly *assembly = [processor assembleSource:sourceParser withGrammar:grammarRoot];
 
-		[[theValue(state) should] beYes];
-
-		YASLAssembly *result = [processor processAssembly];
-		[[result shouldNot] beNil];
-		
+		[[assembly shouldNot] beNil];
 	});
 
 	it(@"should properly load YASL grammar", ^{
-		YASLGrammarNode *grammarRoot = [YASLGrammarFactory loadGrammar:@"YASL"];
+		YASLGrammar *grammarRoot = [YASLGrammarFactory loadGrammar:@"YASL"];
 
 		[[grammarRoot shouldNot] beNil];
-		[[grammarRoot should] beKindOfClass:[YASLGrammarNode class]];
+		[[grammarRoot should] beKindOfClass:[YASLGrammar class]];
 		[[grammarRoot.name should] equal:@"start"];
 
 	});

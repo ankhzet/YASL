@@ -18,6 +18,7 @@
 #import "YASLLiteralNode.h"
 #import "YASLIdentifierNode.h"
 #import "YASLAnyNode.h"
+#import "YASLGrammar.h"
 
 static id kBoolYes = @"kBoolYes";
 static id kBoolNo = nil;
@@ -54,10 +55,15 @@ static id kRBraceTerm = @")";
 		@"Any"       : [YASLAnyNode new],
 		};
 
+	for (NSString *name in [builtInKinds allKeys]) {
+    YASLGrammarNode *node = builtInKinds[name];
+		node.name = name;
+	}
+
 	return self;
 }
 
-- (YASLGrammarNode *) buildGrammar {
+- (YASLGrammar *) buildGrammar {
 	YASLAssembly *assembly = [YASLAssembly new];
 
 	[self tokenizeAll];
@@ -76,7 +82,7 @@ static id kRBraceTerm = @")";
 
 	//TODO: process all rules
 	NSDictionary *rules = [assembly pop];
-	id root = rules[rootRule];
+	YASLGrammarNode *root = rules[rootRule];
 	if (!root)
 		[self raiseError:@"Failed to parse root rule \"%@\"", rootRule];
 
@@ -121,7 +127,12 @@ static id kRBraceTerm = @")";
     rootNode.name = ruleName;
 	}
 
-	[assembly push:root];
+	YASLGrammar *grammar = [YASLGrammar new];
+	grammar.name = root.name;
+	grammar.rootNode = root;
+	grammar.allRules = rules;
+
+	[assembly push:grammar];
 	return kBoolYes;
 }
 

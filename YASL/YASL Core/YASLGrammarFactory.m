@@ -7,7 +7,7 @@
 //
 
 #import "YASLGrammarFactory.h"
-#import "YASLGrammarNode.h"
+#import "YASLGrammar.h"
 #import "YASLBNFParser.h"
 
 YASLUnifiedFileType const YASLUnifiedFileTypeGrammar = @"grammar";
@@ -36,35 +36,35 @@ YASLUnifiedFileType const YASLUnifiedFileTypeGrammar = @"grammar";
 	return instance;
 }
 
-- (YASLGrammarNode *) getGrammar:(NSString *)grammarName {
+- (YASLGrammar *) getGrammar:(NSString *)grammarName {
 	return grammars[grammarName];
 }
 
-+ (YASLGrammarNode *) loadGrammar:(NSString *)grammarName {
++ (YASLGrammar *) loadGrammar:(NSString *)grammarName {
 	YASLGrammarFactory *factory = [self sharedFactory];
 
-	YASLGrammarNode *grammar = [factory getGrammar:grammarName];
+	YASLGrammar *grammar = [factory getGrammar:grammarName];
 	if (!grammar) {
-		YASLGrammarNode *bnfGrammar = grammar = [factory loadBNF:grammarName];
+		YASLGrammar *bnfGrammar = grammar = [factory loadBNF:grammarName];
 		if (!bnfGrammar)
 			bnfGrammar = (id)[NSNull null];
 
 		[factory addGrammar:bnfGrammar withName:grammarName];
 	} else
-		if (![grammar isKindOfClass:[YASLGrammarNode class]]) {
+		if (![grammar isKindOfClass:[YASLGrammar class]]) {
 			return nil;
 		}
 
 	return grammar;
 }
 
-- (YASLGrammarNode *) addGrammar:(YASLGrammarNode *)grammar withName:(NSString *)grammarName {
-	YASLGrammarNode *old = [self getGrammar:grammarName];
+- (YASLGrammar *) addGrammar:(YASLGrammar *)grammar withName:(NSString *)grammarName {
+	YASLGrammar *old = [self getGrammar:grammarName];
 	grammars[grammarName] = grammar;
 	return old;
 }
 
-- (YASLGrammarNode *) loadBNF:(NSString *)grammarName {
+- (YASLGrammar *) loadBNF:(NSString *)grammarName {
 	NSURL *sourceURL = [[NSBundle mainBundle] URLForResource:grammarName withExtension:YASLUnifiedFileTypeGrammar];
 	if (!sourceURL) {
 		NSLog(@"Invalid resource name: \"%@\"", grammarName);
@@ -83,7 +83,7 @@ YASLUnifiedFileType const YASLUnifiedFileTypeGrammar = @"grammar";
 	}
 
 	YASLBNFParser *parser = [[YASLBNFParser alloc] initWithSource:source];
-	YASLGrammarNode *grammarRoot = [parser buildGrammar];
+	YASLGrammar *grammarRoot = [parser buildGrammar];
 	if (!grammarRoot) {
 		NSException *e;
 		while ((e = [parser popException])) {

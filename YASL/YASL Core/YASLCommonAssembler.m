@@ -9,6 +9,7 @@
 #import "YASLCommonAssembler.h"
 #import "YASLAssemblyNode.h"
 #import "YASLGrammarNode.h"
+#import "YASLGrammar.h"
 #import "YASLTokenizer.h"
 #import "YASLToken.h"
 #import "NSObject+TabbedDescription.h"
@@ -65,36 +66,49 @@ NSString *const kProcessorSelectorSignature = @"processAssembly:node%@:";
 	return YES;
 }
 
-#pragma mark - Assembling
+@end
 
-- (BOOL) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammarNode *)grammar {
+@implementation YASLCommonAssembler (AssemblingAndProcessing)
+
+- (YASLAssembly *) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar {
 	YASLAssembly *tokensAssembly = [YASLAssembly assembleTokens:tokenized];
 	if (![tokensAssembly notEmpty])
 		return NO;
 
-	[grammar walkTreeWithBlock:^BOOL(YASLCommonAssembler *assembler, YASLGrammarNode *node) {
-		if (node.name) {
-			[assembler linkProcessorSelectorWithName:node.name];
-		}
-		return YES;
-	} andUserData:self];
+	for (YASLGrammarNode *node in [grammar.allRules allValues]) {
+		[self linkProcessorSelectorWithName:node.name];
+	}
 
-	return [grammar match:tokensAssembly andAssembly:self];
+	BOOL result = [grammar match:tokensAssembly andAssembly:self];
+
+	if (result) {
+		if ([tokensAssembly notEmpty]) {
+			return nil;
+		}
+
+		if (!([self processInAssembly:tokensAssembly toOutAssembly:outAssembly] && [outAssembly notEmpty]))
+			[self raiseError:@"Source assemble failed"];
+
+		return outAssembly;
+	} else
+		[self reRaise];
+
+	return nil;
 }
 
 #pragma mark - Processing assembly
 
-- (YASLAssembly *) processAssembly {
+- (BOOL) processInAssembly:(YASLAssembly *)inAssembly toOutAssembly:(YASLAssembly *)outAssembly {
 	if (![self notEmpty])
 		return NO;
 
 	YASLAssemblyNode *node = [self pop];
-	return [self processNode:node] ? node.tokensAssembly : nil;
+	return [self processNode:node withInAssembly:inAssembly outAssembly:outAssembly];
 }
 
-- (BOOL) processNode:(YASLAssemblyNode *)node {
+- (BOOL) processNode:(YASLAssemblyNode *)node withInAssembly:(YASLAssembly *)inAssembly outAssembly:(YASLAssembly *)outAssembly {
 	while ([node.assembly notEmpty])
-		if (![self processNode:[node.assembly pop]])
+		if (![self processNode:[node.assembly pop] withInAssembly:inAssembly outAssembly:outAssembly])
 			return NO;
 
 	YASLAssembly *tokensAssembly = node.tokensAssembly;

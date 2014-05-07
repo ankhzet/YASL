@@ -15,6 +15,4 @@
 /*! Add subnode to this node. */
 - (void) addSubNode:(YASLGrammarNode *)subnode;
 
-- (BOOL) hasChild:(YASLGrammarNode *)child;
-
 @end

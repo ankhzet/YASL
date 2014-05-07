@@ -8,9 +8,9 @@
 
 #import "YASLTokenizer.h"
 
-@class YASLGrammarNode;
+@class YASLGrammar;
 @interface YASLBNFParser : YASLTokenizer
 
-- (YASLGrammarNode *) buildGrammar;
+- (YASLGrammar *) buildGrammar;
 
 @end
