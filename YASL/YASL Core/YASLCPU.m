@@ -157,6 +157,7 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 		case OPC_SUB: simpleSetter(threadData, op1, *op1 - *op2); break;
 		case OPC_MUL: simpleSetter(threadData, op1, *op1 * *op2); break;
 		case OPC_DIV: simpleSetter(threadData, op1, *op1 / *op2); break;
+		case OPC_RST: simpleSetter(threadData, op1, *op1 % *op2); break;
 		case OPC_INC:	simpleSetter(threadData, op1, ++(*op1)); break;
 		case OPC_DEC: simpleSetter(threadData, op1, --(*op1)); break;
 		case OPC_MOV: simpleSetter(threadData, op1, *op2); break;
@@ -169,19 +170,29 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 		case OPC_SHR: simpleSetter(threadData, op1, *op1 >> *op2); break;
 
 			// stack
-		case OPC_PUSH: [stack push:*op1]; break;
-		case OPC_POP : simpleSetter(threadData, op1, [stack pop]); break;
+		case OPC_PUSH : [stack push:*op1]; break;
+		case OPC_POP  : simpleSetter(threadData, op1, [stack pop]); break;
+		case OPC_PUSHV: [stack pushSpace:*op1]; break;
+		case OPC_POPV : [stack popSpace:*op1]; break;
 
-		case OPC_SAVE:
+		case OPC_SAVE :
 			for (int r = REG_INDEX(instr->r1); r <= REG_INDEX(instr->r2); r++) {
 				[stack push:threadData->registers[r]];
 			}
 			break;
-		case OPC_LOAD:
+		case OPC_LOAD :
 			for (int r = REG_INDEX(instr->r1); r >= REG_INDEX(instr->r2); r--) {
 				threadData->registers[r] = [stack pop];
 			}
 			break;
+
+		case OPC_CVFI: simpleSetter(threadData, op1, (YASLInt)(*((YASLFloat *)op1))); break;
+		case OPC_CVIF: simpleSetter(threadData, op1, (YASLFloat)(*((YASLInt *)op1))); break;
+		case OPC_CVCF: simpleSetter(threadData, op1, (YASLFloat)(*((YASLChar *)op1))); break;
+		case OPC_CVFC: simpleSetter(threadData, op1, (YASLChar)(*((YASLFloat *)op1))); break;
+		case OPC_CVIB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLInt *)op1))); break;
+		case OPC_CVFB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLFloat *)op1))); break;
+		case OPC_CVCB: simpleSetter(threadData, op1, (YASLBool)(!!*((YASLChar *)op1))); break;
 
 		default:
 			switch (instr->opcode) {
@@ -193,6 +204,11 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 				}
 				case OPC_RET: {
 					*ip = [stack pop];
+					break;
+				}
+				case OPC_RETV: {
+					*ip = [stack pop];
+					[stack setTop:[stack top] + *op1];
 					break;
 				}
 					// native functions call
@@ -256,6 +272,33 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 	}
 	if (stackOldTop != stack.top) *sp = stack.top;
 	if (stackOldTop != *sp) stack.top = *sp;
+}
+
+- (YASLInt) disassemblyAtIP:(YASLInt)ip Instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2 {
+	threadData->halt = false;
+
+	YASLInt *_ip = &ip;
+
+	*instr = [ram dataAt:*_ip];
+	*_ip += sizeof(YASLCodeInstruction);
+
+	if ((*instr)->opcode == OPC_NOP) {
+		return ip;
+	}
+
+	YASLInt tmp1 = 0xF0, tmp2 = 0x0F;
+	switch ((*instr)->type) {
+		case YASLOperandCountBinary: {
+			*op2 = SimpleGetOperandBlock(self, _ip, &tmp1, (*instr)->operand2, (*instr)->r2);
+		}
+		case YASLOperandCountUnary: {
+			*op1 = SimpleGetOperandBlock(self, _ip, &tmp2, (*instr)->operand1, (*instr)->r1);
+			break;
+		}
+		default:
+			break;
+	}
+	return ip;
 }
 
 - (void) registerNativeFunctions {

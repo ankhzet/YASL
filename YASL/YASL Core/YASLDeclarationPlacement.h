@@ -7,18 +7,32 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "YASLDeclarationScope.h"
 
 typedef NS_ENUM(NSUInteger, YASLDeclarationPlacementType) {
 	YASLDeclarationPlacementTypeInCode,
 	YASLDeclarationPlacementTypeOnStack,
 };
 
-@class YASLLocalDeclaration;
+@class YASLLocalDeclaration, YASLDeclarationScope;
 @interface YASLDeclarationPlacement : NSObject
 
-- (YASLDeclarationPlacementType) placementType;
+@property (nonatomic) YASLDeclarationPlacement *chained;
+@property (nonatomic) YASLDeclarationPlacementType placementType;
 
-- (void) calcPlacementForDeclaration:(YASLLocalDeclaration *)declaration inScopesManager:(id<YASLDeclarationScopeProtocol>)scopes;
+@property (nonatomic) BOOL offsetChildsByLocals;
+@property (nonatomic) BOOL offsetByParentLocals;
+
++ (instancetype) placementWithType:(YASLDeclarationPlacementType)type;
+- (YASLDeclarationPlacement *) chain:(YASLDeclarationPlacement *)next;
+
+/*! All child scopes won't be ofsetted by receiver locals. */
+- (YASLDeclarationPlacement *) notOfsettedChildsByLocals;
+/*! Receiver will be offsetted by it's parents locals. */
+- (YASLDeclarationPlacement *) ofsettedByParent;
+
+
+- (void) calcPlacementForDeclaration:(YASLLocalDeclaration *)declaration;
+- (void) calcPlacementForScope:(YASLDeclarationScope *)scope;
+- (void) offset:(NSInteger)offset scope:(YASLDeclarationScope *)scope;
 
 @end

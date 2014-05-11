@@ -8,6 +8,7 @@
 
 #import "YASLEventsAPI.h"
 #import "YASLNativeFunction.h"
+#import "YASLDataType.h"
 
 NSString *NATIVE_EVENT_OPEN = @"";
 
@@ -104,7 +105,7 @@ NSString *NATIVE_EVENT_OPEN = @"";
 
 	[self registerNativeFunction:@"createEvent" withParamCount:3 returnType:YASLAPITypeHandle withSelector:@selector(n_CreateEvent:params:)];
 	[self registerNativeFunction:@"signalEvent" withParamCount:2 returnType:YASLAPITypeHandle withSelector:@selector(n_SignalEvent:params:)];
-	[self registerNativeFunction:@"closeEvent" withParamCount:1 returnType:YASLAtomicTypeBool withSelector:@selector(n_CloseEvent:params:)];
+	[self registerNativeFunction:@"closeEvent" withParamCount:1 returnType:YASLBuiltInTypeIdentifierBool withSelector:@selector(n_CloseEvent:params:)];
 }
 
 - (YASLInt) n_CreateEvent:(YASLNativeFunction *)native params:(void *)paramsBase {

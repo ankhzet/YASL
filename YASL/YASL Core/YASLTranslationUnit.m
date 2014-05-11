@@ -7,15 +7,14 @@
 //
 
 #import "YASLTranslationUnit.h"
+#import "YASLCoreLangClasses.h"
 
 @implementation YASLTranslationUnit
 
-- (id)init {
-	if (!(self = [super init]))
-		return self;
-
-	_labels = [NSMutableDictionary dictionary];
-	return self;
++ (instancetype) unitInScope:(YASLDeclarationScope *)scope withName:(NSString *)name {
+	YASLTranslationUnit *unit = [YASLTranslationUnit nodeInScope:scope withType:YASLTranslationNodeTypeRoot];
+	unit.name = name;
+	return unit;
 }
 
 @end

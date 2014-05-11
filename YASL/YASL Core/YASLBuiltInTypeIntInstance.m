@@ -15,7 +15,7 @@
 	if (!(self = [super init]))
 		return self;
 
-	self.name = @"int";
+	self.name = YASLBuiltInTypeIdentifierInt;
 	self.defined = YES;
 	return self;
 }

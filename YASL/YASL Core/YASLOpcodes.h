@@ -17,6 +17,7 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_SUB,
 	OPC_MUL,
 	OPC_DIV,
+	OPC_RST,
 	OPC_INC,
 	OPC_DEC,
 	OPC_MOV,
@@ -30,7 +31,9 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 
 	// stack
 	OPC_PUSH,
+	OPC_PUSHV,
 	OPC_POP,
+	OPC_POPV,
 	OPC_SAVE,		// save registers r1-r2 to stack, from lower to higher, ex: save r1-r3
 	OPC_LOAD,		// restore registers r1-r2 from stack, from higher to lover, ex: load r3-r0
 
@@ -38,6 +41,7 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	// routins
 	OPC_CALL,
 	OPC_RET,
+	OPC_RETV, // return and move stack pointer
 	OPC_NATIV,
 
 	// branching
@@ -50,6 +54,15 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_JGE,
 	OPC_JLE,
 
+	OPC_CVIF, // convert int > float
+	OPC_CVIB, // convert int > bool
+	OPC_CVFI, // convert float > int
+	OPC_CVFB, // convert float > bool
+	OPC_CVFC, // convert float > char
+	OPC_CVCF, // convert char > float
+	OPC_CVCB, // convert char > bool
+
+	OPC_HALT,
 	YASLOpcodesMAX
 };
 

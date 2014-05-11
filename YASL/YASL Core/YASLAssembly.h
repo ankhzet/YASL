@@ -53,6 +53,10 @@
 /*! If top stack object equals to `marker` - method returns nill, else - pops it out from stack, like as -[pop].  */
 - (id) popTill:(id)marker;
 - (id) popTillChunkMarker;
+/*! Pushes back last popped object (all discarded objects in popped stack will be ignored.
+ @return last popped object or nil, if no more objects.
+ */
+- (id) pushBack;
 
 /*! Returns array of objects, pushed onto stack after specified object. If object not found - array of all previously popped objects returned. */
 - (NSArray *) objectsAbove:(id)marker;

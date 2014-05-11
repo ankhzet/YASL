@@ -26,87 +26,94 @@
 		[([top isKindOfClass:expClass] ? operands : operators) push:top];
 
 
-	YASLTranslationExpression *expression;
+	YASLTranslationExpression *left = [operands pop];
 
 	if ([operators notEmpty]) {
-		YASLTranslationExpression *left = [operands pop];
-
 		while ([operators notEmpty]) {
 			NSString *operator = [(YASLToken *)[operators pop] value];
+//			[YASLTranslationExpression ]
 			YASLTranslationExpression *right = [operands pop];
 			if (!right) {
 				right = left;
-				left = [YASLTranslationConstant constantWithType:YASLConstantTypeInt andValue:@(0)];
+				left = [YASLTranslationConstant constantInScope:self.declarationScope.currentScope withType:left.returnType andValue:@(0)];
 			}
-			expression = [YASLTranslationExpression expressionWithType:type andSpecifier:operator];
+			YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:type andSpecifier:operator];
 			[expression addSubNode:left];
 			[expression addSubNode:right];
 			left = expression;
 		}
+	}
 
-		expression = left;
-	} else
-		expression = [operands pop];
-
-	return expression;
+	return left;
 }
 
+/*!@brief Build espression node for `additive` expression: operand ([+-] operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeAdditiveExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeAdditive];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `multiplicative` expression: operand ([*%/] operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeMultiplicativeExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeMultiplicative];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `logical or` expression: operand ('||' operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeLogicalOrExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeLogicalOr];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `logical and` expression: operand ('&&' operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeLogicalAndExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeLogicalAnd];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `aratmetic and` expression: operand ('&' operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeAndExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeInclusiveAnd];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `exclusive or` expression: operand ('^' operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeExclusiveOrExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeExclusiveOr];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `arithmetic or` expression: operand ('|' operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeInclusiveOrExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeInclusiveOr];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `arithmetic shift` expression: operand (('<<' | '>>') operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeShiftExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeShift];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `arithmetic relational` expression: operand (( '<' | '<=' | '>' | '>=' ) operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeRelationalExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeRelational];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `arithmetic relational` expression: operand (( '!=' | '==' ) operand)* . */
 - (void) processAssembly:(YASLAssembly *)a nodeEqualityExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeRelational];
+	YASLTranslationExpression *expression = [self fetchExpressionFromAssembly:a forExpressionType:YASLExpressionTypeBinary];
 	[a push:expression];
 }
 
+/*!@brief Build espression node for `ternar` expression: condition ? true-expression : false-expression . */
 - (void) processAssembly:(YASLAssembly *)a nodeTernarExpression:(YASLGrammarNode *)node {
 	YASLTranslationExpression *elseExpression = [a pop];
 	YASLTranslationExpression *ifExpression = [a popTillChunkMarker];
 	if (ifExpression) {
 		YASLTranslationExpression *condition = [a pop];
-		YASLTranslationExpression *ternar = [YASLTernarExpression ternarExpression];
+		YASLTranslationExpression *ternar = [YASLTernarExpression ternarExpressionInScope:self.declarationScope.currentScope];
 		[ternar addSubNode:condition];
 		[ternar addSubNode:ifExpression];
 		[ternar addSubNode:elseExpression];
@@ -115,20 +122,68 @@
 	[a push:elseExpression];
 }
 
+/*!@brief Build espression node for `constant` expression: (numeric | string | boolean) constant . */
 - (void) processAssembly:(YASLAssembly *)a nodeConstantExpression:(YASLGrammarNode *)node {
 	YASLTranslationExpression *expression = [a top];
 	//TODO: constantnes check here
-	YASLTranslationExpression *folded = [expression foldConstantExpression];
+	YASLTranslationExpression *folded = [expression foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
 	if (folded != expression) {
 		[a pop];
 		[a push:folded];
 	}
 }
 
+/*!@brief Build espression node for `typecast` expression: '(' data-type ')' operand . */
 - (void) processAssembly:(YASLAssembly *)a nodeTypeCast:(YASLGrammarNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	YASLDataType *castType = [a pop];
-	expression.returnType = castType;
+	YASLTranslationExpression *castExpression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeTypecast andSpecifier:nil];
+	castExpression.returnType = castType;
+	[castExpression addSubNode:expression];
+	[a push:castExpression];
+}
+
+#pragma mark - Unary
+
+- (void) processAssembly:(YASLAssembly *)a nodeUnaryOperatorExpression:(YASLGrammarNode *)node {
+	YASLTranslationExpression *expression = [a pop];
+	YASLToken *operator = [a pop];
+//	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operator.value];
+	YASLTranslationExpression *unaryExpression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeUnary andSpecifier:operator.value];
+	[unaryExpression addSubNode:expression];
+	[a push:unaryExpression];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeIncrementDecrementExpression:(YASLGrammarNode *)node {
+	YASLToken *operatorToken = [a pop];
+	YASLTranslationExpression *expression = [a pop];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken.value];
+	YASLTranslationExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:self.declarationScope.currentScope withSpecifier:operator];
+	[unaryExpression addSubNode:expression];
+	[a push:unaryExpression];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixIncrementDecrement:(YASLGrammarNode *)node {
+	[a pop];
+	YASLToken *operatorToken = [a pop];
+	YASLTranslationExpression *expression = [a pop];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken.value];
+	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:self.declarationScope.currentScope withSpecifier:operator];
+	[unaryExpression addSubNode:expression];
+	unaryExpression.postfix = YES;
+	[a push:unaryExpression];
+}
+
+#pragma mark - Variables
+
+- (void) processAssembly:(YASLAssembly *)a nodeVariable:(YASLGrammarNode *)node {
+	YASLToken *variable = [a pop];
+	YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:variable.value];
+	if (!declaration) {
+		[YASLGrammarNode raiseMatch:a error:@"Variable \"%@\" undefined",variable.value];
+	}
+	YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeVariable andSpecifier:variable.value];
+	expression.returnType = declaration.dataType;
 	[a push:expression];
 }
 
@@ -139,54 +194,71 @@
 	YASLToken *token = [a pop];
 
 	NSNumber *value;
-	YASLConstantType type = [constantType unsignedIntegerValue];
+	YASLDataType *dataType;
+	YASLBuiltInType type = [constantType unsignedIntegerValue];
+	dataType = [self.declarationScope typeByName:[YASLDataType builtInTypeToTypeIdentifier:type]];
 	switch (type) {
-		case YASLConstantTypeInt:
+		case YASLBuiltInTypeInt:
 			value = @([token asInteger]);
 			break;
-
-		case YASLConstantTypeFloat:
+		case YASLBuiltInTypeFloat:
 			value = @([token asFloat]);
 			break;
-
-		case YASLConstantTypeBool:
+		case YASLBuiltInTypeBool:
 			value = @([token asBool]);
 			break;
-
-		case YASLConstantTypeChar:
+		case YASLBuiltInTypeChar:
 			value = @([[token asString] characterAtIndex:0]);
 			break;
-
-		case YASLConstantTypeEnum:
-			//TODO: Enum handling
-//			value = @([someenummanager enumFromIdentifier:token.value]);
-			break;
+//		case YASLConstantTypeEnum:
+//			//TODO: Enum handling
+////			value = @([someenummanager enumFromIdentifier:token.value]);
+//			break;
 
 		default:
 			break;
 	}
-	YASLTranslationConstant *constant = [YASLTranslationConstant constantWithType:type andValue:value];
+	YASLTranslationConstant *constant = [YASLTranslationConstant constantInScope:self.declarationScope.currentScope withType:dataType andValue:value];
 	[a push:constant];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeIntegerConstant:(YASLGrammarNode *)node {
-	[a push:@(YASLConstantTypeInt)];
+	[a push:@(YASLBuiltInTypeInt)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeFloatConstant:(YASLGrammarNode *)node {
-	[a push:@(YASLConstantTypeFloat)];
+	[a push:@(YASLBuiltInTypeFloat)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeBooleanConstant:(YASLGrammarNode *)node {
-	[a push:@(YASLConstantTypeBool)];
+	[a push:@(YASLBuiltInTypeBool)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeCharacterConstant:(YASLGrammarNode *)node {
-	[a push:@(YASLConstantTypeChar)];
+	[a push:@(YASLBuiltInTypeChar)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeEnumerationConstant:(YASLGrammarNode *)node {
-	[a push:@(YASLConstantTypeEnum)];
+	[a push:@(YASLBuiltInTypeInt)];
+}
+
+#pragma mark Methods
+
+- (void) processAssembly:(YASLAssembly *)a nodeMethodCallExpr:(YASLGrammarNode *)node {
+	[self fetchArray:a];
+	NSArray *params = [a pop];
+	YASLMethodCallExpression *methodCall = [YASLMethodCallExpression methodCallInScope:self.declarationScope.currentScope];
+	for (YASLTranslationExpression *param in params) {
+    [methodCall addSubNode:param];
+	}
+	[a push:methodCall];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixMethodCall:(YASLGrammarNode *)node {
+	YASLMethodCallExpression *methodCall = [a pop];
+	YASLTranslationExpression *address = [a pop];
+	methodCall.methodAddress = address;
+	[a push:methodCall];
 }
 
 @end

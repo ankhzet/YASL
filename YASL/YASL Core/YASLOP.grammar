@@ -1,0 +1,27 @@
+@start = operation-productions;
+operation-productions = operation-production+;
+operation-production = operation-list productions;
+
+// [*, /, %]
+operation-list = '['! operation (','! operation)* ']'!;
+
+// { [int, char] [*] { [int]: int, [float, char]: float,} [bool] {[bool]: bool} }
+productions = '{'! left-operand-productions* '}'!;
+
+// [int, char] [*] { [int]: int, [float, char]: float,}
+left-operand-productions = operand-types-list operations-filter? operand-productions;
+operations-filter = operation-list;
+
+// [int, char]
+operand-types-list = '['! operand (','! operand)* ']'!;
+
+// { [int]: int, [float, char]: float,}
+operand-productions = '{'! right-operand-productions* '}'!;
+
+// [int, char]: int,
+right-operand-productions = operand-types-list operations-filter? ':'! cast-operand ','!;
+
+cast-operand = (operand '->'!)? operand;
+
+operand = Identifier; // int, float, bool, char
+operation = Symbol; // + - && >=

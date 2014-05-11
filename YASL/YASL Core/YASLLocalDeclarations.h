@@ -11,10 +11,11 @@
 #import "YASLDeclarationScope.h"
 #import "YASLDeclarationPlacement.h"
 
-@class YASLDeclarationScope, YASLDataTypesManager;
+@class YASLDeclarationScope, YASLDataTypesManager, YASLExpressionSolver;
 @interface YASLLocalDeclarations : NSObject <YASLDataTypesManagerProtocol, YASLDeclarationScopeProtocol>
 
 @property (nonatomic) YASLDataTypesManager *globalTypesManager;
+@property (nonatomic) YASLExpressionSolver *expressionSolver;
 @property (nonatomic) YASLDeclarationScope *currentScope;
 
 + (instancetype) declarationsManagerWithDataTypesManager:(YASLDataTypesManager *)typesManager;

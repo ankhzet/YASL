@@ -7,23 +7,18 @@
 //
 
 #import "YASLTranslationExpression.h"
+#import "YASLAPI.h"
 
-typedef NS_ENUM(NSUInteger, YASLConstantType) {
-	YASLConstantTypeVoid = 0,
-	YASLConstantTypeInt,
-	YASLConstantTypeFloat,
-	YASLConstantTypeBool,
-	YASLConstantTypeChar,
-	YASLConstantTypeEnum,
-
-	YASLConstantTypeMAX
-};
-
+@class YASLDataType;
 @interface YASLTranslationConstant : YASLTranslationExpression
 
-@property (nonatomic) YASLConstantType constantType;
 @property (nonatomic) NSNumber *value;
 
-+ (instancetype) constantWithType:(YASLConstantType)type andValue:(NSNumber *)value;
++ (instancetype) constantInScope:(YASLDeclarationScope *)scope withType:(YASLDataType *)type andValue:(NSNumber *)value;
+
+- (YASLInt) toInteger;
+- (YASLFloat) toFloat;
+- (YASLBool) toBool;
+- (YASLChar) toChar;
 
 @end

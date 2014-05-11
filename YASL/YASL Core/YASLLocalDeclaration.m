@@ -7,9 +7,7 @@
 //
 
 #import "YASLLocalDeclaration.h"
-#import "YASLDataType.h"
-#import "YASLDeclarationInitializer.h"
-#import "YASLAPI.h"
+#import "YASLCoreLangClasses.h"
 
 @implementation YASLLocalDeclaration
 
@@ -22,7 +20,7 @@
 		return self;
 
 	self.identifier = nil;
-	self.declarationInitializer = nil;
+	self.reference = [YASLCodeAddressReference new];
 	return self;
 }
 
@@ -42,8 +40,13 @@
 	return sizeof(YASLInt);
 }
 
+- (void) setIdentifier:(NSString *)identifier {
+	_identifier = identifier;
+	self.reference.name = identifier;
+}
+
 - (NSString *) description {
-	return [NSString stringWithFormat:@"(%@%@%@)", self.dataType ? self.dataType : @"", self.identifier, self.declarationInitializer ? self.declarationInitializer : @"<no value>"];
+	return [NSString stringWithFormat:@"(%@%@%@)", self.dataType ? self.dataType : @"", self.identifier, self.declarator ? self.declarator : @""];
 }
 
 @end

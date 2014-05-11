@@ -14,8 +14,9 @@
 #import "YASLPlacementInCode.h"
 #import "YASLPlacementOnStack.h"
 
+#import "YASLExpressionSolver.h"
+
 @interface YASLLocalDeclarations () {
-	NSMutableArray *scopes;
 	NSMutableDictionary *placements;
 }
 
@@ -31,12 +32,11 @@
 	if (!(self = [super init]))
 		return self;
 
-	scopes = [NSMutableArray array];
-	self.globalTypesManager = nil;
+	_globalTypesManager = nil;
+	_expressionSolver = nil;
 
 	placements = [NSMutableDictionary dictionaryWithObjects:@[[YASLPlacementInCode new], [YASLPlacementOnStack new]]
 																									forKeys:@[@(YASLDeclarationPlacementTypeInCode), @(YASLDeclarationPlacementTypeOnStack)]];
-
 	return self;
 }
 
@@ -55,29 +55,20 @@
 	_globalTypesManager = globalTypesManager;
 	YASLDeclarationScope *globalScope = [self pushScope];
 	globalScope.localDataTypesManager = globalTypesManager;
+
+	self.expressionSolver = [YASLExpressionSolver solverInDeclarationScope:self];
 }
 
 - (YASLDeclarationScope *) pushScope {
 	YASLDeclarationScope *newScope = [YASLDeclarationScope scopeWithParentScope:self.currentScope];
-	[scopes addObject:newScope];
-
 	return self.currentScope = newScope;
 }
 
 - (YASLDeclarationScope *) popScope {
-	if ((self.currentScope = [scopes lastObject]) && ([scopes count] > 1)) // don't allow to pop out global scope
-		[scopes removeLastObject];
+	if (_currentScope.parentScope != nil)
+		self.currentScope = _currentScope.parentScope;
 
 	return self.currentScope;
-}
-
-- (NSArray *) childScopes:(YASLDeclarationScope *)parentScope {
-	NSMutableArray *childs = [NSMutableArray array];
-	for (YASLDeclarationScope *scope in scopes) {
-		if (scope.parentScope == parentScope)
-			[childs addObject:scope];
-	}
-	return childs;
 }
 
 #pragma mark - DataTypesManager interface implementation
@@ -98,6 +89,14 @@
 
 - (YASLLocalDeclaration *) localDeclarationByIdentifier:(NSString *)identifier {
 	return [self.currentScope localDeclarationByIdentifier:identifier];
+}
+
+- (BOOL) isDeclared:(NSString *)identifier inLocalScope:(BOOL)localScope {
+	return [self.currentScope isDeclared:identifier inLocalScope:localScope];
+}
+
+- (NSArray *) localDeclarations {
+	return [self.currentScope localDeclarations];
 }
 
 #pragma mark - Declaration placement

@@ -187,10 +187,24 @@
 	}
 }
 
+- (id) pushBack {
+	id object = [popped lastObject];
+	if (!object)
+		return nil;
+
+	[popped removeLastObject];
+
+	if ([discards mustDiscard:object])
+		return [self pushBack];
+
+	[stack addObject:object];
+	return object;
+}
+
 - (id) pop {
 	id object = [self top];
 	if (object) {
-		[stack removeObject:object];
+		[stack removeLastObject];
 		[popped addObject:object];
 
 		if ([discards mustDiscard:object])
@@ -211,7 +225,7 @@
 			return nil;
 		}
 
-		[stack removeObject:object];
+		[stack removeLastObject];
 		[popped addObject:object];
 
 		if ([discards mustDiscard:object])

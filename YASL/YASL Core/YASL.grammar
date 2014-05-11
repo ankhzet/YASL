@@ -1,9 +1,10 @@
 @start = translation-unit;
 
-translation-unit = script-declaration external-declaration*;
+translation-unit = script-declaration external-declarations;
 script-declaration = 'script'! Identifier ';'!;
 
-external-declaration = declaration ';'! | function-definition | compound-statement;
+external-declarations = external-declaration*;
+external-declaration = declaration ';'! | function-definition;
 
 /* ***** Declarations ***** */
 
@@ -91,11 +92,20 @@ assignment-initializer = assignment-expression;
 
 /* ***** Statements ***** */
 
-compound-statement = '{'! (declaration ';'!)* statement* '}'!;
-
-statement = expression-statement | compound-statement;
+statement = expression-statement | compound-statement | jump-statement | selection-statement;
 
 expression-statement = expression? ';'!;
+compound-statement = '{'! (declaration ';'! | statement)* '}'!;
+
+selection-statement = selection-if;// | selection-switch;
+selection-if = 'if'! '('! expression ')'! statement selection-else?;
+selection-else = 'else'! statement;
+
+jump-statement = (jump-goto | jump-return | continue | break) ';'!;
+jump-goto = 'goto'! Identifier;
+jump-return = 'return'! expression?;
+continue = 'continue'!;
+break = 'break'!;
 
 
 /* ***** Expressions ***** */
@@ -121,26 +131,29 @@ cast-expression = unary-expression | type-cast;
 type-cast = '('! typedef-type ')'! cast-expression;
 
 unary-expression = postfix-expression
-| (unary-increment | unary-decrement) unary-expression
-| unary-operator cast-expression
+| increment-decrement-expression
+| unary-operator-expression
 | sizeof-expression;
+
+unary-operator-expression = unary-operator cast-expression;
+increment-decrement-expression = (unary-increment | unary-decrement) unary-expression;
 
 sizeof-expression = 'sizeof'! (unary-expression | typedef-type);
 
-postfix-expression = primary-expression (array-access-expr
-																				 | assign-access-expr
+postfix-expression = postfix-increment-decrement | postfix-method-call | (primary-expression (array-access-expr
 																				 | prop-access-expr
-																				 | struct-access-expr
-																				 | unary-increment
-																				 | unary-decrement)*;
+																				 | struct-access-expr)*);
+
+postfix-increment-decrement = primary-expression (unary-increment | unary-decrement);
+postfix-method-call = primary-expression method-call-expr;
 
 array-access-expr = '['! expression ']'!;
-assign-access-expr = '('! assignment-expression* ')'!;
+method-call-expr = '('! expression? ')'!;
 prop-access-expr = '.'! Identifier;
 struct-access-expr = '->'! Identifier;
 
 
-primary-expression = Identifier
+primary-expression = variable
 | constant
 | String
 | '('! expression ')'!;
@@ -157,11 +170,13 @@ floating-constant = Float;
 boolean-constant = Bool;
 enumeration-constant = Identifier;
 
+variable = Identifier;
+
 expression = assignment-expression (','! expression)*;
 
 assignment-expression = unary-expression assignment-operator assignment-expression | conditional-expression;
 
-assignment-operator = ('*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '^' | '|')? '=';
+assignment-operator = ('*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '^' | '|')? '='!;
 
 unary-operator = '&' | '*' | '+' | '-' | '~' | '!';
 unary-increment = '++';
@@ -170,4 +185,5 @@ unary-decrement = '--';
 
 /* ***** Function definition ***** */
 
-function-definition = type-specifier declarator compound-statement;
+function-definition = type-specifier declarator function-body;
+function-body = compound-statement;

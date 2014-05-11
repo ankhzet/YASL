@@ -9,6 +9,12 @@
 
 #import "Kiwi.h"
 #import "YASLBasicAssembler.h"
+#import "YASLDisassembler.h"
+#import "YASLCPU.h"
+#import "YASLRAM.h"
+#import "YASLStack.h"
+#import "YASLOpcodes.h"
+#import "YASLCoreLangClasses.h"
 
 SPEC_BEGIN(YASLAssemblerSpec)
 
@@ -32,6 +38,123 @@ describe(@"YASLAssembler", ^{
 	});
 
 
+	it(@"should asemble expressions", ^{
+		NSString *source1 = @"script test;\r\
+		typedef int myInt;\r\
+		int k = 10;\r\
+		myInt l = 20;\r\
+		int func(int param1, param2; bool param3) {\r\
+		int u = 10 * (3 + param2);\r\
+		int j = param1 + u;\
+		if (l > u)\r\
+			return l;\r\
+		j++;\r\
+		return param3 ? j + k : j + 1;\r\
+		}\r\
+		int h = func(2, 3, 9) + 1;\r\
+		";
+
+		YASLDataTypesManager *typeManager = [YASLDataTypesManager new];
+		[typeManager registerType:[YASLBuiltInTypeIntInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeFloatInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeBoolInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeCharInstance new]];
+		YASLLocalDeclarations *globalDeclarationScope = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:typeManager];
+
+		YASLAssembler *assembler = [YASLAssembler new];
+		[assembler setDeclarationScope:globalDeclarationScope];
+
+		YASLTranslationUnit *result1 = [assembler assembleSource:source1];
+		[[result1 shouldNot] beNil];
+		NSLog(@"%@", result1);
+
+
+		YASLDeclarationScope *globalScope = globalDeclarationScope.currentScope;
+
+		YASLAssembly *assembly = [YASLAssembly new];
+		[result1 assemble:assembly unPointer:YES];
+		[globalScope.placementManager calcPlacementForScope:globalScope];
+
+		NSUInteger ramSize = 2048;
+		YASLInt ip = 128;
+		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:ramSize];
+		YASLRAM *ram = cpu->ram;
+		YASLStack *stack = cpu->stack;
+
+		memset([ram dataAt:0], 0, ramSize);
+		stack.size = 128;
+		stack.base = ram.size - stack.size;
+		[cpu setReg:YASLRegisterIIP value:ip];
+		[cpu setReg:YASLRegisterISP value:stack.base];
+
+		void *frame = [ram dataAt:ip], *codePtr = frame;
+		[assembly push:OPC_(HALT)];
+		assembly = [[YASLAssembly alloc] initReverseAssembly:assembly];
+		NSMutableArray *labels = [@[] mutableCopy];
+		while ([assembly notEmpty]) {
+			id top = [assembly pop];
+			if ([top isKindOfClass:[YASLOpcode class]]) {
+				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
+			} else if ([top isKindOfClass:[YASLCodeAddressReference class]]) {
+				YASLCodeAddressReference *ref = top;
+				[labels addObject:@[ref, @(ip + (codePtr - frame))]];
+			}
+		}
+
+//		[globalDeclarationScope.currentScope offsetDeclarationsBy:codePtr - frame];
+
+		NSLog(@"\n\n\n");
+//		[globalScope.placementManager calcPlacementForScope:globalScope];
+		[globalScope.placementManager offset:(ip + (codePtr-frame)) scope:globalScope];
+
+		[globalScope propagateReferences];
+
+		for (NSArray *ref in labels) {
+			((YASLCodeAddressReference *)ref[0]).address = [ref[1] intValue];
+		}
+
+		[assembly restoreFullStack];
+
+		memset([ram dataAt:0], 0, ramSize);
+		codePtr = frame;
+		while ([assembly notEmpty]) {
+			id top = [assembly pop];
+			if ([top isKindOfClass:[YASLOpcode class]]) {
+				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
+			}
+		}
+
+//		assembly = [YASLAssembly new];
+//		[result1 assemble:assembly unPointer:YES];
+//
+//		assembly = [[YASLAssembly alloc] initReverseAssembly:assembly];
+//		memset([ram dataAt:0], 0, 512);
+//		codePtr = frame;
+//		while ([assembly notEmpty]) {
+//			id top = [assembly pop];
+//			if ([top isKindOfClass:[YASLOpcode class]]) {
+//				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
+//			} else if ([top isKindOfClass:[YASLCodeAddressReference class]]) {
+//				[(YASLCodeAddressReference *)top addressResolved:codePtr - frame];
+//			}
+//		}
+//
+//		[assembly restoreFullStack];
+//		codePtr = frame;
+//		while ([assembly notEmpty]) {
+//			id top = [assembly pop];
+//			if ([top isKindOfClass:[YASLOpcode class]]) {
+//				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
+//			} else if ([top isKindOfClass:[YASLCodeAddressReference class]]) {
+////				[(YASLCodeAddressReference *)top addressResolved:codePtr - frame];
+//			}
+//		}
+
+		YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:cpu];
+
+		NSString *trace = [disassembler disassembleFrom:ip to:ip + (codePtr - frame) + 1];
+		NSLog(@"ASM trace:\n%@", trace);
+	});
 });
 
 SPEC_END

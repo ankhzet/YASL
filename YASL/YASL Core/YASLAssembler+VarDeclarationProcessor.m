@@ -17,24 +17,34 @@
 
 	for (YASLLocalDeclaration *declaration in declarations) {
 		declaration.dataType = declarationDataType;
+		YASLTranslationExpression *initializer = declaration.declarator.subnodes[0];
+		YASLTranslationExpression *variable = [initializer leftOperand];
+		variable.returnType = declarationDataType;
+		initializer = [initializer foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
+		declaration.declarator.subnodes[0] = initializer;
+		[a push:declaration.declarator.subnodes[0]];
 	}
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeInitDeclarator:(YASLGrammarNode *)node {
 	id top = [a pop];
-	YASLDeclarationInitializer *initializer = nil;
-	if ([top isKindOfClass:[YASLDeclarationInitializer class]]) {
+	YASLAssignmentExpression *initializer = nil;
+	if ([top isKindOfClass:[YASLAssignmentExpression class]]) {
 		initializer = top;
 		top = [a pop];
 	}
 	YASLTranslationDeclarator *declarator = top;
-	YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:declarator.declaratorIdentifier];
-	if (declaration) {
+	BOOL alreadyDeclared = [self.declarationScope isDeclared:declarator.declaratorIdentifier inLocalScope:YES];
+	if (alreadyDeclared) {
 		[self raiseError:@"\"%@\" already declared", declarator.declaratorIdentifier];
 	}
 
-	declaration = [self.declarationScope newLocalDeclaration:declarator.declaratorIdentifier];
-	declaration.declarationInitializer = initializer;
+	YASLAssignmentExpression *assignment = (id)[initializer leftOperand];
+	initializer.subnodes[0] = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeVariable andSpecifier:declarator.declaratorIdentifier];
+	[initializer addSubNode:assignment];
+	[declarator addSubNode:initializer];
+
+	YASLLocalDeclaration *declaration = [self.declarationScope newLocalDeclaration:declarator.declaratorIdentifier];
 	declaration.declarator = declarator;
 
 	[a push:declaration];
@@ -53,25 +63,27 @@
 - (void) processAssembly:(YASLAssembly *)a nodeAssignmentInitializer:(YASLGrammarNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 
-	YASLDeclarationInitializer *initializer = [YASLDeclarationInitializer initializerWithType:YASLInitializerTypeConstantInitializer andExpression:expression];
+	YASLAssignmentExpression *initializer = [YASLAssignmentExpression assignmentInScope:self.declarationScope.currentScope withSpecifier:YASLExpressionOperatorUnknown];
+	[initializer addSubNode:expression];
 
 	[a push:initializer];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeInitializerList:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [YASLTranslationExpression expressionWithType:YASLExpressionTypeDesignatedInitializer andSpecifier:nil];
-
-	YASLDeclarationInitializer *initializer = [YASLDeclarationInitializer initializerWithType:YASLInitializerTypeArrayInitializer andExpression:expression];
-	YASLDeclarationInitializer *top;
-	NSMutableArray *elements = [@[] mutableCopy];
-	while ((top = [a popTill:a.chunkMarker])) {
-		[elements addObject:top];
-	}
-	for (YASLTranslationNode *element in [elements reverseObjectEnumerator]) {
-		[expression addSubNode:element];
-	}
-
-	[a push:initializer];
+	[self raiseError:@"Array initializer implementation pending"];
+//	YASLTranslationExpression *expression = [YASLTranslationExpression expressionWithType:YASLExpressionTypeDesignatedInitializer andSpecifier:nil];
+//
+//	YASLDeclarationInitializer *initializer = [YASLDeclarationInitializer initializerWithType:YASLInitializerTypeArrayInitializer andExpression:expression];
+//	YASLDeclarationInitializer *top;
+//	NSMutableArray *elements = [@[] mutableCopy];
+//	while ((top = [a popTill:a.chunkMarker])) {
+//		[elements addObject:top];
+//	}
+//	for (YASLTranslationNode *element in [elements reverseObjectEnumerator]) {
+//		[expression addSubNode:element];
+//	}
+//
+//	[a push:initializer];
 }
 
 

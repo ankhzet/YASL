@@ -7,29 +7,113 @@
 //
 
 #import "YASLTranslationConstant.h"
-
-NSString *const YASLConstantTypeNames[YASLConstantTypeMAX] = {
-	[YASLConstantTypeVoid] = @"void",
-	[YASLConstantTypeInt] = @"int",
-	[YASLConstantTypeFloat] = @"float",
-	[YASLConstantTypeBool] = @"bool",
-	[YASLConstantTypeChar] = @"char",
-	[YASLConstantTypeEnum] = @"enum",
-};
+#import "YASLCoreLangClasses.h"
 
 @implementation YASLTranslationConstant
 
-+ (instancetype) constantWithType:(YASLConstantType)type andValue:(NSNumber *)value {
-	YASLTranslationConstant *constant = [self expressionWithType:YASLExpressionTypeConstant andSpecifier:nil];
-	constant.constantType = type;
++ (instancetype) constantInScope:(YASLDeclarationScope *)scope withType:(YASLDataType *)type andValue:(NSNumber *)value {
+	YASLTranslationConstant *constant = [self expressionInScope:scope withType:YASLExpressionTypeConstant andSpecifier:nil];
+	constant.returnType = type;
 	constant.value = value;
 	return constant;
 }
 
 - (NSString *) toString {
-	NSString *type = YASLConstantTypeNames[self.constantType];
+	NSString *type = self.returnType.name;
 	type = type ? type : @"<?>";
 	return [NSString stringWithFormat:@"(%@ %@)", type, self.value];
+}
+
+#pragma mark - Typecast
+
+- (YASLInt) toInteger {
+	switch ([self.returnType builtInType]) {
+		case YASLBuiltInTypeInt:
+			return [self.value integerValue];
+			break;
+		case YASLBuiltInTypeFloat:
+			return [self.value floatValue];
+			break;
+		case YASLBuiltInTypeBool:
+			return [self.value boolValue];
+			break;
+		case YASLBuiltInTypeChar:
+			return [self.value unsignedIntegerValue];
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+- (YASLFloat) toFloat {
+	switch ([self.returnType builtInType]) {
+		case YASLBuiltInTypeInt:
+			return [self.value integerValue];
+			break;
+		case YASLBuiltInTypeFloat:
+			return [self.value floatValue];
+			break;
+		case YASLBuiltInTypeBool:
+			return [self.value boolValue];
+			break;
+		case YASLBuiltInTypeChar:
+			return [self.value unsignedIntegerValue];
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+- (YASLBool) toBool {
+	switch ([self.returnType builtInType]) {
+		case YASLBuiltInTypeInt:
+			return [self.value integerValue];
+			break;
+		case YASLBuiltInTypeFloat:
+			return [self.value floatValue];
+			break;
+		case YASLBuiltInTypeBool:
+			return [self.value boolValue];
+			break;
+		case YASLBuiltInTypeChar:
+			return [self.value unsignedIntegerValue];
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+- (YASLChar) toChar {
+	switch ([self.returnType builtInType]) {
+		case YASLBuiltInTypeInt:
+			return [self.value integerValue];
+			break;
+		case YASLBuiltInTypeFloat:
+			return [self.value floatValue];
+			break;
+		case YASLBuiltInTypeBool:
+			return [self.value boolValue];
+			break;
+		case YASLBuiltInTypeChar:
+			return [self.value unsignedIntegerValue];
+			break;
+		default:
+			break;
+	}
+	return 0;
+}
+
+@end
+
+@implementation YASLTranslationConstant (Assembling)
+
+- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+	YASLOpcode *opcode = OPC_(MOV, REG_(R0), IMM_(self.value));
+	[assembly push:opcode];
+	return YES;
 }
 
 @end

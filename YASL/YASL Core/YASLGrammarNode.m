@@ -13,6 +13,8 @@
 #import "YASLToken.h"
 #import "YASLNonfatalException.h"
 
+#define _VERBOSE_DEBUG
+
 NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 @implementation YASLGrammarNode
@@ -34,13 +36,16 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	id tokensMarker = [match top];
 
 	NSUInteger assemblyState = [assembly pushState];
-	NSUInteger errorState = [assembly pushExceptionStackState];
+//	NSUInteger errorState = [assembly pushExceptionStackState];
 
 	@try {
+#ifdef VERBOSE_DEBUG
 		if (self.name) {
 			NSLog(@"%@:", self.name);
 		}
+#endif
 		BOOL matches = [self matches:match for:assembly];
+#ifdef VERBOSE_DEBUG
 		if (self.name) {
 			NSString *matchedTokensStr = [match stackToStringFrom:tokensMarker till:[match top]];
 			if ([matchedTokensStr length]) {
@@ -48,8 +53,9 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 				NSLog(@"%@%@: %@\n%@\n", YN[@(matches)], self.name, matchedTokensStr, match);
 			}
 		}
+#endif
     if (matches) {
-			[assembly popExceptionStackState:errorState];
+//			[assembly popExceptionStackState:errorState];
 			if (self.discard) {
 				NSArray *tokensArray = [match objectsAbove:[match top] belove:tokensMarker];
 				if ([tokensArray count]) {
@@ -85,12 +91,11 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 			[assembly push:an];
 			return YES;
 		} else
-			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
+			[YASLGrammarNode raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
 	}
 	@catch (YASLNonfatalException *exception) {
-		[assembly pushException:exception];
 		[match popException];
-//		NSLog(@"Assemble error: %@", exception);
+		[assembly pushException:exception];
 	}
 
 	[match popState:state];
@@ -100,17 +105,21 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	return NO;
 }
 
-- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
++ (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
 	va_list args;
   va_start(args, msg);
 	NSString *formatted = [[NSString alloc] initWithFormat:msg arguments:args];
   va_end(args);
 
+	id token = [match top];
+	while (token && ![token isKindOfClass:[YASLToken class]]) {
+		token = [match pushBack];
+	}
 	YASLNonfatalException *exception = [match prepareExceptionObject:formatted];
-	YASLToken *token = [match top];
 	if (token) {
-		exception.atLine = token.line;
-		exception.atCollumn = token.collumn;
+		exception.atLine = ((YASLToken *)token).line;
+		exception.atCollumn = ((YASLToken *)token).collumn;
+		exception.atToken = ((YASLToken *)token).value;
 	}
 
 	[match pushException:exception];
@@ -125,6 +134,10 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 - (id) copyWithZone:(NSZone *)zone {
 	return self;
 }
+
+@end
+
+@implementation YASLGrammarNode (StringRepresentation)
 
 - (NSString *) description {
 	NSMutableSet *circular = [NSMutableSet set];

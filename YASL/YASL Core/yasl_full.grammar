@@ -46,7 +46,7 @@ postfix-expression = primary-expression (array-access-expr
 																						 | unary-decrement)*;
 
 array-access-expr = '['! expression ']'!;
-assign-access-expr = '('! assignment-expression* ')'!;
+method-call-expr = '('! assignment-expression* ')'!;
 prop-access-expr = '.'! Identifier;
 struct-access-expr = '-'! '>'! Identifier;
 

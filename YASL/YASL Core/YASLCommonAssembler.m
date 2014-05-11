@@ -10,10 +10,12 @@
 #import "YASLAssemblyNode.h"
 #import "YASLGrammarNode.h"
 #import "YASLGrammar.h"
+#import "YASLGrammarFactory.h"
 #import "YASLTokenizer.h"
 #import "YASLToken.h"
 #import "NSObject+TabbedDescription.h"
 #import "YASLTypedNode.h"
+#import "YASLNonfatalException.h"
 
 NSString *const kProcessorSelectorSignature = @"processAssembly:node%@:";
 NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
@@ -86,6 +88,61 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 
 @implementation YASLCommonAssembler (AssemblingAndProcessing)
 
+- (NSString *) grammarIdentifier {
+	NSAssert(0, @"-[YASLCommonAssembler grammarIdentifier] should be overriden in subclass");
+	return nil;
+}
+
+- (id) assembleFile:(NSString *)fileName {
+	NSURL *sourceURL = [[NSBundle mainBundle] URLForResource:fileName withExtension:@""];
+	if (!sourceURL) {
+		NSLog(@"Invalid resource name: \"%@\"", fileName);
+		return nil;
+	}
+	if (![[NSFileManager defaultManager] fileExistsAtPath:[sourceURL path]]) {
+		NSLog(@"Resource \"%@\" doesn't exists", fileName);
+		return nil;
+	}
+
+	NSError *error = nil;
+	NSString *source = [NSString stringWithContentsOfURL:sourceURL encoding:NSUTF8StringEncoding error:&error];
+	if (!source) {
+		NSLog(@"Failed to load \"%@\": %@", fileName, [error localizedDescription]);
+		return nil;
+	}
+	
+	return [self assembleSource:source];
+}
+
+- (id) assembleSource:(NSString *)source {
+	id result = nil;
+	@try {
+		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
+		[tokenizer tokenizeAll];
+
+		if (![tokenizer hasTokens])
+			[self raiseError:@"Failed to tokenize YASL source"];
+
+		YASLGrammar *grammarRoot = [YASLGrammarFactory loadGrammar:[self grammarIdentifier]];
+		if (!grammarRoot)
+			[self raiseError:@"Failed to load \"%@\" BNF grammar",[self grammarIdentifier]];
+
+
+		YASLAssembly *outAssembly = [self assembleSource:tokenizer withGrammar:grammarRoot];
+
+		if (!(outAssembly && [outAssembly notEmpty]))
+			[self raiseError:@"Source assemble failed"];
+
+		result = [outAssembly pop];
+	}
+	@catch (YASLNonfatalException *exception) {
+		NSLog(@"Assemble process halted: %@", exception);
+	}
+	@finally {
+		return result;
+	}
+}
+
 - (YASLAssembly *) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar {
 	YASLAssembly *tokensAssembly = [YASLAssembly assembleTokens:tokenized];
 	if (![tokensAssembly notEmpty])
@@ -99,15 +156,7 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 	[self popExceptionStackState:0];
 	BOOL result = [grammar match:tokensAssembly andAssembly:self];
 
-	if (result) {
-		if ([tokensAssembly notEmpty]) {
-			YASLNonfatalException *e = [self popException];
-			do {
-				NSLog(@"Syntax check exception: %@", e);
-			} while ((e = [self popException]));
-			return nil;
-		}
-
+	if (result && ![tokensAssembly notEmpty]) {
 		[self foldDiscards];
 		YASLAssembly *outAssembly = [YASLAssembly new];
 		[outAssembly discardAs:self];
@@ -118,8 +167,19 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 			[self raiseError:@"Source assemble failed"];
 
 		return outAssembly;
-	} else
-		[self reRaise];
+	} else {
+		YASLNonfatalException *e = [self popException], *top = e;
+		if (top) {
+			NSLog(@"Stack trace:\n%@\n", [top callStackSymbols]);
+		}
+		do {
+			NSLog(@"Syntax check exception: %@", e);
+		} while ((e = [self popException]));
+
+		if (top) {
+			@throw top;
+		}
+	}
 
 	return nil;
 }
@@ -155,7 +215,8 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 
 	if ([node.grammarNode isKindOfClass:[YASLTypedNode class]]) {
 		YASLToken *token = [outAssembly pop];
-		[outAssembly push:[YASLToken token:token.value withKind:token.kind]];
+		YASLToken *copy = [token copy];
+		[outAssembly push:copy];
 		[outAssembly discardPopped:discardAssembly];
 	} else {
 		BOOL processed = NO;
@@ -165,7 +226,7 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 				processed = [self performPre:NO processorSelectorForNode:node andTokensAssembly:outAssembly];
 			}
 			@catch (NSException *exception) {
-				NSLog(@"Processing exception: %@", exception);
+				NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\nStack trace:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly, [exception callStackSymbols]);
 				return NO;
 			}
 			@finally {
@@ -180,5 +241,37 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 
 	return YES;
 }
+
+@end
+
+@implementation YASLCommonAssembler (CommonProcessors)
+
+
+- (void) fetchArray:(YASLAssembly *)assembly {
+	NSMutableArray *elements = [NSMutableArray array];
+	id top;
+	while ((top = [assembly popTillChunkMarker])) {
+		[elements addObject:top];
+	}
+	[assembly push:elements];
+}
+
+- (void) pushInt:(YASLAssembly *)assembly {
+	[assembly push:@([(YASLToken *)[assembly popTillChunkMarker] asInteger])];
+}
+
+- (void) pushFloat:(YASLAssembly *)assembly {
+	[assembly push:@([(YASLToken *)[assembly popTillChunkMarker] asFloat])];
+}
+
+- (void) pushBool:(YASLAssembly *)assembly {
+	[assembly push:@([(YASLToken *)[assembly popTillChunkMarker] asBool])];
+}
+
+- (void) pushString:(YASLAssembly *)assembly {
+	[assembly push:[(YASLToken *)[assembly popTillChunkMarker] value]];
+}
+
+
 
 @end

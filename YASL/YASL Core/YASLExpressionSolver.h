@@ -8,6 +8,13 @@
 
 #import <Foundation/Foundation.h>
 
+@class YASLLocalDeclarations, YASLTranslationExpression, YASLExpressionProcessor;
 @interface YASLExpressionSolver : NSObject
+
+@property (nonatomic, readonly, weak) YASLLocalDeclarations *declarationScope;
+
++ (instancetype) solverInDeclarationScope:(YASLLocalDeclarations *)scope;
+
+- (YASLExpressionProcessor *) pickProcessor:(YASLTranslationExpression *)expression;
 
 @end

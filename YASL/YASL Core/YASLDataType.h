@@ -7,12 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-
-extern NSString *const YASLBuiltInTypeVoid;
-extern NSString *const YASLBuiltInTypeInt;
-extern NSString *const YASLBuiltInTypeFloat;
-extern NSString *const YASLBuiltInTypeBool;
-extern NSString *const YASLBuiltInTypeChar;
+#import "YASLAPI.h"
 
 @interface YASLDataType : NSObject
 
@@ -26,5 +21,17 @@ extern NSString *const YASLBuiltInTypeChar;
 - (id)initWithName:(NSString *)name;
 
 - (NSUInteger) sizeOf;
+
+- (BOOL) isSubclassOf:(YASLDataType *)parent;
+
+/*! If specified type identifier is a built-in type identifier, returns correspondive type enum value. */
++ (YASLBuiltInType) typeIdentifierToBuiltInType:(NSString *)identifier;
+/*! If specified type enum is a built-in type, returns correspondive type identifier. */
++ (NSString *) builtInTypeToTypeIdentifier:(YASLBuiltInType)type;
+
+/*! If receiver is a built-in type, returns correspondive type enum value. */
+- (YASLBuiltInType) builtInType;
+/*! Returns base type of receiver. */
+- (YASLBuiltInType) baseType;
 
 @end

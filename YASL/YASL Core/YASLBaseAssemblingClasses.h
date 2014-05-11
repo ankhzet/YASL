@@ -9,9 +9,9 @@
 #import "YASLToken.h"
 #import "YASLTokenizer.h"
 #import "YASLAssembly.h"
-#import "YASLGrammarNode.h"
 
 #import "YASLNonfatalException.h"
 
+#import "YASLGrammarNode.h"
 #import "YASLGrammarFactory.h"
 

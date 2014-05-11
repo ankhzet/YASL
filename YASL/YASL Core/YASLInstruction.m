@@ -28,11 +28,14 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
 
   [OPC_POP  ] = @"POP",
   [OPC_PUSH ] = @"PUSH",
+  [OPC_POPV ] = @"POPV",
+  [OPC_PUSHV] = @"PUSHV",
   [OPC_SAVE ] = @"SAVE",
   [OPC_LOAD ] = @"LOAD",
 
   [OPC_CALL ] = @"CALL",
   [OPC_RET  ] = @"RET",
+  [OPC_RETV ] = @"RETV",
   [OPC_NATIV] = @"NATIV",
 
   [OPC_JMP  ] = @"JMP",
@@ -43,6 +46,16 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_JLT  ] = @"JLT",
   [OPC_JGE  ] = @"JGE",
   [OPC_JLE  ] = @"JLE",
+
+  [OPC_CVCB  ] = @"CVCB",
+  [OPC_CVCF  ] = @"CVCF",
+  [OPC_CVFB  ] = @"CVFB",
+  [OPC_CVFC  ] = @"CVFC",
+  [OPC_CVFI  ] = @"CVFI",
+  [OPC_CVIB  ] = @"CVIB",
+  [OPC_CVIF  ] = @"CVIF",
+
+  [OPC_HALT  ] = @"HALT",
 };
 
 NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
@@ -87,14 +100,14 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 		return sign ? @"+###" : @"###";
 
 	YASLInt i = *(YASLInt *)((char *)immediates + immediate * sizeof(YASLInt));
-	return [NSString stringWithFormat:@"%@%i", ((i > 0) & sign) ? @"+" : @"", i];
+	return [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
 }
 
 - (NSString *) description {
 	NSString *instr;
 
 	NSString *opcode = OPCODE_NAMES[instruction->opcode];
-	if (!opcode) opcode = @"XXX";
+	if (!opcode) opcode = @"XXXXX"; else opcode = [opcode stringByPaddingToLength:5 withString:@" " startingAtIndex:0];
 
 	if (instruction->type == YASLOperandCountNone) {
 		instr = opcode;

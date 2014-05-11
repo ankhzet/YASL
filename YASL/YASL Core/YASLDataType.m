@@ -9,13 +9,13 @@
 #import "YASLDataType.h"
 #import "YASLAPI.h"
 
-NSString *const YASLBuiltInTypeVoid = @"void";
-NSString *const YASLBuiltInTypeInt = @"int";
-NSString *const YASLBuiltInTypeFloat = @"float";
-NSString *const YASLBuiltInTypeBool = @"bool";
-NSString *const YASLBuiltInTypeChar = @"char";
-
-
+NSString *const YASLBuiltInTypeNames[] = {
+	[YASLBuiltInTypeVoid] = _YASLBuiltInTypeIdentifierVoid,
+	[YASLBuiltInTypeInt] = _YASLBuiltInTypeIdentifierInt,
+	[YASLBuiltInTypeFloat] = _YASLBuiltInTypeIdentifierFloat,
+	[YASLBuiltInTypeBool] = _YASLBuiltInTypeIdentifierBool,
+	[YASLBuiltInTypeChar] = _YASLBuiltInTypeIdentifierChar,
+};
 
 @implementation YASLDataType
 
@@ -37,6 +37,35 @@ NSString *const YASLBuiltInTypeChar = @"char";
 
 - (NSUInteger) sizeOf {
 	return sizeof(YASLInt);
+}
+
+- (BOOL) isSubclassOf:(YASLDataType *)parent {
+	return (self == parent) || (self.parent && ((self.parent == parent) || [self.parent isSubclassOf:parent]));
+}
+
++ (YASLBuiltInType) typeIdentifierToBuiltInType:(NSString *)identifier {
+	for (YASLBuiltInType i = YASLBuiltInTypeUnknown; i < YASLBuiltInTypeMAX; i++) {
+		if ([YASLBuiltInTypeNames[i] isEqualToString:identifier])
+			return i;
+	}
+	return YASLBuiltInTypeUnknown;
+}
+
++ (NSString *) builtInTypeToTypeIdentifier:(YASLBuiltInType)type {
+	NSString *identifier = YASLBuiltInTypeNames[type];
+	return identifier ? identifier : YASLBuiltInTypeNames[YASLBuiltInTypeUnknown];
+}
+
+- (YASLBuiltInType) builtInType {
+	return [YASLDataType typeIdentifierToBuiltInType:self.name];
+}
+
+- (YASLBuiltInType) baseType {
+	YASLBuiltInType type = [self builtInType];
+	if ((type == YASLBuiltInTypeUnknown) && self.parent) {
+		type = [self.parent baseType];
+	}
+	return type;
 }
 
 @end

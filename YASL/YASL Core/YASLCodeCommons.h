@@ -35,8 +35,8 @@ typedef NS_ENUM(NSUInteger, YASLRegister) {
 };
 
 typedef NS_ENUM(NSUInteger, YASLIndexedRegister) {
-	YASLRegisterIMIN= 0,
 	YASLRegisterIR0 = 0, // base register, for function return results, base instructions operations etc
+	YASLRegisterIMIN= 0,
 	YASLRegisterIR1 = 1, // common register
 	YASLRegisterIR2 = 2, // common register
 	YASLRegisterIR3 = 3, // common register
@@ -69,13 +69,13 @@ typedef struct {
 
 	// instruction operand: immediate (-xxx, [xxx]), register (r1, [r1]), both (r0+xxx, [r0+xxx])
 	// instruction operand types: straight (r0, r1-xxx, xxx), memory ([r0], [r1-xxx], [xxx])
-	YASLOperandType operand1:4;
-	YASLOperandType operand2:4;
+	YASLOperandType operand1:3;
+	YASLOperandType operand2:3;
 
-	YASLIndexedRegister r1:4; // first operand register
-	YASLIndexedRegister r2:4; // second operand register
+	YASLIndexedRegister r1:3; // first operand register
+	YASLIndexedRegister r2:3; // second operand register
 
-	unsigned char spaced:6; // unused
+	int spaced:10; // unused
 }
 __attribute__((packed))
 YASLCodeInstruction;

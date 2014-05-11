@@ -10,6 +10,6 @@
 
 @interface YASLTernarExpression : YASLTranslationExpression
 
-+ (instancetype) ternarExpression;
++ (instancetype) ternarExpressionInScope:(YASLDeclarationScope *)scope;
 
 @end

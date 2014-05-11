@@ -89,7 +89,10 @@ NSString *const YASLTokenKindNames[YASLTokenKindMAX] = {
 }
 
 - (id) copyWithZone:(NSZone *)zone {
-	return self;
+	YASLToken *instance = [YASLToken token:self.value withKind:self.kind];
+	instance.line = self.line;
+	instance.collumn = self.collumn;
+	return instance;
 }
 
 @end

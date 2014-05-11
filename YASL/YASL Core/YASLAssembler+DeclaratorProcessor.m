@@ -25,16 +25,13 @@
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeDirectDeclarator:(YASLGrammarNode *)node {
-	NSMutableArray *specificDeclarators = [@[] mutableCopy];
-	id top;
-	while ((top = [a popTill:a.chunkMarker])) {
-		[specificDeclarators addObject:top];
-	}
+	[self fetchArray:a];
+	NSMutableArray *specificDeclarators = [a pop];
 
 	YASLToken *token = [specificDeclarators lastObject];
 	[specificDeclarators removeObject:token];
 
-	YASLTranslationDeclarator *declarator = [YASLTranslationDeclarator new];
+	YASLTranslationDeclarator *declarator = [YASLTranslationDeclarator nodeInScope:self.declarationScope.currentScope withType:YASLTranslationNodeTypeInitializer];
 	declarator.declaratorIdentifier = token.value;
 	declarator.declaratorSpecifiers = specificDeclarators;
 	declarator.isPointer = 0;
@@ -48,6 +45,10 @@
 	}
 	id specifier = @{@0: @"array", @1: top ? top : [NSNull null]};
 	[a push:specifier];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeDeclaratorList:(YASLGrammarNode *)node {
+	[self fetchArray:a];
 }
 
 @end

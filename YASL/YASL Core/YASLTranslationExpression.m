@@ -7,54 +7,253 @@
 //
 
 #import "YASLTranslationExpression.h"
-#import "NSObject+TabbedDescription.h"
-#import "YASLTranslationConstant.h"
+#import "YASLCoreLangClasses.h"
+
+NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
+	[YASLExpressionOperatorUnknown] = @"#",
+	[YASLExpressionOperatorAdd] = @"+",
+	[YASLExpressionOperatorSub] = @"-",
+	[YASLExpressionOperatorIncrement] = @"++",
+	[YASLExpressionOperatorDecrement] = @"--",
+	[YASLExpressionOperatorMul] = @"*",
+	[YASLExpressionOperatorDiv] = @"/",
+	[YASLExpressionOperatorRest] = @"%",
+	[YASLExpressionOperatorSHL] = @"<<",
+	[YASLExpressionOperatorSHR] = @">>",
+	[YASLExpressionOperatorInclusiveAnd] = @"&",
+	[YASLExpressionOperatorInclusiveOr] = @"|",
+	[YASLExpressionOperatorExclusiveOr] = @"^",
+	[YASLExpressionOperatorLogicAnd] = @"&&",
+	[YASLExpressionOperatorLogicOr] = @"||",
+	[YASLExpressionOperatorEqual] = @"==",
+	[YASLExpressionOperatorNotEqual] = @"!=",
+	[YASLExpressionOperatorLess] = @"<",
+	[YASLExpressionOperatorLessEqual] = @"<=",
+	[YASLExpressionOperatorGreater] = @">",
+	[YASLExpressionOperatorGreaterEqual] = @">=",
+};
+
 
 @implementation YASLTranslationExpression
 
-+ (instancetype) expressionWithType:(YASLExpressionType)type andSpecifier:(NSString *)specifier {
-	YASLTranslationExpression *expression = [self nodeWithType:YASLTranslationNodeTypeExpression];
++ (instancetype) expressionInScope:(YASLDeclarationScope *)scope withType:(YASLExpressionType)type {
+	YASLTranslationExpression *expression = [self nodeInScope:scope withType:YASLTranslationNodeTypeExpression];
 	expression.expressionType = type;
+	return expression;
+}
+
++ (instancetype) expressionInScope:(YASLDeclarationScope *)scope withType:(YASLExpressionType)type andSpecifier:(NSString *)specifier {
+	YASLTranslationExpression *expression = [self expressionInScope:scope withType:type];
 	expression.specifier = specifier;
 	return expression;
 }
 
++ (YASLExpressionOperator) specifierToOperator:(NSString *)specifier {
+	for (YASLExpressionOperator o = YASLExpressionOperatorUnknown; o < YASLExpressionOperatorMAX; o++)
+		if ([YASLExpressionOperationSpecifiers[o] isEqualToString:specifier])
+			return o;
+
+	return YASLExpressionOperatorUnknown;
+}
+
++ (NSString *) operatorToSpecifier:(YASLExpressionOperator)operator {
+	return YASLExpressionOperationSpecifiers[operator];
+}
+
+- (YASLExpressionOperator) expressionOperator {
+	return [YASLTranslationExpression specifierToOperator:self.specifier];
+}
+
 /*! Try to evaluate this expression. If it consists from constant operands, then result will be evaluated constant value, else returns self. */
-- (YASLTranslationExpression *) foldConstantExpression {
-	if (self.expressionType == YASLExpressionTypeConstant)
-		return self;
+- (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
+	switch (self.expressionType) {
+		case YASLExpressionTypeConstant:
+		case YASLExpressionTypeVariable:
+			return self;
+			break;
+
+		default:;
+	}
 
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
 	int nonConstants = 0;
 	// first, try to fold operands
 	for (YASLTranslationExpression *operand in self.subnodes) {
-		YASLTranslationExpression *folded = [operand foldConstantExpression];
+		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
     [foldedOperands addObject:folded];
 		if (folded.expressionType != YASLExpressionTypeConstant)
 			nonConstants++;
 	}
 	self.subnodes = foldedOperands;
 
+	YASLExpressionProcessor *processor = [solver pickProcessor:self];
+	if (!processor) {
+		@throw [YASLNonfatalException exceptionAtLine:0 andCollumn:0 withMsg:@"Can't process constant expression: %@", self];
+	}
+
 	// there are non-constant operands
-	if (nonConstants)
+	if (nonConstants) {
+		self.returnType = processor.returnType;
 		return self;
+	}
 
 	// try evaluate operands
 	//TODO: constant expressions evaluation
-	YASLTranslationConstant *result = [YASLTranslationConstant constantWithType:YASLConstantTypeInt andValue:@(0)];
+	YASLTranslationExpression *result = [processor solveExpression:self];
+
 	return result;
 }
 
++ (BOOL) checkFolding:(YASLTranslationExpression **)operand withSolver:(YASLExpressionSolver *)solver {
+	if (*operand == nil)
+		return NO;
+
+	if ((*operand).expressionType == YASLExpressionTypeConstant)
+		return YES;
+
+	YASLTranslationExpression *constantOperand = [*operand foldConstantExpressionWithSolver:solver];
+	if (constantOperand == *operand)
+		return NO;
+
+	*operand = constantOperand;
+	return YES;
+}
+
+- (YASLTranslationExpression *) leftOperand {
+	return self.subnodes[0];
+}
+
+- (YASLTranslationExpression *) rigthOperand {
+	return self.subnodes[1];
+}
+
+- (YASLTranslationExpression *) thirdOperand {
+	return self.subnodes[2];
+}
+
+- (NSUInteger) operandsCount {
+	return [self.subnodes count];
+}
+
 - (NSString *) toString {
-	NSString *delim = [NSString stringWithFormat:@" %@\n", self.specifier];
+	NSString *delim = [NSString stringWithFormat:@" %@ ", self.specifier];
 	NSString *subs = @"";
 	for (YASLTranslationNode *subnode in self.subnodes) {
-    subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? delim : @""), [[subnode toString] descriptionTabbed:@"  "]];
+    subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? delim : @""), [subnode toString]];
 	}
 	subs = [subs length] ? subs : self.specifier;
 
-	return [NSString stringWithFormat:@"(\n%@\n)", subs];
+	return [NSString stringWithFormat:([self.subnodes count] > 1 ? @"(%@:(%@))" : @"(%@:%@)"), self.returnType.name, subs];
 }
 
 
 @end
+
+@implementation YASLTranslationExpression (Assembling)
+
++ (YASLOpcodes) operationToOpcode:(YASLExpressionOperator)operator {
+	switch (operator) {
+		case YASLExpressionOperatorAdd: return OPC_ADD;
+		case YASLExpressionOperatorSub: return OPC_SUB;
+		case YASLExpressionOperatorMul: return OPC_MUL;
+		case YASLExpressionOperatorDiv: return OPC_DIV;
+		case YASLExpressionOperatorRest: return OPC_RST;
+
+		case YASLExpressionOperatorSHL: return OPC_SHL;
+		case YASLExpressionOperatorSHR: return OPC_SHR;
+
+		case YASLExpressionOperatorLogicOr: return OPC_OR;
+		case YASLExpressionOperatorLogicAnd: return OPC_AND;
+
+		case YASLExpressionOperatorInclusiveAnd: return OPC_AND;
+		case YASLExpressionOperatorInclusiveOr: return OPC_OR;
+		case YASLExpressionOperatorExclusiveOr: return OPC_XOR;
+
+		case YASLExpressionOperatorDecrement: return OPC_DEC;
+		case YASLExpressionOperatorIncrement: return OPC_INC;
+
+		case YASLExpressionOperatorEqual: return OPC_JZ;
+		case YASLExpressionOperatorNotEqual: return OPC_JNZ;
+
+		case YASLExpressionOperatorGreater: return OPC_JGT;
+		case YASLExpressionOperatorGreaterEqual: return OPC_JGE;
+		case YASLExpressionOperatorLess: return OPC_JLT;
+		case YASLExpressionOperatorLessEqual: return OPC_JLE;
+
+		default:
+			break;
+	}
+
+	return OPC_NOP;
+}
+
+- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+	switch (self.expressionType) {
+		case YASLExpressionTypeBinary: {
+			[[self leftOperand] assemble:assembly unPointer:YES];
+			[assembly push:OPC_(PUSH, REG_(R0))];
+			[[self rigthOperand] assemble:assembly unPointer:YES];
+			[assembly push:OPC_(MOV, REG_(R1), REG_(R0))];
+			[assembly push:OPC_(POP, REG_(R0))];
+			YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:[self expressionOperator]];
+			switch (opcode) {
+				case OPC_JZ:
+				case OPC_JNZ:
+				case OPC_JGE:
+				case OPC_JGT:
+				case OPC_JLE:
+				case OPC_JLT: {
+					YASLOpcodeOperand *labTrue = IMM_(0);
+					YASLOpcodeOperand *labOut = IMM_(0);
+					YASLCodeAddressReference *trueRef = [YASLCodeAddressReference new];
+					YASLCodeAddressReference *outRef = [YASLCodeAddressReference new];
+					[trueRef addReferent:labTrue];
+					[outRef addReferent:labOut];
+					[assembly push:OPC_(SUB, REG_(R0), REG_(R1))];
+					[assembly push:OPC(opcode, labTrue)];
+					[assembly push:OPC_(XOR, REG_(R0), REG_(R0))];
+					[assembly push:OPC_(JMP, labOut)];
+					[assembly push:trueRef];
+					[assembly push:OPC_(XOR, REG_(R0), REG_(R0))];
+					[assembly push:OPC_(INC, REG_(R0))];
+					[assembly push:outRef];
+					break;
+				}
+
+				default:
+					[assembly push:OPC(opcode, REG_(R0), REG_(R1))];
+					break;
+			}
+			break;
+		}
+
+		case YASLExpressionTypeVariable: {
+			NSString *declarationIdentifier = self.specifier;
+			YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:declarationIdentifier];
+			YASLOpcodeOperand *operand;
+			switch ([declaration.parentScope.placementManager placementType]) {
+				case YASLDeclarationPlacementTypeInCode:
+					operand = IMM_(@0);
+					break;
+				case YASLDeclarationPlacementTypeOnStack:
+					operand = REG_IMM(BP, @0);
+					break;
+
+				default:
+					break;
+			}
+			if (unPointer) operand = [operand asPointer];
+			[declaration.reference addReferent:operand];
+			[assembly push:OPC_(MOV, REG_(R0), operand)];
+			break;
+		}
+		default:
+//			NSAssert(0, @"Unknown expression type, can't assemble");
+			break;
+	}
+	
+	return YES;
+}
+
+@end
+

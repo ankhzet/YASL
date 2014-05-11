@@ -14,44 +14,41 @@ NSString *const YASLYASLGrammar = @"YASL";
 
 @implementation YASLAssembler
 
+- (NSString *) grammarIdentifier {
+	return YASLYASLGrammar;
+}
+
 - (YASLTranslationUnit *) assembleSource:(NSString *)source {
-	YASLTranslationUnit *result = nil;
-	@try {
-		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
-		[tokenizer tokenizeAll];
-
-		if (![tokenizer hasTokens])
-			[self raiseError:@"Failed to tokenize YASL source"];
-
-		YASLGrammar *grammarRoot = [YASLGrammarFactory loadGrammar:YASLYASLGrammar];
-		if (!grammarRoot)
-			[self raiseError:@"Failed to load YASL BNF grammar"];
-
-
-		YASLAssembly *outAssembly = [self assembleSource:tokenizer withGrammar:grammarRoot];
-
-		if (!(outAssembly && [outAssembly notEmpty]))
-			[self raiseError:@"Source assemble failed"];
-
-		result = [outAssembly pop];
-	}
-	@catch (YASLNonfatalException *exception) {
-		NSLog(@"Assemble process halted: %@", exception);
-	}
-	@finally {
-		return result;
-	}
+	return [super assembleSource:source];
 }
 
 @end
 
 @implementation YASLAssembler (Processor)
 
+- (void) preProcessAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
+	self.declarationScope.currentScope.placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeInCode] ofsettedByParent];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
+}
+
 - (void) processAssembly:(YASLAssembly *)a nodeScriptDeclaration:(YASLGrammarNode *)node {
 	YASLToken *token = [a pop];
-	YASLTranslationUnit *unit = [YASLTranslationUnit new];
-	unit.name = token.value;
+	YASLTranslationUnit *unit = [YASLTranslationUnit unitInScope:self.declarationScope.currentScope withName:token.value];
+	self.declarationScope.currentScope.name = [NSString stringWithFormat:@"unit:%@", token.value];
 	[a push:unit];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeExternalDeclarations:(YASLGrammarNode *)node {
+	[self fetchArray:a];
+	NSArray *declarations = [a pop];
+	YASLTranslationUnit *unit = [a pop];
+	for (YASLTranslationNode *declaration in [declarations reverseObjectEnumerator]) {
+    [unit addSubNode:declaration];
+	}
+	[a push:unit];
+	[a dropPopped];
 }
 
 @end

@@ -28,10 +28,10 @@
 - (void) registerNativeFunctions {
 	[super registerNativeFunctions];
 
-	[self registerNativeFunction:@"f1" withParamCount:0 returnType:YASLAtomicTypeFloat withSelector:@selector(testFunc1:atParamBase:)];
-	[self registerNativeFunction:@"f2" withParamCount:1 returnType:YASLAtomicTypeInt withSelector:@selector(testFunc2:atParamBase:)];
-	[self registerNativeFunction:@"f3" withParamCount:2 returnType:YASLAtomicTypeInt withSelector:@selector(testFunc3:atParamBase:)];
-	[self registerNativeFunction:@"f4" withParamCount:3 returnType:YASLAtomicTypeInt withSelector:@selector(testFunc4:atParamBase:)];
+	[self registerNativeFunction:@"f1" withParamCount:0 returnType:YASLBuiltInTypeIdentifierFloat withSelector:@selector(testFunc1:atParamBase:)];
+	[self registerNativeFunction:@"f2" withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(testFunc2:atParamBase:)];
+	[self registerNativeFunction:@"f3" withParamCount:2 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(testFunc3:atParamBase:)];
+	[self registerNativeFunction:@"f4" withParamCount:3 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(testFunc4:atParamBase:)];
 }
 
 - (YASLInt) testFunc1:(YASLNativeFunction *)native atParamBase:(void *)paramsBase {

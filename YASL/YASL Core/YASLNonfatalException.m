@@ -26,7 +26,8 @@
 
 - (NSString *) description {
 	NSString *def = [super description];
-	NSString *err = [NSString stringWithFormat:@"Error at (%lu: %u): %@", (unsigned long)self.atLine, self.atCollumn, def];
+	NSString *token = self.atToken ? [NSString stringWithFormat:@", %@", self.atToken] : @"";
+	NSString *err = [NSString stringWithFormat:@"Error at (%lu: %u%@): %@", (unsigned long)self.atLine, self.atCollumn, token, def];
 	return err;
 }
 

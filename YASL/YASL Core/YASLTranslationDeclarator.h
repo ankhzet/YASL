@@ -8,6 +8,7 @@
 
 #import "YASLTranslationNode.h"
 
+@class YASLAssignmentExpression;
 @interface YASLTranslationDeclarator : YASLTranslationNode
 
 @property (nonatomic) NSString *declaratorIdentifier;

@@ -7,24 +7,15 @@
 //
 
 #import "YASLTranslationNode.h"
+#import "YASLCodeCommons.h"
 
 typedef NS_ENUM(NSUInteger, YASLExpressionType) {
 	YASLExpressionTypeMin = 0,
-	YASLExpressionTypeAdditive,
-	YASLExpressionTypeMultiplicative,
-
+	YASLExpressionTypeUnary,
+	YASLExpressionTypeBinary,
 	YASLExpressionTypeTernar,
 
-	YASLExpressionTypeLogicalOr,
-	YASLExpressionTypeLogicalAnd,
-	YASLExpressionTypeInclusiveOr,
-	YASLExpressionTypeExclusiveOr,
-	YASLExpressionTypeInclusiveAnd,
-	YASLExpressionTypeRelational,
-	YASLExpressionTypeShift,
-
 	YASLExpressionTypeTypecast,
-	YASLExpressionTypeUnary,
 	YASLExpressionTypeSizeOf,
 
 	YASLExpressionTypeVariable,
@@ -35,20 +26,71 @@ typedef NS_ENUM(NSUInteger, YASLExpressionType) {
 	YASLExpressionTypeCall,
 	YASLExpressionTypeProperty,
 	YASLExpressionTypeStructure,
+	YASLExpressionTypeAssignment,
+
+	YASLExpressionTypeJump,
+	YASLExpressionTypeReturn,
 
 	YASLExpressionTypeDesignatedInitializer,
 
 };
 
-@class YASLDataType;
+typedef NS_ENUM(NSUInteger, YASLExpressionOperator) {
+	YASLExpressionOperatorUnknown = 0,
+	YASLExpressionOperatorAdd,
+	YASLExpressionOperatorSub,
+	YASLExpressionOperatorMul,
+	YASLExpressionOperatorDiv,
+	YASLExpressionOperatorRest,
+
+	YASLExpressionOperatorIncrement,
+	YASLExpressionOperatorDecrement,
+
+	YASLExpressionOperatorInclusiveOr,
+	YASLExpressionOperatorExclusiveOr,
+	YASLExpressionOperatorLogicOr,
+	YASLExpressionOperatorLogicAnd,
+	YASLExpressionOperatorInclusiveAnd,
+
+	YASLExpressionOperatorGreater,
+	YASLExpressionOperatorGreaterEqual,
+	YASLExpressionOperatorLess,
+	YASLExpressionOperatorLessEqual,
+	YASLExpressionOperatorNotEqual,
+	YASLExpressionOperatorEqual,
+
+	YASLExpressionOperatorSHL,
+	YASLExpressionOperatorSHR,
+
+	YASLExpressionOperatorMAX
+};
+
+@class YASLDataType, YASLExpressionSolver;
 @interface YASLTranslationExpression : YASLTranslationNode
 
 @property (nonatomic) YASLExpressionType expressionType;
 @property (nonatomic) NSString *specifier;
 @property (nonatomic) YASLDataType *returnType;
 
-+ (instancetype) expressionWithType:(YASLExpressionType)type andSpecifier:(NSString *)specifier;
++ (instancetype) expressionInScope:(YASLDeclarationScope *)scope withType:(YASLExpressionType)type andSpecifier:(NSString *)specifier;
++ (instancetype) expressionInScope:(YASLDeclarationScope *)scope withType:(YASLExpressionType)type;
 
-- (YASLTranslationExpression *) foldConstantExpression;
+- (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver;
+- (YASLTranslationExpression *) leftOperand;
+- (YASLTranslationExpression *) rigthOperand;
+- (YASLTranslationExpression *) thirdOperand;
+- (NSUInteger) operandsCount;
+
++ (YASLExpressionOperator) specifierToOperator:(NSString *)specifier;
++ (NSString *) operatorToSpecifier:(YASLExpressionOperator)operator;
+- (YASLExpressionOperator) expressionOperator;
+
++ (BOOL) checkFolding:(YASLTranslationExpression **)operand withSolver:(YASLExpressionSolver *)solver;
+
+@end
+
+@interface YASLTranslationExpression (Assembling)
+
++ (YASLOpcodes) operationToOpcode:(YASLExpressionOperator)operator;
 
 @end

@@ -7,26 +7,29 @@
 //
 
 #import "YASLTranslationNode.h"
-#import "NSObject+TabbedDescription.h"
+#import "YASLCoreLangClasses.h"
 
 NSString *const YASLTranslationNodeTypeNames[] = {
 	[YASLTranslationNodeTypeConstant] = @"const",
 	[YASLTranslationNodeTypeExpression] = @"exp",
 	[YASLTranslationNodeTypeInitializer] = @"init",
+	[YASLTranslationNodeTypeFunction] = @"function",
+	[YASLTranslationNodeTypeRoot] = @"unit",
 };
 
 
 @implementation YASLTranslationNode
 
-+ (instancetype) nodeWithType:(YASLTranslationNodeType)type {
-	return [(YASLTranslationNode *)[self alloc] initWithType:type];
++ (instancetype) nodeInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type {
+	return [(YASLTranslationNode *)[self alloc] initInScope:scope withType:type];
 }
 
-- (id)initWithType:(YASLTranslationNodeType)type {
+- (id)initInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type {
 	if (!(self = [super init]))
 		return self;
 
 	_type = type;
+	_declarationScope = scope;
 	_subnodes = [NSMutableArray array];
 	return self;
 }
@@ -54,6 +57,19 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 - (NSString *) description {
 	return [self toString];
+}
+
+@end
+
+@implementation YASLTranslationNode (Assembling)
+
+- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+	for (YASLTranslationNode *node in self.subnodes) {
+    if (![node assemble:assembly unPointer:unPointer])
+			return NO;
+	}
+
+	return YES;
 }
 
 @end

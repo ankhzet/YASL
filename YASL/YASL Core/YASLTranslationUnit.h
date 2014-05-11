@@ -6,9 +6,12 @@
 //  Copyright (c) 2014 Ankh. All rights reserved.
 //
 
-@interface YASLTranslationUnit : NSObject
+#import "YASLTranslationNode.h"
+
+@interface YASLTranslationUnit : YASLTranslationNode
 
 @property (nonatomic) NSString *name;
-@property (nonatomic) NSDictionary *labels;
+
++ (instancetype) unitInScope:(YASLDeclarationScope *)scope withName:(NSString *)name;
 
 @end

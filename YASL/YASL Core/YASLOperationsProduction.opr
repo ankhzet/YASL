@@ -1,0 +1,72 @@
+[#] {
+	[int] {
+		[int, float, bool ,char]: int,
+	}
+	[float] {
+		[int, float, bool ,char]: float,
+	}
+	[bool] {
+		[int, float, bool ,char]: bool,
+	}
+	[char] {
+		[int, float, bool ,char]: char,
+	}
+}
+[<, <=, >, >=, ==, !=, ||, &&] {
+	[int, bool, char] {
+		[int, bool, char]: int -> bool,
+		[float]: float -> bool,
+	}
+	[float] {
+		[int, float, bool, char]: float -> bool,
+	}
+}
+[+, -] {
+	[int] {
+		[int, char, bool]: int,
+		[float]: float,
+	}
+	[float] {
+		[int, float]: float,
+	}
+	[bool] {
+		[int]: int,
+		[bool]: bool,
+	}
+	[char] {
+		[int, char]: int,
+	}
+}
+[*, /, %] {
+	[int] {
+		[int]: int,
+		[char, bool] [*]: int,
+		[float] [*, /]: float,
+	}
+	[float] [*, /] {
+		[int, float]: float,
+		[bool] [*]: float,
+	}
+	[bool] [*] {
+		[int]: int,
+		[float]: float,
+		[char]: int -> char,
+	}
+	[char] [*] {
+		[int]: int,
+		[bool]: int -> char,
+	}
+}
+[|, &, ^] {
+	[int] {
+		[int, char, bool]: int,
+	}
+	[bool, char] {
+		[int]: int,
+	}
+}
+[<<, >>] {
+	[int, char, bool] {
+		[int, char, bool]: int,
+	}
+}
