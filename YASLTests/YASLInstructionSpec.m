@@ -10,10 +10,7 @@
 #import "Kiwi.h"
 #import "TestUtils.h"
 #import "YASLInstruction.h"
-#import "YASLOpcodes.h"
-#import "YASLCPU.h"
-#import "YASLRAM.h"
-#import "YASLStack.h"
+#import "YASLVMBuilder.h"
 
 SPEC_BEGIN(YASLInstructionSpec)
 
@@ -25,8 +22,9 @@ describe(@"YASLInstruction", ^{
 	});
 
 	it(@"should parse unary instructions", ^{
-		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:256];
-		YASLRAM *ram = cpu->ram;
+		YASLVMBuilder *builder = [YASLVMBuilder new];
+		YASLVM *vm = [builder buildVM];
+		YASLRAM *ram = vm.ram;
 		memset([ram dataAt:0], 0, ram.size);
 
 		YASLInt ramOffset = 0;
@@ -39,20 +37,21 @@ describe(@"YASLInstruction", ^{
 		CPU_PUTINSTR(ramOffset, OPC_INC, YASLOperandCountUnary, YASLOperandTypeImmediate | YASLOperandTypePointer, 0, 0, 0);
 
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 0]];
-		[[[i description] should] equal:@"INC R1"];
+		[[[i description] should] equal:@"INC   R1"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 1]];
-		[[[i description] should] equal:@"JMP ###"];
+		[[[i description] should] equal:@"JMP   ###"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 2]];
-		[[[i description] should] equal:@"INC R2+###"];
+		[[[i description] should] equal:@"INC   R2+###"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 3]];
-		[[[i description] should] equal:@"INC [R3]"];
+		[[[i description] should] equal:@"INC   [R3]"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 4]];
-		[[[i description] should] equal:@"INC [###]"];
+		[[[i description] should] equal:@"INC   [###]"];
 	});
 
 	it(@"should parse binary instructions", ^{
-		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:256];
-		YASLRAM *ram = cpu->ram;
+		YASLVMBuilder *builder = [YASLVMBuilder new];
+		YASLVM *vm = [builder buildVM];
+		YASLRAM *ram = vm.ram;
 		memset([ram dataAt:0], 0, ram.size);
 
 		YASLInt ramOffset = 0;
@@ -91,25 +90,26 @@ describe(@"YASLInstruction", ^{
 								 );
 
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 0]];
-		[[[i description] should] equal:@"INC [R1+###]"];
+		[[[i description] should] equal:@"INC   [R1+###]"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 1]];
-		[[[i description] should] equal:@"INC R1, R2"];
+		[[[i description] should] equal:@"INC   R1, R2"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 2]];
-		[[[i description] should] equal:@"INC [###], R2"];
+		[[[i description] should] equal:@"INC   [###], R2"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 3]];
-		[[[i description] should] equal:@"INC R1, ###"];
+		[[[i description] should] equal:@"INC   R1, ###"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 4]];
-		[[[i description] should] equal:@"INC [R2+###], R3"];
+		[[[i description] should] equal:@"INC   [R2+###], R3"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 5]];
-		[[[i description] should] equal:@"INC R1, R2+###"];
+		[[[i description] should] equal:@"INC   R1, R2+###"];
 		[i setInstruction:[ram dataAt:sizeof(YASLCodeInstruction) * 6]];
-		[[[i description] should] equal:@"INC R1+###, [R2+###]"];
+		[[[i description] should] equal:@"INC   R1+###, [R2+###]"];
 		
 	});
 
 	it(@"should parse immediates", ^{
-		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:256];
-		YASLRAM *ram = cpu->ram;
+		YASLVMBuilder *builder = [YASLVMBuilder new];
+		YASLVM *vm = [builder buildVM];
+		YASLRAM *ram = vm.ram;
 		memset([ram dataAt:0], 0, ram.size);
 
 		YASLInt ramOffset = 0;
@@ -125,7 +125,7 @@ describe(@"YASLInstruction", ^{
 		CPU_PUTVAL(ramOffset, 12345);
 
 		[i setInstruction:[ram dataAt:0]];
-		[[[i description] should] equal:@"INC R1+12345, [R2-18]"];
+		[[[i description] should] equal:@"INC   R1+12345, [R2-18]"];
 	});
 });
 

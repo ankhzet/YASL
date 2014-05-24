@@ -18,4 +18,6 @@
 
 - (NSString *) disassembleFrom:(YASLInt)startOffset to:(YASLInt)endOffset;
 
+- (void) setLabelsRefs:(NSArray *)labels;
+
 @end

@@ -19,7 +19,7 @@
 
 - (NSString *) toString {
 	NSString *signature = [NSString stringWithFormat:@"%@ %@", self.declaration.dataType, self.declaration.declarator];
-	return [NSString stringWithFormat:@"%@ {\n%@\n}", signature, [self.subnodes componentsJoinedByString:@";\n"]];
+	return [NSString stringWithFormat:@"%@ {\n%@\n}", signature, [[[self nodesEnumerator:NO] allObjects] componentsJoinedByString:@";\n"]];
 }
 
 - (NSString *) returnVarIdentifier {
@@ -112,48 +112,57 @@ bp+00  00 00 p1
 
 @implementation YASLTranslationFunction (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+- (void) assembleNativeFunction:(YASLAssembly *)assembly {
+	return;
+	YASLDeclarationScope *functionScope = self.declarationScope;
+	YASLLocalDeclaration *declaration = [functionScope localDeclarationByIdentifier:self.declaratorIdentifier];
+
+	[assembly push:OPC_(NOP)]; // mark function start
+	[assembly push:declaration.reference];
+	[assembly push:OPC_(NATIV, IMM_(@(self.native.GUID)))];
+}
+
+- (void) assembleFunction:(YASLAssembly *)assembly {
 	YASLDeclarationScope *functionScope = self.declarationScope;
 	YASLDeclarationScope *bodyScope = [functionScope.childs firstObject];
 
 	YASLLocalDeclaration *declaration = [functionScope localDeclarationByIdentifier:self.declaratorIdentifier];
-
 	YASLLocalDeclaration *returnVar = [bodyScope localDeclarationByIdentifier:[self returnVarIdentifier]];
 	YASLLocalDeclaration *extLabel = [bodyScope localDeclarationByIdentifier:[self exitLabelIdentifier]];
 	YASLOpcodeOperand *returnImmediate = [REG_IMM(BP, @0) asPointer];
-	YASLOpcodeOperand *startImmediate = IMM_(@0);
 	[returnVar.reference addReferent:returnImmediate];
 	YASLDataType *returns = returnVar.dataType;
 	BOOL isVoid = [returns baseType] == YASLBuiltInTypeVoid;
+	BOOL savesGeneralRegisters = NO;
 
 	NSArray *params = [functionScope localDeclarations];
 
-//	[functionScope.placementManager calcPlacementForScope:functionScope];
+	//	[functionScope.placementManager calcPlacementForScope:functionScope];
 	NSUInteger localDataSize = [bodyScope scopeDataSize];
 	NSUInteger paramsDataSize = [functionScope localDeclarationsDataSize];
 
-	NSInteger savedRegisters = (isVoid ? 4 : 3) * sizeof(YASLInt);
+	NSInteger savedRegisters = savesGeneralRegisters * (isVoid ? 4 : 3) * sizeof(YASLInt);
 	NSInteger savedBP = sizeof(YASLInt);
 	NSInteger savedIP = sizeof(YASLInt);
 	NSInteger preservedOnStack = savedRegisters + savedBP + savedIP;
 	NSInteger totalOffset = - ( preservedOnStack + paramsDataSize);
 	for (YASLLocalDeclaration *param in params) {
-    param.reference.base = totalOffset;
+		param.reference.base = totalOffset;
 	}
 
-	[declaration.reference addReferent:startImmediate];
 	YASLOpcodeOperand *lowerReg = isVoid ? REG_(R0) : REG_(R1);
 	[assembly push:OPC_(NOP)]; // mark function start
-	[assembly push:OPC_(JMP, startImmediate)];
+														 //	[assembly push:OPC_(JMP, startImmediate)];
 	[assembly push:declaration.reference];
 	[assembly push:OPC_(PUSH, REG_(BP))];
-	[assembly push:OPC_(SAVE, lowerReg, REG_(R3))];
+	if (savesGeneralRegisters)
+  	[assembly push:OPC_(SAVE, lowerReg, REG_(R3))];
 	[assembly push:OPC_(MOV, REG_(BP), REG_(SP))];
 	if (localDataSize)
 		[assembly push:OPC_(PUSHV, IMM_(@(localDataSize)))];
 
-	for (YASLTranslationNode *statement in self.subnodes) {
-		[statement assemble:assembly unPointer:unPointer];
+	for (YASLTranslationNode *statement in [self nodesEnumerator:NO]) {
+		[statement assemble:assembly];
 	}
 
 
@@ -164,10 +173,17 @@ bp+00  00 00 p1
 	}
 
 	[assembly push:OPC_(MOV, REG_(SP), REG_(BP))];
-	[assembly push:OPC_(LOAD, REG_(R3), lowerReg)];
+	if (savesGeneralRegisters)
+		[assembly push:OPC_(LOAD, REG_(R3), lowerReg)];
 	[assembly push:OPC_(POP, REG_(BP))];
-	[assembly push:(paramsDataSize ? OPC_(RETV, IMM_(@(paramsDataSize))) : OPC_(POP, REG_(BP)))];
-	return YES;
+	[assembly push:(paramsDataSize ? OPC_(RETV, IMM_(@(paramsDataSize))) : OPC_(RET))];
+}
+
+- (void) assemble:(YASLAssembly *)assembly {
+	if (self.native)
+		[self assembleNativeFunction:assembly];
+	else
+		[self assembleFunction:assembly];
 }
 
 @end

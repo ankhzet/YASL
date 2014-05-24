@@ -10,4 +10,6 @@
 
 @interface YASLIdentifierParser : YASLTokenParser
 
+- (id)initExtendedSyntax:(BOOL)extended;
+
 @end

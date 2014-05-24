@@ -31,6 +31,11 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	[YASLExpressionOperatorLessEqual] = @"<=",
 	[YASLExpressionOperatorGreater] = @">",
 	[YASLExpressionOperatorGreaterEqual] = @">=",
+
+	[YASLExpressionOperatorNot] = @"!",
+	[YASLExpressionOperatorInv] = @"~",
+	[YASLExpressionOperatorRef] = @"&",
+	[YASLExpressionOperatorUnref] = @"*",
 };
 
 
@@ -67,10 +72,19 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 /*! Try to evaluate this expression. If it consists from constant operands, then result will be evaluated constant value, else returns self. */
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
 	switch (self.expressionType) {
-		case YASLExpressionTypeConstant:
-		case YASLExpressionTypeVariable:
+		case YASLExpressionTypeVariable:{
+			if (!self.returnType) {
+				YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:self.specifier];
+
+				if (!declaration.dataType) {
+					@throw [YASLNonfatalException exceptionAtLine:0 andCollumn:0 withMsg:@"Variable not yet declared: %@", self];
+				} else
+					self.returnType = declaration.dataType;
+			}
 			return self;
-			break;
+		}
+		case YASLExpressionTypeConstant:
+			return self;
 
 		default:;
 	}
@@ -78,13 +92,13 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
 	int nonConstants = 0;
 	// first, try to fold operands
-	for (YASLTranslationExpression *operand in self.subnodes) {
+	for (YASLTranslationExpression *operand in [self nodesEnumerator:NO]) {
 		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
     [foldedOperands addObject:folded];
 		if (folded.expressionType != YASLExpressionTypeConstant)
 			nonConstants++;
 	}
-	self.subnodes = foldedOperands;
+	[self setSubNodes:foldedOperands];
 
 	YASLExpressionProcessor *processor = [solver pickProcessor:self];
 	if (!processor) {
@@ -119,31 +133,15 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	return YES;
 }
 
-- (YASLTranslationExpression *) leftOperand {
-	return self.subnodes[0];
-}
-
-- (YASLTranslationExpression *) rigthOperand {
-	return self.subnodes[1];
-}
-
-- (YASLTranslationExpression *) thirdOperand {
-	return self.subnodes[2];
-}
-
-- (NSUInteger) operandsCount {
-	return [self.subnodes count];
-}
-
 - (NSString *) toString {
 	NSString *delim = [NSString stringWithFormat:@" %@ ", self.specifier];
 	NSString *subs = @"";
-	for (YASLTranslationNode *subnode in self.subnodes) {
+	for (YASLTranslationNode *subnode in [self nodesEnumerator:NO]) {
     subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? delim : @""), [subnode toString]];
 	}
 	subs = [subs length] ? subs : self.specifier;
 
-	return [NSString stringWithFormat:([self.subnodes count] > 1 ? @"(%@:(%@))" : @"(%@:%@)"), self.returnType.name, subs];
+	return [NSString stringWithFormat:([self nodesCount] > 1 ? @"%@(%@)" : @"%@%@"), self.returnType, subs];
 }
 
 
@@ -187,12 +185,24 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 	return OPC_NOP;
 }
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+	if (self.expressionType != YASLExpressionTypeVariable)
+		return NO;
+
+	[outAssembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];
+	return YES;
+}
+
+- (void) assemble:(YASLAssembly *)assembly {
+	if (self.sourceLine) {
+		[assembly push:[YASLCodeAddressReference referenceWithName:[NSString stringWithFormat:@"Line #%u", self.sourceLine]]];
+	}
+
 	switch (self.expressionType) {
 		case YASLExpressionTypeBinary: {
-			[[self leftOperand] assemble:assembly unPointer:YES];
+			[[self leftOperand] assemble:assembly unPointered:YES];
 			[assembly push:OPC_(PUSH, REG_(R0))];
-			[[self rigthOperand] assemble:assembly unPointer:YES];
+			[[self rigthOperand] assemble:assembly unPointered:YES];
 			[assembly push:OPC_(MOV, REG_(R1), REG_(R0))];
 			[assembly push:OPC_(POP, REG_(R0))];
 			YASLOpcodes opcode = [YASLTranslationExpression operationToOpcode:[self expressionOperator]];
@@ -242,7 +252,6 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 				default:
 					break;
 			}
-			if (unPointer) operand = [operand asPointer];
 			[declaration.reference addReferent:operand];
 			[assembly push:OPC_(MOV, REG_(R0), operand)];
 			break;
@@ -252,7 +261,6 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 			break;
 	}
 	
-	return YES;
 }
 
 @end

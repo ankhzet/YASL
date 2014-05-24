@@ -6,10 +6,10 @@
 //  Copyright (c) 2014 Ankh. All rights reserved.
 //
 
-#import "YASLTokenizer.h"
+#import "YASLBNFTokenizer.h"
 
 @class YASLGrammar;
-@interface YASLBNFParser : YASLTokenizer
+@interface YASLBNFParser : YASLBNFTokenizer
 
 - (YASLGrammar *) buildGrammar;
 

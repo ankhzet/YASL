@@ -13,8 +13,6 @@
 #import "YASLToken.h"
 #import "YASLNonfatalException.h"
 
-#define _VERBOSE_DEBUG
-
 NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 
 @implementation YASLGrammarNode
@@ -39,15 +37,15 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 //	NSUInteger errorState = [assembly pushExceptionStackState];
 
 	@try {
-#ifdef VERBOSE_DEBUG
+#ifdef VERBOSE_SYNTAX
 		if (self.name) {
 			NSLog(@"%@:", self.name);
 		}
 #endif
 		BOOL matches = [self matches:match for:assembly];
-#ifdef VERBOSE_DEBUG
-		if (self.name) {
-			NSString *matchedTokensStr = [match stackToStringFrom:tokensMarker till:[match top]];
+#ifdef VERBOSE_SYNTAX
+		if (self.name && matches) {
+			NSString *matchedTokensStr = [match stackToStringFrom:tokensMarker till:[match top] withContext:YES];
 			if ([matchedTokensStr length]) {
 				NSDictionary *YN = @{@YES: @"+", @NO: @" "};
 				NSLog(@"%@%@: %@\n%@\n", YN[@(matches)], self.name, matchedTokensStr, match);
@@ -87,11 +85,16 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 			an.grammarNode = self;
 			an.assembly = assemblies;
 			an.tokensRange = NSMakeRange(state, state - [match pushState]);
+#ifdef VERBOSE_ASSEMBLY
+			an.tokensAssembly = match;
+			an.topToken = [match top];
+			an.bottomToken = tokensMarker;
+#endif
 			[assembly dropPopped];
 			[assembly push:an];
 			return YES;
 		} else
-			[YASLGrammarNode raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
+			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
 	}
 	@catch (YASLNonfatalException *exception) {
 		[match popException];
@@ -105,7 +108,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	return NO;
 }
 
-+ (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
+- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
 	va_list args;
   va_start(args, msg);
 	NSString *formatted = [[NSString alloc] initWithFormat:msg arguments:args];

@@ -42,4 +42,7 @@
 	return [self.link match:match andAssembly:assembly];
 }
 
+- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
+}
+
 @end

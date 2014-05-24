@@ -11,6 +11,9 @@
 #import <Foundation/Foundation.h>
 #import "YASLCodeCommons.h"
 
+extern NSString *const OPCODE_NAMES[YASLOpcodesMAX];
+extern NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1];
+
 @interface YASLInstruction : NSObject {
 	YASLCodeInstruction *instruction;
 	void *immediates;
@@ -24,5 +27,6 @@
 - (void) setInstruction:(YASLCodeInstruction *)i;
 - (YASLCodeInstruction *) instruction;
 - (void) setImmediatePtr:(void *)ptr;
+- (void) setLabelRefs:(NSArray *)refs;
 
 @end

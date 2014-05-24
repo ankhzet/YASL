@@ -18,7 +18,16 @@
 	[(id)self.beginsWith addCharactersInString:@"_"];
 	self.charset = [self.beginsWith mutableCopy];
 	[(id)self.charset formUnionWithCharacterSet:[NSCharacterSet decimalDigitCharacterSet]];
-	[(id)self.charset addCharactersInString:@"-"];
+
+	return self;
+}
+
+- (id)initExtendedSyntax:(BOOL)extended {
+	if (!(self = [self init]))
+		return self;
+
+	if (extended)
+		[(id)self.charset addCharactersInString:@"-"];
 
 	return self;
 }

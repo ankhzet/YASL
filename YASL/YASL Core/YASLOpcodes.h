@@ -9,6 +9,18 @@
 #ifndef YASL_YASLOpcodes_h
 #define YASL_YASLOpcodes_h
 
+typedef NS_ENUM(NSUInteger, YASLOperandAccessType) {
+	YASLOperandAccessTypeNone        = 0,
+	YASLOperandAccessTypeReadFirst   = 1 << 0,
+	YASLOperandAccessTypeReadSecond  = 1 << 1,
+	YASLOperandAccessTypeWriteFirst  = 1 << 2,
+	YASLOperandAccessTypeReadAll     = 1 << 3,
+	YASLOperandAccessTypeWriteAll    = 1 << 4,
+	YASLOperandAccessTypeModifiesR0  = 1 << 5,
+	YASLOperandAccessTypeImpactsFlow = 1 << 6,
+	YASLOperandAccessTypeImpactsStack= 1 << 7,
+};
+
 typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_NOP = 0,
 
@@ -21,8 +33,11 @@ typedef NS_ENUM (NSUInteger, YASLOpcodes) {
 	OPC_INC,
 	OPC_DEC,
 	OPC_MOV,
+	OPC_INV,
+	OPC_NEG,
 
 	// binary logic
+	OPC_NOT,
 	OPC_OR,
 	OPC_AND,
 	OPC_XOR,

@@ -10,10 +10,7 @@
 #import "Kiwi.h"
 #import "YASLBasicAssembler.h"
 #import "YASLDisassembler.h"
-#import "YASLCPU.h"
-#import "YASLRAM.h"
-#import "YASLStack.h"
-#import "YASLOpcodes.h"
+#import "YASLVMBuilder.h"
 #import "YASLCoreLangClasses.h"
 
 SPEC_BEGIN(YASLAssemblerSpec)
@@ -72,20 +69,18 @@ describe(@"YASLAssembler", ^{
 		YASLDeclarationScope *globalScope = globalDeclarationScope.currentScope;
 
 		YASLAssembly *assembly = [YASLAssembly new];
-		[result1 assemble:assembly unPointer:YES];
+		[result1 assemble:assembly];
 		[globalScope.placementManager calcPlacementForScope:globalScope];
 
 		NSUInteger ramSize = 2048;
 		YASLInt ip = 128;
-		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:ramSize];
-		YASLRAM *ram = cpu->ram;
-		YASLStack *stack = cpu->stack;
-
+		YASLVMBuilder *builder = [YASLVMBuilder new];
+		YASLVM *vm = [builder buildVM];
+		YASLRAM *ram = vm.ram;
+		YASLCPU *cpu = vm.cpu;
 		memset([ram dataAt:0], 0, ramSize);
-		stack.size = 128;
-		stack.base = ram.size - stack.size;
 		[cpu setReg:YASLRegisterIIP value:ip];
-		[cpu setReg:YASLRegisterISP value:stack.base];
+		[cpu setReg:YASLRegisterISP value:DEFAULT_STACK_BASE];
 
 		void *frame = [ram dataAt:ip], *codePtr = frame;
 		[assembly push:OPC_(HALT)];
@@ -123,32 +118,6 @@ describe(@"YASLAssembler", ^{
 				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
 			}
 		}
-
-//		assembly = [YASLAssembly new];
-//		[result1 assemble:assembly unPointer:YES];
-//
-//		assembly = [[YASLAssembly alloc] initReverseAssembly:assembly];
-//		memset([ram dataAt:0], 0, 512);
-//		codePtr = frame;
-//		while ([assembly notEmpty]) {
-//			id top = [assembly pop];
-//			if ([top isKindOfClass:[YASLOpcode class]]) {
-//				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
-//			} else if ([top isKindOfClass:[YASLCodeAddressReference class]]) {
-//				[(YASLCodeAddressReference *)top addressResolved:codePtr - frame];
-//			}
-//		}
-//
-//		[assembly restoreFullStack];
-//		codePtr = frame;
-//		while ([assembly notEmpty]) {
-//			id top = [assembly pop];
-//			if ([top isKindOfClass:[YASLOpcode class]]) {
-//				codePtr = [((YASLOpcode *)top) toCodeInstruction:codePtr];
-//			} else if ([top isKindOfClass:[YASLCodeAddressReference class]]) {
-////				[(YASLCodeAddressReference *)top addressResolved:codePtr - frame];
-//			}
-//		}
 
 		YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:cpu];
 

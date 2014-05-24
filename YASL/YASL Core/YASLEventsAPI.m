@@ -15,6 +15,7 @@ NSString *NATIVE_EVENT_OPEN = @"";
 @interface YASLEventsAPI () {
 	NSMutableArray *events;
 	NSMutableDictionary *namedEvents;
+	id null;
 }
 
 @end
@@ -27,6 +28,8 @@ NSString *NATIVE_EVENT_OPEN = @"";
 
 	events = [NSMutableArray arrayWithObject:[NSNull null]];
 	namedEvents = [NSMutableDictionary dictionary];
+
+	null = [NSNull null];
 	return self;
 }
 
@@ -37,11 +40,13 @@ NSString *NATIVE_EVENT_OPEN = @"";
 }
 
 - (YASLEvent *) findByHandle:(YASLInt)handle {
-	return ((handle > 0) && (handle < [events count])) ? events[handle] : nil;
+	YASLEvent *event = ((handle > 0) && (handle < [events count])) ? events[handle] : nil;
+	return (event != null) ? event : nil;
 }
 
 - (YASLEvent *) findByName:(NSString *)name {
-	return namedEvents[name];
+	YASLEvent *event = namedEvents[name];
+	return (event != null) ? event : nil;
 }
 
 - (YASLEvent *) createEventWithName:(NSString *)name initialState:(YASLInt)state autoreset:(BOOL)autoreset {
@@ -79,7 +84,7 @@ NSString *NATIVE_EVENT_OPEN = @"";
 }
 
 - (YASLInt) closeEvent:(YASLInt)handle {
-	YASLEvent *event = ((handle > 0) && (handle < [events count])) ? events[handle] : nil;
+	YASLEvent *event = [self findByHandle:handle];
 
 	if (!event)
 		return YASL_INVALID_HANDLE;

@@ -31,7 +31,7 @@
 	YASLToken *token = [specificDeclarators lastObject];
 	[specificDeclarators removeObject:token];
 
-	YASLTranslationDeclarator *declarator = [YASLTranslationDeclarator nodeInScope:self.declarationScope.currentScope withType:YASLTranslationNodeTypeInitializer];
+	YASLTranslationDeclarator *declarator = [YASLTranslationDeclarator nodeInScope:[self scope] withType:YASLTranslationNodeTypeInitializer];
 	declarator.declaratorIdentifier = token.value;
 	declarator.declaratorSpecifiers = specificDeclarators;
 	declarator.isPointer = 0;

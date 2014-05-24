@@ -39,49 +39,55 @@
             </BuildableReference>
             <SkippedTests>
                <Test
-                  Identifier = "YASLNativeFunctionSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLAssembler_VarDeclarationProcessorSpec">
+                  Identifier = "YASLCPUSpec">
                </Test>
                <Test
                   Identifier = "YASLAssembler_ExpressionsProcessorSpec">
                </Test>
                <Test
-                  Identifier = "YASLStackSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLThreadsAPISpec">
-               </Test>
-               <Test
-                  Identifier = "YASLTokenizerSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLInstructionSpec">
+                  Identifier = "YASLAssemblerSpec">
                </Test>
                <Test
                   Identifier = "YASLBNFParserSpec">
                </Test>
                <Test
-                  Identifier = "YASLAssembler_TypeDeclarationProcessorSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLCPUSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLRAMSpec">
-               </Test>
-               <Test
-                  Identifier = "YASLOperationProductionsAssemblerSpec">
+                  Identifier = "YASLTokenizerSpec">
                </Test>
                <Test
                   Identifier = "YASLExpressionSolverSpec">
                </Test>
                <Test
+                  Identifier = "YASLAssembler_FunctionProcessorSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLAssembler_TypeDeclarationProcessorSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLOperationProductionsAssemblerSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLNativeFunctionSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLStackSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLInstructionSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLThreadsAPISpec">
+               </Test>
+               <Test
+                  Identifier = "YASLRAMSpec">
+               </Test>
+               <Test
                   Identifier = "YASLAssembler_StatementProcessorSpec">
                </Test>
                <Test
-                  Identifier = "YASLAssembler_FunctionProcessorSpec">
+                  Identifier = "YASLAssembler_VarDeclarationProcessorSpec">
+               </Test>
+               <Test
+                  Identifier = "YASLCompilerSpec">
                </Test>
             </SkippedTests>
          </TestableReference>

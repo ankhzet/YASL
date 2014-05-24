@@ -7,6 +7,7 @@
 //
 
 #import "YASLAlternationNode.h"
+#import "YASLAssembly.h"
 
 @implementation YASLAlternationNode
 
@@ -21,7 +22,11 @@
 //
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
+	NSUInteger errorState = [assembly pushExceptionStackState];
 	for (YASLGrammarNode *node in self.subnodes) {
+		[assembly popExceptionStackState:errorState];
+		errorState = [assembly pushExceptionStackState];
+
     BOOL state = [node match:match andAssembly:assembly];
 		if (state)
 			return YES;

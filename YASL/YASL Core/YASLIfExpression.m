@@ -23,7 +23,7 @@
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
 	int nonConstants = 0;
 	// first, try to fold operands
-	for (YASLTranslationExpression *operand in self.subnodes) {
+	for (YASLTranslationExpression *operand in [self nodesEnumerator:NO]) {
 		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
     [foldedOperands addObject:folded];
 		if (folded.expressionType != YASLExpressionTypeConstant)
@@ -44,7 +44,7 @@
 		foldedOperands[2] = elseExpression = [cast foldConstantExpressionWithSolver:solver];
 	}
 
-	self.subnodes = foldedOperands;
+	[self setSubNodes:foldedOperands];
 
 	if (condition.expressionType == YASLExpressionTypeConstant) {
 		NSLog(@"Constant condition in ternar expression: %@", self);
@@ -56,8 +56,8 @@
 }
 
 - (NSString *) toString {
-	NSString *elseBlock = [self operandsCount] <3 ? @"" : [NSString stringWithFormat:@" else {%@};", [self.subnodes[2] toString]];
-	NSString *subs = [NSString stringWithFormat:@"if (%@) {%@};%@", [self.subnodes[0] toString], [self.subnodes[1] toString], elseBlock];
+	NSString *elseBlock = [self nodesCount] <3 ? @"" : [NSString stringWithFormat:@" else {%@};", [[self nthOperand:2] toString]];
+	NSString *subs = [NSString stringWithFormat:@"if (%@) {%@};%@", [[self nthOperand:0] toString], [[self nthOperand:1] toString], elseBlock];
 
 	return [NSString stringWithFormat:@"(%@)", subs];
 }
@@ -77,24 +77,23 @@
 // asm false-block -> mov r0, false-block
 //:outLabel
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
-	YASLOpcodeOperand *outLabel = IMM_(0);
+- (void) assemble:(YASLAssembly *)assembly {
 	YASLOpcodeOperand *elseLabel = IMM_(0);
 
 	YASLCodeAddressReference *outReference = [YASLCodeAddressReference new];
-	[outReference addReferent:outLabel];
+	YASLOpcodeOperand *outLabel = [outReference addNewOpcodeOperandReferent];
 
 	// assemble condition
-	[[self leftOperand] assemble:assembly unPointer:YES];
+	[[self leftOperand] assemble:assembly unPointered:YES];
 	// OPC_TEST r0, r0
 //	[assembly push:OPC_(TEST, REG_(R0), REG_(R0))];
 
 	// OPC_JNZ :elseLabel
 	[assembly push:OPC_(JZ, elseLabel)];
 	// assemble true-block
-	[[self rigthOperand] assemble:assembly unPointer:unPointer];
+	[[self rigthOperand] assemble:assembly unPointered:YES];
 
-	BOOL hasElseBlock = [self operandsCount] > 2;
+	BOOL hasElseBlock = [self nodesCount] > 2;
 	if (hasElseBlock) {
 		YASLCodeAddressReference *falseBlockReference = [YASLCodeAddressReference new];
 		[falseBlockReference addReferent:elseLabel];
@@ -104,13 +103,11 @@
 		// :falseLabel
 		[assembly push:falseBlockReference];
 		// assemble false-block
-		[[self thirdOperand] assemble:assembly unPointer:unPointer];
+		[[self thirdOperand] assemble:assembly unPointered:YES];
 	} else
 		[outReference addReferent:elseLabel];
 	// :outLabel
 	[assembly push:outReference];
-
-	return YES;
 }
 
 @end

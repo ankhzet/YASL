@@ -73,6 +73,7 @@ method-param-group = type-specifier declarator-list;
 /* ***** Var declaration ***** */
 
 var-declaration = type-specifier init-declarator-list;
+init-declarator-list = init-declarator (','! init-declarator)*;
 
 /* init-declarator: part of the statement, that initializes variables.
  int myInt = myInt2 = a * b;
@@ -82,8 +83,6 @@ var-declaration = type-specifier init-declarator-list;
 
 init-declarator = declarator ('='! initializer)?;
 
-init-declarator-list = init-declarator (','! init-declarator)*;
-
 initializer = assignment-initializer | initializer-list;
 
 initializer-list = '{'! initializer (','! initializer)* ','? '}'!;
@@ -92,10 +91,10 @@ assignment-initializer = assignment-expression;
 
 /* ***** Statements ***** */
 
-statement = expression-statement | compound-statement | jump-statement | selection-statement;
+statement = compound-statement | jump-statement | selection-statement | iteration-statement | expression-statement;
 
 expression-statement = expression? ';'!;
-compound-statement = '{'! (declaration ';'! | statement)* '}'!;
+compound-statement = '{'! (statement | declaration ';'!)* '}'!;
 
 selection-statement = selection-if;// | selection-switch;
 selection-if = 'if'! '('! expression ')'! statement selection-else?;
@@ -107,6 +106,15 @@ jump-return = 'return'! expression?;
 continue = 'continue'!;
 break = 'break'!;
 
+iteration-statement = straight-while | straight-do | straight-for;
+straight-while = 'while'! '('! expression ')'! statement?;
+straight-do = 'do'! statement? 'while'! '('! expression ')'! ';'!;
+straight-for = 'for'! '('! for-initializer ';'! for-condition ';'! for-iterator ')'! for-statements;
+
+for-statements = statement?;
+for-initializer = declaration?;
+for-condition = expression?;
+for-iterator = expression?;
 
 /* ***** Expressions ***** */
 
@@ -115,17 +123,17 @@ constant-expression = conditional-expression;
 conditional-expression = ternar-expression;
 ternar-expression = logical-or-expression ('?'! conditional-expression ':'! conditional-expression)?;
 
-logical-or-expression = logical-and-expression ('||' logical-or-expression)*;
-logical-and-expression = inclusive-or-expression ('&&' logical-and-expression)*;
-inclusive-or-expression = exclusive-or-expression ('|' inclusive-or-expression)*;
-exclusive-or-expression = and-expression ('^' exclusive-or-expression)*;
-and-expression = equality-expression ('&' and-expression)*;
+logical-or-expression = logical-and-expression ('||' logical-and-expression)*;
+logical-and-expression = inclusive-or-expression ('&&' inclusive-or-expression)*;
+inclusive-or-expression = exclusive-or-expression ('|' exclusive-or-expression)*;
+exclusive-or-expression = and-expression ('^' and-expression)*;
+and-expression = equality-expression ('&' equality-expression)*;
 
-equality-expression = relational-expression (('==' | '!=') equality-expression)*;
-relational-expression = shift-expression (('<' | '<=' | '>' | '>=') relational-expression)*;
-shift-expression = additive-expression (('<<' | '>>') shift-expression)*;
-additive-expression = multiplicative-expression (('+' | '-') additive-expression)*;
-multiplicative-expression = cast-expression (('*' | '/' | '%') multiplicative-expression)*;
+equality-expression = relational-expression (('==' | '!=') relational-expression)*;
+relational-expression = shift-expression (('<' | '<=' | '>' | '>=') shift-expression)*;
+shift-expression = additive-expression (('<<' | '>>') additive-expression)*;
+additive-expression = multiplicative-expression (('+' | '-') multiplicative-expression)*;
+multiplicative-expression = cast-expression (('*' | '/' | '%') cast-expression)*;
 
 cast-expression = unary-expression | type-cast;
 type-cast = '('! typedef-type ')'! cast-expression;
@@ -179,11 +187,17 @@ assignment-expression = unary-expression assignment-operator assignment-expressi
 assignment-operator = ('*' | '/' | '%' | '+' | '-' | '<<' | '>>' | '&' | '^' | '|')? '='!;
 
 unary-operator = '&' | '*' | '+' | '-' | '~' | '!';
-unary-increment = '++';
-unary-decrement = '--';
+unary-increment = '++'!;
+unary-decrement = '--'!;
 
 
 /* ***** Function definition ***** */
 
-function-definition = type-specifier declarator function-body;
+function-definition = function-forward-declaration | function-declaration;
+function-forward-declaration = function-signature ';'!;
+function-declaration = function-signature function-body?;
+function-signature = function-specifier type-specifier declarator;
+function-specifier = (native | extern)*;
+native = 'native'!;
+extern = 'extern'!;
 function-body = compound-statement;

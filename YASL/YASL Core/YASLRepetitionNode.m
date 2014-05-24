@@ -7,6 +7,7 @@
 //
 
 #import "YASLRepetitionNode.h"
+#import "YASLAssembly.h"
 
 NSString *const YASLRepetitionSpecifierNames[YASLRepetitionSpecifierMAX] = {
 	[YASLRepetitionSpecifierOnce] = @"?",
@@ -38,11 +39,14 @@ NSString *const YASLRepetitionSpecifierNames[YASLRepetitionSpecifierMAX] = {
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
+	NSUInteger errorState = [match pushExceptionStackState];
 	BOOL state = [self.linked match:match andAssembly:assembly];
 
 	switch (self.specifier) {
-		case YASLRepetitionSpecifierOnce:
+		case YASLRepetitionSpecifierOnce: {
+			[match popExceptionStackState:errorState];
 			return YES;
+		}
 
 		case YASLRepetitionSpecifierAtLeastOnce:
 			if (!state)
@@ -52,6 +56,8 @@ NSString *const YASLRepetitionSpecifierNames[YASLRepetitionSpecifierMAX] = {
 			while (state) {
 				state = [self.linked match:match andAssembly:assembly];
 			}
+
+			[match popExceptionStackState:errorState];
 			return YES;
 
 		default:;

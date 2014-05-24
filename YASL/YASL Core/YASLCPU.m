@@ -16,6 +16,10 @@
 #import "YASLThread.h"
 
 @interface YASLCPU () {
+@public
+	YASLRAM *_ram;
+	YASLStack *_stack;
+@protected
 	YASLThreadStruct state;
 	__weak YASLNativeFunctions *nativeFunctions;
 }
@@ -27,7 +31,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 
 	YASLInt *temp = ptr;
 	if (type & YASLOperandTypeImmediate) {
-		*temp = *(YASLInt *)[cpu->ram dataAt:*ip];
+		*temp = *(YASLInt *)[cpu->_ram dataAt:*ip];
 		*ip += sizeof(YASLInt);
 	}
 
@@ -40,7 +44,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 	}
 
 	if (type & YASLOperandTypePointer)
-		temp = [cpu->ram dataAt:*temp];
+		temp = [cpu->_ram dataAt:*temp];
 
 	return temp;
 };
@@ -53,28 +57,39 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 };
 
 @implementation YASLCPU
+@synthesize ram = _ram;
+@synthesize stack = _stack;
 
-+ (instancetype) cpuWithRAMSize:(NSUInteger)size {
-	return [(YASLCPU *)[self alloc] initWithRAMSize:size];
++ (instancetype) cpu {
+	return [(YASLCPU *)[self alloc] init];
 }
 
 //TODO: move ram/stack/eventmanager creation outside of cpu class
 
-- (id)initWithRAMSize:(NSUInteger)size {
+- (id)init {
 	if (!(self = [super initWithEventsManager:[YASLEventsAPI new]]))
 		return self;
 
-	ram = [YASLRAM ramWithSize:size];
-	stack = [YASLStack stackForRAM:ram];
-	stack.size = ram.size * 0.2;
-	stack.base = ram.size - stack.size;
-
 	nativeFunctions = [YASLNativeFunctions sharedFunctions];
-	nativeFunctions.attachedRAM = ram;
-	nativeFunctions.attachedStack = stack;
 	nativeFunctions.attachedCPU = self;
 
 	return self;
+}
+
+- (void) setRam:(YASLRAM *)ram {
+	if (_ram == ram)
+		return;
+
+	_ram = ram;
+	nativeFunctions.attachedRAM = ram;
+}
+
+- (void) setStack:(YASLStack *)stack {
+	if (_stack == stack)
+		return;
+
+	_stack = stack;
+	nativeFunctions.attachedStack = stack;
 }
 
 - (YASLInt)regValue:(YASLIndexedRegister)reg {
@@ -95,17 +110,36 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 
 #pragma mark - CPU cycles
 
+- (void) setActiveThread:(YASLThread *)activeThread {
+	if (!activeThread)
+		return;
+
+	_stack.top = &threadData->registers[YASLRegisterISP];
+	if (activeThread->firstRun) {
+		[_stack push:activeThread->param];
+		[_stack push:0];
+		activeThread->firstRun = NO;
+	}
+}
+
 - (void) run {
 	NSUInteger steps = 0;
+	BOOL halted;
 	do {
-		if ([self switchThreads] != YASL_INVALID_HANDLE) {
+		do {
+			if (steps % 10 == 0) {
+				if ([self switchThreads] == YASL_INVALID_HANDLE)
+					break;
+			}
+
 			[self processInstruction];
 			steps = ++self.activeThread->steps;
-		} else
-			break;
-	} while (!(self.halted || threadData->halt || (steps % 50 == 0)));
+			halted = self.halted || threadData->halt;
+		} while (!(halted || (steps % 50 == 0)));
 
-	//TODO: here must be callback & sleep
+		//TODO: here must be callback & sleep
+
+	} while (!halted);
 }
 
 - (void) runTo {
@@ -127,10 +161,8 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 	threadData->halt = false;
 
 	YASLInt *ip = &threadData->registers[YASLRegisterIIP];
-	YASLInt *sp = &threadData->registers[YASLRegisterISP];
-	YASLInt stackOldTop = stack.top;
 
-	YASLCodeInstruction *instr = [ram dataAt:*ip];
+	YASLCodeInstruction *instr = [_ram dataAt:*ip];
 	*ip += sizeof(YASLCodeInstruction);
 
 	if (instr->opcode == OPC_NOP) {
@@ -161,8 +193,11 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 		case OPC_INC:	simpleSetter(threadData, op1, ++(*op1)); break;
 		case OPC_DEC: simpleSetter(threadData, op1, --(*op1)); break;
 		case OPC_MOV: simpleSetter(threadData, op1, *op2); break;
+		case OPC_INV: simpleSetter(threadData, op1, ~*op1); break;
+		case OPC_NEG: simpleSetter(threadData, op1, -*op1); break;
 
 			// binary logic
+		case OPC_NOT: simpleSetter(threadData, op1, !*op1); break;
 		case OPC_OR : simpleSetter(threadData, op1, *op1 | *op2); break;
 		case OPC_AND: simpleSetter(threadData, op1, *op1 & *op2); break;
 		case OPC_XOR: simpleSetter(threadData, op1, *op1 ^ *op2); break;
@@ -170,19 +205,19 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 		case OPC_SHR: simpleSetter(threadData, op1, *op1 >> *op2); break;
 
 			// stack
-		case OPC_PUSH : [stack push:*op1]; break;
-		case OPC_POP  : simpleSetter(threadData, op1, [stack pop]); break;
-		case OPC_PUSHV: [stack pushSpace:*op1]; break;
-		case OPC_POPV : [stack popSpace:*op1]; break;
+		case OPC_PUSH : [_stack push:*op1]; break;
+		case OPC_POP  : simpleSetter(threadData, op1, [_stack pop]); break;
+		case OPC_PUSHV: [_stack pushSpace:*op1]; break;
+		case OPC_POPV : [_stack popSpace:*op1]; break;
 
 		case OPC_SAVE :
 			for (int r = REG_INDEX(instr->r1); r <= REG_INDEX(instr->r2); r++) {
-				[stack push:threadData->registers[r]];
+				[_stack push:threadData->registers[r]];
 			}
 			break;
 		case OPC_LOAD :
 			for (int r = REG_INDEX(instr->r1); r >= REG_INDEX(instr->r2); r--) {
-				threadData->registers[r] = [stack pop];
+				threadData->registers[r] = [_stack pop];
 			}
 			break;
 
@@ -198,17 +233,17 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 			switch (instr->opcode) {
 					// routins
 				case OPC_CALL: {
-					[stack push:*ip];
+					[_stack push:*ip];
 					*ip = *op1;
 					break;
 				}
 				case OPC_RET: {
-					*ip = [stack pop];
+					*ip = [_stack pop];
 					break;
 				}
 				case OPC_RETV: {
-					*ip = [stack pop];
-					[stack setTop:[stack top] + *op1];
+					*ip = [_stack pop];
+					[_stack popSpace:*op1];
 					break;
 				}
 					// native functions call
@@ -220,12 +255,12 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 						//TODO: unknown native function instruction handling
 						return;
 					}
-					YASLInt returnValue = [function callOnParamsBase:[ram dataAt:stack.base + stack.top - sizeof(YASLInt)]];
+					YASLInt returnValue = [function callOnParamsBase:[_ram dataAt:*_stack.top - sizeof(YASLInt)]];
 
 					[self setReg:YASLRegisterIR0 value:returnValue];
 
 					if (function.params)
-						[stack popSpace:function.params];
+						[_stack popSpace:function.params];
 
 					break;
 				}
@@ -270,8 +305,6 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 					break;
 			}
 	}
-	if (stackOldTop != stack.top) *sp = stack.top;
-	if (stackOldTop != *sp) stack.top = *sp;
 }
 
 - (YASLInt) disassemblyAtIP:(YASLInt)ip Instr:(YASLCodeInstruction **)instr opcode1:(YASLInt **)op1 opcode2:(YASLInt **)op2 {
@@ -279,7 +312,7 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 
 	YASLInt *_ip = &ip;
 
-	*instr = [ram dataAt:*_ip];
+	*instr = [_ram dataAt:*_ip];
 	*_ip += sizeof(YASLCodeInstruction);
 
 	if ((*instr)->opcode == OPC_NOP) {

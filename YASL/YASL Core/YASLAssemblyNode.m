@@ -15,10 +15,15 @@
 @implementation YASLAssemblyNode
 
 - (NSString *) descriptionTabbed:(NSString *)tab {
-	NSString *stack = @"";//[self.tokensAssembly stackToStringFrom:self.bottomToken till:self.topToken];
-	NSString *assembly = self.assembly ? [self.assembly descriptionTabbed:[NSObject progressTab:tab]] : @"";
+#ifdef VERBOSE_ASSEMBLY
+	NSString *stack = [self.tokensAssembly stackToStringFrom:self.bottomToken till:self.topToken withContext:YES];
+	stack = [NSString stringWithFormat:@"[%@]", stack];
+#else
+	NSString *stack = @"";
+#endif
+	NSString *assembly = self.assembly ? [self.assembly descriptionTabbed:@""] : @"";
 	assembly = self.assembly ? [NSString stringWithFormat:@"\n%@", assembly] : assembly;
-	return [[NSString stringWithFormat:@"\nAN %@: [%@]%@\n", self.grammarNode.name, stack, assembly] descriptionTabbed:tab];
+	return [[NSString stringWithFormat:@"\nAN %@: %@%@\n", self.grammarNode.name, stack, assembly] descriptionTabbed:tab];
 }
 
 - (NSString *) description {

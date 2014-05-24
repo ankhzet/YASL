@@ -7,6 +7,7 @@
 //
 
 #import "NSObject+TabbedDescription.h"
+#import "YASLNoNullsEnumerator.h"
 
 #import "YASLCodeCommons.h"
 
@@ -16,8 +17,14 @@
 #import "YASLLocalDeclarations.h"
 #import "YASLLocalDeclaration.h"
 #import "YASLDataType.h"
+#import "YASLArrayDataType.h"
 
+#import "YASLBuiltInTypeVoidInstance.h"
 #import "YASLBuiltInTypeIntInstance.h"
 #import "YASLBuiltInTypeFloatInstance.h"
 #import "YASLBuiltInTypeBoolInstance.h"
 #import "YASLBuiltInTypeCharInstance.h"
+
+#import "YASLNativeFunction.h"
+#import "YASLNativeFunctions.h"
+#import "YASLNativeInterface.h"

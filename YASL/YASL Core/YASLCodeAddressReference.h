@@ -16,8 +16,12 @@
 @property (nonatomic) YASLInt base;
 @property (nonatomic) YASLInt address;
 
-- (void) addReferent:(YASLOpcodeOperand *)operand;
++ (instancetype) referenceWithName:(NSString *)name;
+
+- (YASLOpcodeOperand *) addReferent:(YASLOpcodeOperand *)operand;
+- (YASLOpcodeOperand *) addNewOpcodeOperandReferent;
 - (void) addressResolved:(YASLInt)referencedAddress;
 - (void) updateReferents;
+- (YASLInt) complexAddress;
 
 @end

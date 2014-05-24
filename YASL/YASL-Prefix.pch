@@ -17,6 +17,9 @@
 
 #define USECUSTOMLOGS 1
 
+#define _VERBOSE_SYNTAX
+#define VERBOSE_ASSEMBLY
+
 #ifdef USECUSTOMLOGS
 #define NSLog NSLogShort
 

@@ -10,6 +10,12 @@
 
 @implementation YASLCodeAddressReference
 
++ (instancetype) referenceWithName:(NSString *)name {
+	YASLCodeAddressReference *ref = [self new];
+	ref.name = name;
+	return ref;
+}
+
 - (id)init {
 	if (!(self = [super init]))
 		return self;
@@ -18,8 +24,13 @@
 	return self;
 }
 
-- (void) addReferent:(YASLOpcodeOperand *)operand {
+- (YASLOpcodeOperand *) addReferent:(YASLOpcodeOperand *)operand {
 	[(NSMutableArray *)_references addObject:operand];
+	return operand;
+}
+
+- (YASLOpcodeOperand *) addNewOpcodeOperandReferent {
+	return [self addReferent:IMM_(0)];
 }
 
 - (void) addressResolved:(YASLInt)referencedAddress {
@@ -28,15 +39,25 @@
 
 - (void) setAddress:(YASLInt)address {
 	_address = address;
-	NSLog(@"%@ now references at %.4d", self.name, address + self.base);
+//	NSLog(@"%@ now references at %.4d", self.name, address + self.base);
 	[self updateReferents];
 }
 
+- (YASLInt) complexAddress {
+	return _base + _address;
+}
+
 - (void) updateReferents {
-	NSNumber *address = @(self.address + self.base);
+	NSNumber *address = @([self complexAddress]);
 	for (YASLOpcodeOperand *operand in self.references) {
     operand->immediate = address;
 	}
+}
+
+- (NSString *) description {
+	NSString *offsets = self.address ? [NSString stringWithFormat:@"%@%d", self.address >= 0 ? @"+" : @"", self.address] : @"";
+	offsets = self.base ? [NSString stringWithFormat:@"%d%@", self.base, offsets] : offsets;
+	return [NSString stringWithFormat:@"<#%@%@>:\n", self.name ? self.name : @"anon", offsets];
 }
 
 @end

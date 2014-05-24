@@ -15,7 +15,7 @@ SPEC_BEGIN(YASLAssembler_ExpressionsProcessorSpec)
 describe(@"YASLAssembler+ExpressionsProcessor", ^{
 	it(@"should assemble expressions", ^{
 		NSString *source1 = @"script test;\
-		int i1 = (1 + 2 - (3 + 4 - (5 + 6)) + 7 - 8 - 9);\
+		int i1 = 1 + 2 - 3 + 4 - 5 + 6 + 7 - 8 - 9;\
 		";
 
 		NSString *source2 = @"script test;\
@@ -31,7 +31,7 @@ describe(@"YASLAssembler+ExpressionsProcessor", ^{
 		";
 
 		NSString *source5 = @"script test;\
-		int i5 = 2 | 3, i6 = 11 * (12 + 13), i7 = 3 ^ 4;\
+		int i5 = 2 | 3, i6 = 11 * (12 + 13), i7 = i5 ^ 4;\
 		";
 
 		NSString *source6 = @"script test;\
@@ -44,6 +44,9 @@ describe(@"YASLAssembler+ExpressionsProcessor", ^{
 
 		YASLDataTypesManager *typeManager = [YASLDataTypesManager new];
 		[typeManager registerType:[YASLBuiltInTypeIntInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeFloatInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeBoolInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeCharInstance new]];
 		YASLLocalDeclarations *globalDeclarationScope = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:typeManager];
 
 		YASLAssembler *assembler = [YASLAssembler new];

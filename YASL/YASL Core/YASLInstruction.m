@@ -8,6 +8,7 @@
 
 #import "YASLInstruction.h"
 #import "YASLOpcodes.h"
+#import "YASLCodeAddressReference.h"
 
 NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_NOP  ] = @"NOP",
@@ -19,7 +20,10 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_INC  ] = @"INC",
   [OPC_DEC  ] = @"DEC",
   [OPC_MOV  ] = @"MOV",
+  [OPC_INV  ] = @"INV",
+  [OPC_NEG  ] = @"NEG",
 
+  [OPC_NOT  ] = @"NOT",
   [OPC_AND  ] = @"AND",
   [OPC_OR   ] = @"DIV",
   [OPC_XOR  ] = @"XOR",
@@ -69,7 +73,9 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
   [YASLRegisterIBP] = @"BP",
 };
 
-@implementation YASLInstruction
+@implementation YASLInstruction {
+	NSArray *labelRefs;
+}
 
 + (instancetype) instruction:(YASLCodeInstruction *)i {
 	return [(YASLInstruction *)[self alloc] initWithInstruction:i];
@@ -95,12 +101,29 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 	immediates = ptr;
 }
 
+- (void) setLabelRefs:(NSArray *)refs {
+	labelRefs = refs;
+}
+
+- (NSString *) associatedLabel:(YASLInt)ip {
+	NSMutableString *result = [@"" mutableCopy];
+	for (NSArray *refOffs in labelRefs) {
+		YASLCodeAddressReference * ref = refOffs[0];
+    if (ip == ref.address) {
+			[result appendFormat:@":%@",ref.name ? ref.name : @"?"];
+		}
+	}
+	return result;
+}
+
 - (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign {
 	if (immediates == NULL)
 		return sign ? @"+###" : @"###";
 
 	YASLInt i = *(YASLInt *)((char *)immediates + immediate * sizeof(YASLInt));
-	return [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
+	NSString *label = [self associatedLabel:i];
+	NSString *immediateStr = [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
+	return [label length] ? [NSString stringWithFormat:@"%@(%@)",label,immediateStr] : immediateStr;
 }
 
 - (NSString *) description {

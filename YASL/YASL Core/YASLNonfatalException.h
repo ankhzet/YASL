@@ -13,6 +13,7 @@
 @property (nonatomic) NSUInteger atLine;
 @property (nonatomic) NSUInteger atCollumn;
 @property (nonatomic) NSString *atToken;
+@property (nonatomic) NSUInteger stackGUID;
 
 + (instancetype) exceptionAtLine:(NSUInteger)line andCollumn:(NSUInteger)collumn withMsg:(NSString *)msg, ...;
 

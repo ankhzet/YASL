@@ -17,7 +17,7 @@ describe(@"YASLAssembler+StatementProcessor", ^{
 		NSString *source1 = @"script test;\r\
 		int i = 0;\r\
 		int j = 1, k, l = 10;\r\
-		{\r\
+		int main() {\r\
 			float m = 20, n = 40;\r\
 			int j = 50;\r\
 			k = 60;\r\

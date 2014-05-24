@@ -47,6 +47,9 @@ describe(@"YASLAssembler+VarDeclarationProcessor", ^{
 
 		YASLDataTypesManager *typeManager = [YASLDataTypesManager new];
 		[typeManager registerType:[YASLBuiltInTypeIntInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeFloatInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeBoolInstance new]];
+		[typeManager registerType:[YASLBuiltInTypeCharInstance new]];
 		YASLLocalDeclarations *globalDeclarationScope = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:typeManager];
 
 		YASLAssembler *assembler = [YASLAssembler new];

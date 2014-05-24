@@ -16,8 +16,7 @@
 
 @property (nonatomic) YASLRAM *ram;
 @property (nonatomic) YASLInt size;
-@property (nonatomic) YASLInt top;
-@property (nonatomic) YASLInt base;
+@property (nonatomic) YASLInt *top;
 
 + (instancetype) stackForRAM:(YASLRAM *)ram;
 

@@ -7,6 +7,7 @@
 //
 
 #import "YASLOpcode.h"
+#import "YASLInstruction.h"
 
 @implementation YASLOpcodeOperand
 
@@ -56,6 +57,48 @@
 	return self;
 }
 
+- (BOOL) isEqual:(id)object {
+	if (![object isKindOfClass:[self class]])
+		return NO;
+
+	YASLOpcodeOperand *o = object;
+	if ((self->type | YASLOperandTypePointer) != (o->type | YASLOperandTypePointer))
+		return NO;
+
+	if (self->type & YASLOperandTypeRegister)
+		if (self->reg != o->reg)
+			return NO;
+
+	if (self->type & YASLOperandTypeImmediate)
+		if (![self->immediate isEqual:o->immediate])
+			return NO;
+
+	return YES;
+}
+
+- (BOOL) isPointer {
+	return !!(type & YASLOperandTypePointer);
+}
+
+- (NSString *) immediateStrWithPlusSign:(BOOL)sign {
+	YASLInt i = [immediate intValue];
+	return [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
+}
+
+- (NSString *) description {
+	NSString *result = @"";
+	BOOL isPointer = !!(type & YASLOperandTypePointer);
+	BOOL isRegister = !!(type & YASLOperandTypeRegister);
+	BOOL isImmediate = !!(type & YASLOperandTypeImmediate);
+
+	NSString *r = isRegister ? REGISTER_NAMES[reg] : @"";
+	NSString *i = isImmediate ? [self immediateStrWithPlusSign:isRegister] : @"";
+	result = [NSString stringWithFormat:@"%@%@", r, i];
+	if (isPointer) result = [NSString stringWithFormat:@"[%@]", result];
+
+	return result;
+}
+
 @end
 
 @implementation YASLOpcode
@@ -82,6 +125,15 @@
 	}
 	return opcode;
 }
+
+- (YASLOpcodeOperand *) leftOperand {
+	return (operandsCount > YASLOperandCountNone) ? operands[0] : nil;
+}
+
+- (YASLOpcodeOperand *) rightOperand {
+	return (operandsCount > YASLOperandCountUnary) ? operands[1] : nil;
+}
+
 
 - (void *) toCodeInstruction:(void *)mem {
 	YASLCodeInstruction *i = mem;
@@ -143,6 +195,25 @@
 	}
 
 	return mem;
+}
+
+- (NSString *) description {
+	NSString *opcodeName = OPCODE_NAMES[opcode], *op1 = @"", *op2 = @"";
+	opcodeName = opcodeName ? [opcodeName stringByPaddingToLength:5 withString:@" " startingAtIndex:0] : @"XXXXX";
+	switch (operandsCount) {
+		case YASLOperandCountBinary: {
+			YASLOpcodeOperand *op = operands[1];
+			op2 = [NSString stringWithFormat:@", %@", [op description]];
+		}
+		case YASLOperandCountUnary: {
+			YASLOpcodeOperand *op = operands[0];
+			op1 = [op description];
+			break;
+		}
+		default:
+			break;
+	}
+	return [NSString stringWithFormat:@"%@ %@%@\n", opcodeName, op1, op2];
 }
 
 @end

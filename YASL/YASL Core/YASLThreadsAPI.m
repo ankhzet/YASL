@@ -34,6 +34,10 @@
 	return self;
 }
 
+- (NSUInteger) threadsCount {
+	return [enumerable count];
+}
+
 #pragma mark - Threads creation/suspend/resume/terminate
 
 - (YASLThread *) thread:(YASLInt)handle {
@@ -44,12 +48,13 @@
 - (YASLThread *) threadCreateWithEntryAt:(YASLInt)entry andState:(YASLThreadState)state andInitParam:(YASLInt)param waitable:(BOOL)waitable {
 	YASLThread *thread = [YASLThread thread:waitable withEventManager:self.eventsManager];
 	thread->data.registers[YASLRegisterIIP] = entry;
+	thread->param = param;
 	thread.state = state;
 	NSUInteger c = [threads count];
 	while (++c <= thread->handle) {
 		[threads addObject:[NSNull null]];
 	}
-	[threads setObject:threads atIndexedSubscript:thread->handle];
+	[threads setObject:thread atIndexedSubscript:thread->handle];
 	[enumerable addObject:thread];
 	return thread;
 }
@@ -108,7 +113,6 @@
 }
 
 - (void) setActiveThread:(YASLThread *)activeThread {
-	_activeThread = activeThread;
 }
 
 /*!
@@ -151,7 +155,7 @@
 }
 
 /*!
- Awakew threads, that was suspended via threadSuspend or threadWaitEvent.
+ Awake threads, that was suspended via threadSuspend or threadWaitEvent.
  */
 - (void) awakeThreads {
 	long long tick = [YASLThread ticksMsec];
@@ -187,21 +191,31 @@
 
 /*!
  Starts next execution cycle. Picks first running thread available, other threads will be marked as ready for execution.
- Also closed terminated threads, for which associated event has zero link count.
+ Also closes terminated threads, for which associated event has zero link count.
  */
 - (YASLInt) nextCycle {
 	YASLInt selected = YASL_INVALID_HANDLE;
 
+	NSMutableArray *pendingClose = [NSMutableArray arrayWithCapacity:[enumerable count]];
 	for (YASLThread *thread in enumerable) {
 		YASLThreadState state = thread.state;
+		//if not picked next thread yet - pick it
     if ((selected == YASL_INVALID_HANDLE) && (state == YASLThreadStateRunning))
 			selected = thread->handle;
 		else
+			//if thread terminated and all opened handles of it was closed - close thread
 			if ((state == YASLThreadStateTerminated) && ![_eventsManager findByHandle:thread->handle])
-				[self threadClose:thread->handle];
+				// can't close it in this loop - that will mutate `enumerable` array, so, fetch terminated threads and close them later
+				[pendingClose addObject:thread];
 			else
 				thread->runned = NO;
 	}
+
+	// closing fetched terminated threads
+	for (YASLThread *thread in pendingClose)
+		[self threadClose:thread->handle];
+
+	// return picked thread handle, if any
 	return selected;
 }
 

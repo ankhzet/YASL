@@ -8,10 +8,11 @@
 
 #import "YASLTranslationDeclarator.h"
 
-@class YASLLocalDeclaration;
+@class YASLLocalDeclaration, YASLNativeFunction;
 @interface YASLTranslationFunction : YASLTranslationDeclarator
 
 @property (nonatomic, readonly, weak) YASLLocalDeclaration *declaration;
+@property (nonatomic) YASLNativeFunction *native;
 
 + (instancetype) functionInScope:(YASLDeclarationScope *)scope withDeclaration:(YASLLocalDeclaration *)declaration;
 

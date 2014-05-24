@@ -17,8 +17,13 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 	[YASLTranslationNodeTypeRoot] = @"unit",
 };
 
+@interface YASLTranslationNode ()
+@end
 
-@implementation YASLTranslationNode
+@implementation YASLTranslationNode {
+	@protected
+	NSMutableArray *subnodes;
+}
 
 + (instancetype) nodeInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type {
 	return [(YASLTranslationNode *)[self alloc] initInScope:scope withType:type];
@@ -30,25 +35,83 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 	_type = type;
 	_declarationScope = scope;
-	_subnodes = [NSMutableArray array];
+	subnodes = [NSMutableArray array];
 	return self;
 }
 
+@end
+
+@implementation YASLTranslationNode (SubNodesManagement)
+
 - (void) addSubNode:(YASLTranslationNode *)subnode {
-	[_subnodes addObject:subnode];
+	[subnodes addObject:subnode];
 	subnode.parent = self;
 }
 
 - (void) removeSubNode:(YASLTranslationNode *)subnode {
-	[_subnodes removeObject:subnode];
+	[subnodes removeObject:subnode];
 	subnode.parent = nil;
 }
+
+- (NSEnumerator *) nodesEnumerator:(BOOL)reverse {
+	return [YASLNoNullsEnumerator enumeratorWithArray:subnodes reverse:reverse];
+}
+
+- (NSUInteger) nodesCount {
+	return [[[self nodesEnumerator:NO] allObjects] count];
+}
+
+- (id) nthOperand:(NSUInteger)idx {
+	id e = [subnodes count] > idx ? subnodes[idx] : nil;
+	if (e != [NSNull null]) {
+		return e;
+	}
+	return nil;
+}
+
+- (void) setNth:(NSUInteger)idx operand:(YASLTranslationExpression *)operand {
+	if (!operand)
+		operand = (id)[NSNull null];
+
+	NSUInteger count = [subnodes count];
+	while (count < idx) {
+		[self setNth:count++ operand:nil];
+	}
+
+	if (count == idx)
+		[subnodes addObject:operand];
+	else
+		subnodes[idx] = operand;
+}
+
+- (id) leftOperand {
+	return [self nthOperand:0];
+}
+
+- (id) rigthOperand {
+	return [self nthOperand:1];
+}
+
+- (id) thirdOperand {
+	return [self nthOperand:2];
+}
+
+- (void) setSubNodes:(NSArray *)array {
+	subnodes = [array mutableCopy];
+	for (YASLTranslationNode *subnode in subnodes) {
+    subnode.parent = self;
+	}
+}
+
+@end
+
+@implementation YASLTranslationNode (Debug)
 
 - (NSString *) toString {
 	NSString *type = YASLTranslationNodeTypeNames[self.type];
 	type = type ? type : [NSString stringWithFormat:@"TN::%u", self.type];
 	NSString *subs = @"";
-	for (YASLTranslationNode *subnode in self.subnodes) {
+	for (YASLTranslationNode *subnode in [self nodesEnumerator:NO]) {
     subs = [NSString stringWithFormat:@"%@%@%@", subs, ([subs length] ? @",\n" : @""), [[subnode toString] descriptionTabbed:@"  "]];
 	}
 	subs = [subs length] ? [NSString stringWithFormat:@": {\n%@\n}", subs] : subs;
@@ -63,13 +126,19 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 
 @implementation YASLTranslationNode (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
-	for (YASLTranslationNode *node in self.subnodes) {
-    if (![node assemble:assembly unPointer:unPointer])
-			return NO;
-	}
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+	return NO;
+}
 
-	return YES;
+- (void) assemble:(YASLAssembly *)assembly unPointered:(BOOL)unPointered {
+	[self assemble:assembly];
+	if (unPointered)
+		[self unPointer:assembly];
+}
+
+- (void) assemble:(YASLAssembly *)assembly {
+	for (YASLTranslationNode *node in [self nodesEnumerator:NO])
+    [node assemble:assembly];
 }
 
 @end

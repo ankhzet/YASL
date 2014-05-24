@@ -11,11 +11,7 @@
 #import "TestUtils.h"
 #import "YASLNativeFunction.h"
 #import "YASLNativeInterface.h"
-#import "YASLCPU.h"
-#import "YASLRAM.h"
-#import "YASLStack.h"
-#import "YASLAPI.h"
-#import "YASLOpcodes.h"
+#import "YASLVMBuilder.h"
 #import "YASLNativeFunctions.h"
 #import "YASLNativeFunction.h"
 
@@ -75,10 +71,12 @@ describe(@"YASLNativeFunction", ^{
 //	});
 
 	it(@"should ", ^{
-		YASLCPU *cpu = [YASLCPU cpuWithRAMSize:256];
-		YASLRAM *ram = cpu->ram;
+		YASLVMBuilder *builder = [YASLVMBuilder new];
+		YASLVM *vm = [builder buildVM];
+		YASLRAM *ram = vm.ram;
+		YASLStack *stack = vm.stack;
+		YASLCPU *cpu = vm.cpu;
 		memset([ram dataAt:0], 0, ram.size);
-		YASLStack *stack = cpu->stack;
 
 		TestInterface *i = [TestInterface new];
 		YASLNativeFunction *native1 = [[YASLNativeFunctions sharedFunctions] findByName:@"f1"];

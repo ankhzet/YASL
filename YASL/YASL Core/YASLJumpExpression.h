@@ -8,6 +8,9 @@
 
 #import "YASLTranslationExpression.h"
 
-@interface YASLReturnExpression : YASLTranslationExpression
+@class YASLLocalDeclaration;
+@interface YASLJumpExpression : YASLTranslationExpression
+
+@property (nonatomic) YASLLocalDeclaration *jumpDeclaration;
 
 @end

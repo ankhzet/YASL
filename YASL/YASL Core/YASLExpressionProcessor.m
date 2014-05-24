@@ -53,27 +53,100 @@
 	YASLTranslationConstant *leftOperand = (id)[expression leftOperand];
 	if (![YASLTranslationExpression checkFolding:&leftOperand withSolver:self.solver]) return expression;
 
-	YASLTranslationConstant *rightOperand = (id)[expression rigthOperand];
-	if (![YASLTranslationExpression checkFolding:&rightOperand withSolver:self.solver]) return expression;
-
 	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier];
-
 	YASLBuiltInType returnType = [self.returnType builtInType];
 	YASLBuiltInType castType = [self.castType builtInType];
-	switch (returnType) {
-			DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeInt, YASLInt, castType);
-			DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeFloat, YASLFloat, castType);
-			DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeBool, YASLBool, castType);
-			DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeChar, YASLChar, castType);
-		default:
-			break;
+
+	if ([expression nodesCount] > 1) {
+		YASLTranslationConstant *rightOperand = (id)[expression rigthOperand];
+		if (![YASLTranslationExpression checkFolding:&rightOperand withSolver:self.solver]) return expression;
+
+		switch (returnType) {
+				DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeInt, YASLInt, castType);
+				DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeFloat, YASLFloat, castType);
+				DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeBool, YASLBool, castType);
+				DECLARE_FOR_RETURN_TYPE(YASLBuiltInTypeChar, YASLChar, castType);
+			default:
+				break;
+		}
+	} else {
+		switch (returnType) {
+				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeInt, YASLInt, castType);
+				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeFloat, YASLFloat, castType);
+				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeBool, YASLBool, castType);
+				DECLARE_UNARY_FOR_RETURN_TYPE(YASLBuiltInTypeChar, YASLChar, castType);
+			default:
+				break;
+		}
 	}
 
 	return result;
 }
 
+- (YASLInt) intUnaryOperation:(YASLExpressionOperator)operator resultForOperand:(YASLTranslationConstant *)leftOperand {
+	YASLInt value;
+	YASLInt operand = [leftOperand toInteger];
+	switch (operator) {
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorAdd, +);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorSub, -);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorNot, !);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorInv, ~);
+		default:
+			value = 0;
+			break;
+	}
+	return value;
+}
+
+- (YASLFloat) floatUnaryOperation:(YASLExpressionOperator)operator resultForOperand:(YASLTranslationConstant *)leftOperand {
+	YASLFloat value;
+	YASLFloat operand = [leftOperand toFloat];
+	switch (operator) {
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorAdd, +);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorSub, -);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorNot, !);
+//			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorNeg, ~);
+		default:
+			value = 0;
+			break;
+	}
+	return value;
+}
+
+- (YASLBool) boolUnaryOperation:(YASLExpressionOperator)operator resultForOperand:(YASLTranslationConstant *)leftOperand {
+	YASLBool value;
+	YASLBool operand = [leftOperand toBool];
+	switch (operator) {
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorAdd, +);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorSub, -);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorNot, !);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorInv, ~);
+		default:
+			value = 0;
+			break;
+	}
+	return value;
+}
+
+- (YASLChar) charUnaryOperation:(YASLExpressionOperator)operator resultForOperand:(YASLTranslationConstant *)leftOperand {
+	YASLChar value;
+	YASLChar operand = [leftOperand toChar];
+	switch (operator) {
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorAdd, +);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorSub, -);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorNot, !);
+			DECLARE_PREFIX_OPERATION(YASLExpressionOperatorInv, ~);
+		default:
+			value = 0;
+			break;
+	}
+	return value;
+}
+
 - (YASLInt) intOperation:(YASLExpressionOperator)operator resultForLeftOperand:(YASLTranslationConstant *)leftOperand rightOperand:(YASLTranslationConstant *)rightOperand {
-	YASLInt left = [leftOperand toInteger], right = [rightOperand toInteger], value;
+	YASLInt value;
+	YASLInt left = [leftOperand toInteger];
+	YASLInt right = [rightOperand toInteger];
 	switch (operator) {
 			DECLARE_OPERATION(YASLExpressionOperatorAdd, +);
 			DECLARE_OPERATION(YASLExpressionOperatorSub, -);

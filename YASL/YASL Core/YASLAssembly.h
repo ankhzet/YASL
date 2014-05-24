@@ -10,7 +10,7 @@
 #import "YASLExceptionStack.h"
 #import "YASLDiscards.h"
 
-@class YASLTokenizer;
+@class YASLAbstractTokenizer;
 @interface YASLAssembly : YASLExceptionStack <NSCopying> {
 @public
 	YASLDiscards *discards;
@@ -32,10 +32,10 @@
 /*! Push all tokens from array to stack in reverse order. */
 - (id) initReverseArray:(NSArray *)source;
 /*! Push all tokens from tokenizer to stack in reverse order. */
-- (id) initWithTokenizer:(YASLTokenizer *)tokenizer;
+- (id) initWithTokenizer:(YASLAbstractTokenizer *)tokenizer;
 
 /*! Push all tokens from tokenizer to new assembly in reverse order. */
-+ (YASLAssembly *) assembleTokens:(YASLTokenizer *)tokenizer;
++ (YASLAssembly *) assembleTokens:(YASLAbstractTokenizer *)tokenizer;
 
 @end
 
@@ -103,7 +103,7 @@
 @interface YASLAssembly (StringRepresentation)
 
 - (NSString *) stackToString;
-- (NSString *) stackToStringFrom:(id)from till:(id)marker;
+- (NSString *) stackToStringFrom:(id)from till:(id)marker withContext:(BOOL)context;
 - (NSString *) stackToString:(BOOL)noPopped till:(id)marker;
 
 @end

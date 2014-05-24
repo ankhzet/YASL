@@ -18,6 +18,7 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 	YASLTranslationNodeTypeExpression,
 	YASLTranslationNodeTypeInitializer,
 	YASLTranslationNodeTypeFunction,
+	YASLTranslationNodeTypeArrayDeclarator,
 
 	YASLTranslationNodeTypeMAX
 };
@@ -25,8 +26,8 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 @class YASLAssembly, YASLDeclarationScope;
 @interface YASLTranslationNode : NSObject
 
+@property (nonatomic) NSUInteger sourceLine;
 @property (nonatomic) YASLTranslationNodeType type;
-@property (nonatomic) NSMutableArray *subnodes;
 @property (nonatomic, weak) YASLTranslationNode *parent;
 @property (nonatomic, readonly) YASLDeclarationScope *declarationScope;
 
@@ -34,9 +35,28 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 + (instancetype) nodeInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type;
 - (id)initInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type;
 
+@end
+
+@interface YASLTranslationNode (SubNodesManagement)
+
 // subnode handling
 - (void) addSubNode:(YASLTranslationNode *)subnode;
 - (void) removeSubNode:(YASLTranslationNode *)subnode;
+- (NSUInteger) nodesCount;
+- (NSEnumerator *) nodesEnumerator:(BOOL)reverse;
+- (void) setSubNodes:(NSArray *)array;
+
+/*! Returns n-th operand. If none, returns nil. */
+- (id) nthOperand:(NSUInteger)idx;
+/*! Sets n-th operand. If index is greater than current operands count - they will be assumed as nil. */
+- (void) setNth:(NSUInteger)idx operand:(YASLTranslationNode *)operand;
+- (id) leftOperand;
+- (id) rigthOperand;
+- (id) thirdOperand;
+
+@end
+
+@interface YASLTranslationNode (Debug)
 
 - (NSString *) toString;
 
@@ -44,6 +64,8 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 
 @interface YASLTranslationNode (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer;
+- (BOOL) unPointer:(YASLAssembly *)outAssembly;
+- (void) assemble:(YASLAssembly *)assembly;
+- (void) assemble:(YASLAssembly *)assembly unPointered:(BOOL)unPointered;
 
 @end

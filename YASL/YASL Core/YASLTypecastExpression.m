@@ -20,7 +20,7 @@
 /*! Try to evaluate this typecast if subnode is constant. */
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
 	YASLTranslationConstant *folded = (id)[[self leftOperand] foldConstantExpressionWithSolver:solver];
-	self.subnodes[0] = folded;
+	[self setNth:0 operand:folded];
 	if (folded.expressionType != YASLExpressionTypeConstant)
 		return self;
 
@@ -49,9 +49,9 @@
 
 @implementation YASLTypecastExpression (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
+- (void) assemble:(YASLAssembly *)assembly {
 	YASLTranslationExpression *expression = [self leftOperand];
-	[expression assemble:assembly unPointer:!self.returnType.isPointer];
+	[expression assemble:assembly];
 
 	YASLDataType *sourceType = expression.returnType;
 	if (![sourceType isSubclassOf:self.returnType]) {
@@ -89,7 +89,6 @@
 		if (opcode != OPC_NOP)
 			[assembly push:OPC(opcode, REG_(R0))];
 	}
-	return YES;
 }
 
 @end

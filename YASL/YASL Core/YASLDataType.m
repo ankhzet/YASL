@@ -23,8 +23,15 @@ NSString *const YASLBuiltInTypeNames[] = {
 	return [(YASLDataType *)[self alloc] initWithName:name];
 }
 
-- (id)initWithName:(NSString *)name {
+- (id)init {
 	if (!(self = [super init]))
+		return self;
+
+	return self;
+}
+
+- (id)initWithName:(NSString *)name {
+	if (!(self = [self init]))
 		return self;
 
 	_name = name;
@@ -32,11 +39,14 @@ NSString *const YASLBuiltInTypeNames[] = {
 }
 
 - (NSString *) description {
-	return [NSString stringWithFormat:@"(:%@:%@)", self.parent ? self.parent.name : @"", self.name];
+	NSString *pointer = self.isPointer ? [@"" stringByPaddingToLength:self.isPointer withString:@"*" startingAtIndex:0] : @"";
+	NSString *specifiers = self.specifiers ? [self.specifiers componentsJoinedByString:@""] : @"";
+	NSString *parent = self.parent ? [NSString stringWithFormat:@"%@:", self.parent] : @"";
+	return [NSString stringWithFormat:@"%@(%@%@%@)", pointer, parent, self.name, specifiers];
 }
 
 - (NSUInteger) sizeOf {
-	return sizeof(YASLInt);
+	return _isPointer ? sizeof(YASLInt) : (_parent ? [_parent sizeOf] : sizeof(YASLInt));
 }
 
 - (BOOL) isSubclassOf:(YASLDataType *)parent {
@@ -66,6 +76,15 @@ NSString *const YASLBuiltInTypeNames[] = {
 		type = [self.parent baseType];
 	}
 	return type;
+}
+
+- (id) copyWithZone:(NSZone *)zone {
+	YASLDataType *copy = [YASLDataType typeWithName:self.name];
+	copy.defined = YES;
+	copy.parent = self;
+	copy.specifiers = [self.specifiers copy];
+	copy.isPointer = self.isPointer;
+	return copy;
 }
 
 @end

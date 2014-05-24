@@ -22,12 +22,16 @@ NSString *const YASLYASLGrammar = @"YASL";
 	return [super assembleSource:source];
 }
 
+- (YASLDeclarationScope *) scope {
+	return self.declarationScope.currentScope;
+}
+
 @end
 
 @implementation YASLAssembler (Processor)
 
 - (void) preProcessAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
-	self.declarationScope.currentScope.placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeInCode] ofsettedByParent];
+	[self scope].placementManager = [[YASLDeclarationPlacement placementWithType:YASLDeclarationPlacementTypeInCode] ofsettedByParent];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLGrammarNode *)node {
@@ -35,8 +39,8 @@ NSString *const YASLYASLGrammar = @"YASL";
 
 - (void) processAssembly:(YASLAssembly *)a nodeScriptDeclaration:(YASLGrammarNode *)node {
 	YASLToken *token = [a pop];
-	YASLTranslationUnit *unit = [YASLTranslationUnit unitInScope:self.declarationScope.currentScope withName:token.value];
-	self.declarationScope.currentScope.name = [NSString stringWithFormat:@"unit:%@", token.value];
+	YASLTranslationUnit *unit = [YASLTranslationUnit unitInScope:[self scope] withName:token.value];
+	[self scope].name = [NSString stringWithFormat:@"unit:%@", token.value];
 	[a push:unit];
 }
 

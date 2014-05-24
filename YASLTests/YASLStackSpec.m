@@ -26,7 +26,7 @@ describe(@"YASLStack", ^{
 		YASLRAM *ram = [YASLRAM ramWithSize:64];
 		YASLStack *stack = [YASLStack stackForRAM:ram];
 
-		NSUInteger top = stack.top;
+		NSUInteger top = *stack.top;
 
 		[[theValue(top) should] equal:theValue(0)];
 

@@ -11,13 +11,15 @@
 #import "YASLThreadsAPI.h"
 
 @class YASLRAM, YASLStack, YASLEventsAPI;
-@interface YASLCPU : YASLThreadsAPI {
-@public
-	YASLRAM *ram;
-	YASLStack *stack;
-}
+@interface YASLCPU : YASLThreadsAPI
+@property (nonatomic)	YASLRAM *ram;
+@property (nonatomic)	YASLStack *stack;
 
-+ (instancetype) cpuWithRAMSize:(NSUInteger)size;
++ (instancetype) cpu;
+
+
+- (void) run;
+- (void) runTo;
 
 - (YASLInt)regValue:(YASLIndexedRegister)reg;
 - (void) setReg:(YASLIndexedRegister)reg value:(YASLInt)value;

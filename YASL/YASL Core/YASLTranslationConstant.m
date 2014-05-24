@@ -19,9 +19,8 @@
 }
 
 - (NSString *) toString {
-	NSString *type = self.returnType.name;
-	type = type ? type : @"<?>";
-	return [NSString stringWithFormat:@"(%@ %@)", type, self.value];
+	NSString *type = self.returnType ? [self.returnType description] : @"<?>";
+	return [NSString stringWithFormat:@"%@%@", type, self.value];
 }
 
 #pragma mark - Typecast
@@ -110,10 +109,12 @@
 
 @implementation YASLTranslationConstant (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
-	YASLOpcode *opcode = OPC_(MOV, REG_(R0), IMM_(self.value));
-	[assembly push:opcode];
-	return YES;
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+	return NO;
+}
+
+- (void) assemble:(YASLAssembly *)assembly {
+	[assembly push:OPC_(MOV, REG_(R0), IMM_(self.value))];
 }
 
 @end

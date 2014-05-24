@@ -8,10 +8,7 @@
 //
 
 #import "Kiwi.h"
-#import "YASLCPU.h"
-#import "YASLRAM.h"
-#import "YASLStack.h"
-#import "YASLOpcodes.h"
+#import "YASLVMBuilder.h"
 #import "YASLNativeFunction.h"
 #import "YASLNativeFunctions.h"
 #import "YASLStrings.h"
@@ -32,14 +29,13 @@ describe(@"YASLCPU", ^{
 		__block YASLStack *stack = nil;
 
 		beforeEach(^{
-			cpu = [YASLCPU cpuWithRAMSize:512];
-			ram = cpu->ram;
-			memset([ram dataAt:0], 0, 512);
-			stack = cpu->stack;
-			stack.size = 128;
-			stack.base = ram.size - stack.size;
+			YASLVMBuilder *builder = [YASLVMBuilder new];
+			YASLVM *vm = [builder buildVM];
+			ram = vm.ram;
+			stack = vm.stack;
+			cpu = vm.cpu;
 			[cpu setReg:YASLRegisterIIP value:0];
-			[cpu setReg:YASLRegisterISP value:stack.base];
+			[cpu setReg:YASLRegisterISP value:DEFAULT_STACK_BASE];
 		});
 
 		it(@"should process different operand types & placement", ^{

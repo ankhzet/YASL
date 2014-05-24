@@ -10,19 +10,24 @@
 #import "YASLNonfatalException.h"
 
 @implementation YASLExceptionStack {
-	NSMutableArray *stack;
+	NSMutableArray *exceptionsStack;
+	NSUInteger stateGUID;
+	NSMutableDictionary *stackStates;
 }
 
 - (id)init {
 	if (!(self = [super init]))
 		return self;
 
-	stack = [NSMutableArray array];
+	exceptionsStack = [NSMutableArray array];
+	stackStates = [NSMutableDictionary dictionary];
+	stateGUID = 0;
 	return self;
 }
 
 - (void) pushException:(YASLNonfatalException *)exception {
-	[stack addObject:exception];
+	[exceptionsStack addObject:exception];
+	exception.stackGUID = stateGUID;
 }
 
 - (void) reRaise {
@@ -31,9 +36,9 @@
 
 /*! Returns and deletes from stack last thrown syntax exception. */
 - (YASLNonfatalException *) popException {
-	id e = [stack lastObject];
+	id e = [exceptionsStack lastObject];
 	if (e)
-		[stack removeLastObject];
+		[exceptionsStack removeLastObject];
 
 	return e;
 }
@@ -50,12 +55,32 @@
 }
 
 - (NSUInteger) pushExceptionStackState {
-	return [stack count];
+	NSUInteger count = [exceptionsStack count];
+	NSUInteger guid = ++stateGUID;
+	stackStates[@(guid)] = @(count);
+	return guid;
 }
 
-- (void) popExceptionStackState:(NSUInteger)state {
-	if ((int)state < (int)[stack count] - 1) {
-		[stack removeObjectsInRange:NSMakeRange(state, [stack count] - state)];
+- (void) popExceptionStackState:(NSUInteger)guid {
+	NSNumber *state = stackStates[@(guid)];
+	if (!state)
+		return;
+
+	NSMutableArray *junk = [NSMutableArray arrayWithCapacity:[[stackStates allKeys] count]];
+	for (NSNumber *guidKey in [stackStates allKeys]) {
+    if ([guidKey unsignedIntegerValue] > guid) {
+			[junk addObject:guidKey];
+		}
+	}
+	for (id key in junk) {
+    [stackStates removeObjectForKey:key];
+	}
+
+	NSUInteger count = [state unsignedIntegerValue];
+	NSUInteger current = [exceptionsStack count];
+	NSInteger delta = current - count;
+	if (delta > 0) {
+		[exceptionsStack removeObjectsInRange:NSMakeRange(count, delta)];
 	}
 }
 

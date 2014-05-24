@@ -15,6 +15,7 @@
 #import "YASLToken.h"
 #import "NSObject+TabbedDescription.h"
 #import "YASLTypedNode.h"
+#import "YASLTranslationNode.h"
 #import "YASLNonfatalException.h"
 
 NSString *const kProcessorSelectorSignature = @"processAssembly:node%@:";
@@ -79,6 +80,9 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 #pragma clang diagnostic push
 #pragma clang diagnostic ignored "-Warc-performSelector-leaks"
 	[self performSelector:selector withObject:tokens withObject:assemblyNode];
+	if ([[tokens top] isKindOfClass:[YASLTranslationNode class]]) {
+		((YASLTranslationNode *)[tokens top]).sourceLine = assemblyNode.sourceLine;
+	}
 #pragma clang diagnostic pop
 
 	return YES;
@@ -117,7 +121,7 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 - (id) assembleSource:(NSString *)source {
 	id result = nil;
 	@try {
-		YASLTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
+		YASLAbstractTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
 		[tokenizer tokenizeAll];
 
 		if (![tokenizer hasTokens])
@@ -143,7 +147,7 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 	}
 }
 
-- (YASLAssembly *) assembleSource:(YASLTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar {
+- (YASLAssembly *) assembleSource:(YASLAbstractTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar {
 	YASLAssembly *tokensAssembly = [YASLAssembly assembleTokens:tokenized];
 	if (![tokensAssembly notEmpty])
 		return NO;
@@ -203,9 +207,11 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 			return NO;
 
 	[inAssembly popState:node.tokensRange.location];
+	id top = [inAssembly top];
+	node.sourceLine = (top && [top isKindOfClass:[YASLToken class]]) ? ((YASLToken *)top).line : 0;
+
 	YASLAssembly *discardAssembly = [YASLAssembly new];
 	NSUInteger c = node.tokensRange.length;
-	id top = nil;
 	while ((c-- > 0) && (top = [inAssembly pop])) {
 		if (![outAssembly mustDiscard:top]) {
 			[outAssembly push:top];
@@ -215,28 +221,37 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 
 	if ([node.grammarNode isKindOfClass:[YASLTypedNode class]]) {
 		YASLToken *token = [outAssembly pop];
-		YASLToken *copy = [token copy];
-		[outAssembly push:copy];
-		[outAssembly discardPopped:discardAssembly];
+		if (!node.grammarNode.discard) {
+			YASLToken *copy = [token copy];
+			[outAssembly push:copy];
+			[outAssembly discardPopped:discardAssembly];
+		} else
+			[outAssembly alwaysDiscard:token inGlobalScope:NO];
 	} else {
 		BOOL processed = NO;
-		if (!node.grammarNode.discard) {
-			@try {
-				outAssembly.chunkMarker = marker;
-				processed = [self performPre:NO processorSelectorForNode:node andTokensAssembly:outAssembly];
-			}
-			@catch (NSException *exception) {
-				NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\nStack trace:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly, [exception callStackSymbols]);
-				return NO;
-			}
-			@finally {
-				[outAssembly dropPopped];
-				[outAssembly discardPopped:discardAssembly];
+		if (node.grammarNode.discard) {
+			for (id obj in [discardAssembly enumerator:NO])
+				[outAssembly alwaysDiscard:obj inGlobalScope:YES];
+		}
+		@try {
+			outAssembly.chunkMarker = marker;
+			processed = [self performPre:NO processorSelectorForNode:node andTokensAssembly:outAssembly];
+		}
+		@catch (NSException *exception) {
+			NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\nStack trace:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly, [exception callStackSymbols]);
+			return NO;
+		}
+		@finally {
+			[outAssembly dropPopped];
+			[outAssembly discardPopped:discardAssembly];
 //				if (processed)
 //					NSLog(@"process (%@): \n%@\n\n", node.grammarNode.name, outAssembly);
 
-			}
 		}
+
+//		} else {
+//			NSLog(@"discard %@", node);
+//		}
 	}
 
 	return YES;
@@ -254,6 +269,12 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 		[elements addObject:top];
 	}
 	[assembly push:elements];
+}
+
+- (YASLAssembly *) reverseFetch:(YASLAssembly *)assembly {
+	[self fetchArray:assembly];
+	NSArray *fetched = [assembly pop];
+	return [[YASLAssembly alloc] initWithArray:fetched];
 }
 
 - (void) pushInt:(YASLAssembly *)assembly {

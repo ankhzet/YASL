@@ -40,6 +40,7 @@
 	// initialize base parameters
 	startedAt = [YASLThread ticksMsec];
 	steps = 0;
+	firstRun = YES;
 
 	return self;
 }
@@ -96,6 +97,22 @@
 			[self suspend:msec];
 		}
 	}
+}
+
+- (YASLInt)regValue:(YASLIndexedRegister)reg {
+	return data.registers[reg];
+}
+
+- (void) setReg:(YASLIndexedRegister)reg value:(YASLInt)value {
+	data.registers[reg] = value;
+}
+
+- (YASLFloat)regValuef:(YASLIndexedRegister)reg {
+	return *(YASLFloat *)&data.registers[reg];
+}
+
+- (void) setReg:(YASLIndexedRegister)reg valuef:(YASLFloat)value {
+	*(YASLFloat *)&data.registers[reg] = value;
 }
 
 @end

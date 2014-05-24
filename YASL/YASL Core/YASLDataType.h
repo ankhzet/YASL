@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
 
-@interface YASLDataType : NSObject
+@interface YASLDataType : NSObject <NSCopying>
 
 @property (nonatomic) NSString *name;
 @property (nonatomic) BOOL defined;

@@ -29,6 +29,8 @@
 + (instancetype) immediate:(NSNumber *)value;
 - (id) asPointer;
 
+- (BOOL) isPointer;
+
 @end
 
 @interface YASLOpcode : NSObject {
@@ -42,5 +44,8 @@
 
 /*! Converts into CPU opcode instruction and copies it into memory at `mem` offset, returns new offset> */
 - (void *) toCodeInstruction:(void *)mem;
+
+- (YASLOpcodeOperand *) leftOperand;
+- (YASLOpcodeOperand *) rightOperand;
 
 @end

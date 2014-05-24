@@ -22,7 +22,8 @@
 	// thread execution steps count
 	NSUInteger steps;
 	// was thread runned, or terminated straight after creation without wakeup
-	BOOL runned;
+	YASLInt param;
+	BOOL runned, firstRun;
 }
 
 // thread state (ready, running, suspended, terminated)
@@ -31,6 +32,12 @@
 @property (nonatomic) YASLInt exitCode;
 
 + (instancetype) thread:(BOOL)waitable withEventManager:(YASLEventsAPI *)eventManager;
+
+- (YASLInt)regValue:(YASLIndexedRegister)reg;
+- (void) setReg:(YASLIndexedRegister)reg value:(YASLInt)value;
+
+- (YASLFloat)regValuef:(YASLIndexedRegister)reg;
+- (void) setReg:(YASLIndexedRegister)reg valuef:(YASLFloat)value;
 
 - (void) suspend:(YASLInt)msec;
 - (void) resume;

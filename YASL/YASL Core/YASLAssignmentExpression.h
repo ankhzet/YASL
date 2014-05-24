@@ -10,8 +10,6 @@
 
 @interface YASLAssignmentExpression : YASLTranslationExpression
 
-@property (nonatomic, readonly) YASLExpressionOperator operator;
-
 @property (nonatomic) BOOL postfix;
 
 + (instancetype) assignmentInScope:(YASLDeclarationScope *)scope withSpecifier:(YASLExpressionOperator)operator;

@@ -150,7 +150,7 @@ NSString *const kProductionCastType = @"kProductionCastType";
 }
 
 - (YASLExpressionProcessor *) pickProcessor:(YASLTranslationExpression *)expression {
-	NSUInteger operands = [expression operandsCount];
+	NSUInteger operands = [expression nodesCount];
 	switch (operands) {
 		case 2: {
 			YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:expression.specifier];

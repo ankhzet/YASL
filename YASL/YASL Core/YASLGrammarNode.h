@@ -30,7 +30,7 @@ typedef BOOL (^YASLGrammarNodeWalkBlock) (id userData, YASLGrammarNode *node);
 /*! Node-type relative matching. Reimplemented in subclasses. */
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly;
 
-+ (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ...;
+- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ...;
 
 @end
 

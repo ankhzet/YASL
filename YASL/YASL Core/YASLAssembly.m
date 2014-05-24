@@ -7,7 +7,7 @@
 //
 
 #import "YASLAssembly.h"
-#import "YASLTokenizer.h"
+#import "YASLAbstractTokenizer.h"
 
 @interface YASLAssembly () {
 	NSMutableArray *stack, *popped;
@@ -69,7 +69,7 @@
 	return self;
 }
 
-- (id) initWithTokenizer:(YASLTokenizer *)tokenizer {
+- (id) initWithTokenizer:(YASLAbstractTokenizer *)tokenizer {
 	if (!(self = [self init]))
 		return self;
 
@@ -81,7 +81,7 @@
 
 #pragma mark - Tokenizer assembly
 
-+ (YASLAssembly *) assembleTokens:(YASLTokenizer *)tokenizer {
++ (YASLAssembly *) assembleTokens:(YASLAbstractTokenizer *)tokenizer {
 	return [[self alloc] initWithTokenizer:tokenizer];
 }
 
@@ -136,24 +136,7 @@
 }
 
 - (void) dropDiscardsAfterState:(NSUInteger)state {
-	YASLDiscards *d = discards;
-	NSMutableSet *s = [NSMutableSet set];
-	while (d) {
-		[s unionSet:d->discardsSet];
-		d = d->parent;
-	}
 	discards = [discards dropDiscardsAfterState:state];
-
-	d = discards;
-	NSMutableSet *s2 = [NSMutableSet set];
-	while (d) {
-		[s2 unionSet:d->discardsSet];
-		d = d->parent;
-	}
-
-	[s minusSet:s2];
-	if ([s count])
-		[s removeAllObjects];
 }
 
 @end
@@ -163,7 +146,7 @@
 @implementation YASLAssembly (Stack)
 
 - (BOOL) notEmpty {
-	return [stack count];
+	return !![stack count];
 }
 
 - (id) top {
@@ -342,28 +325,46 @@
 	return [self stackToString:NO till:nil];
 }
 
-- (NSString *) stackToStringFrom:(id)from till:(id)marker {
-	NSMutableString *r = [@"" mutableCopy];
-	NSMutableArray *stackReverse = [NSMutableArray arrayWithCapacity:[stack count]];
-	for (id o in [stack reverseObjectEnumerator]) {
-    [stackReverse addObject:o];
-	}
+- (NSString *) stackToStringFrom:(id)from till:(id)marker withContext:(BOOL)context {
+	NSArray *stackReverse = [[stack reverseObjectEnumerator] allObjects];
 	NSArray *all = [popped arrayByAddingObjectsFromArray:stackReverse];
-	BOOL first = false;
-	for (id obj in all) {
-		if (!first) {
-			if (obj != from)
-				continue;
-			else
-				first = YES;
+
+	NSUInteger allCount = [all count];
+	NSMutableArray *pre = [NSMutableArray arrayWithCapacity:allCount];
+	NSMutableArray *chunk = [NSMutableArray arrayWithCapacity:allCount];
+	NSMutableArray *post = [NSMutableArray arrayWithCapacity:allCount];
+	BOOL isPre = YES, isChunk = NO, isPost = NO;
+	for (id object in all) {
+		if (object == from) {
+			isPre = NO;
+			isChunk = YES;
 		}
 
-		if (marker == obj)
-			break;
+		if (![self mustDiscard:object]) {
+			if (isPre) [pre addObject:object];
+			if (isChunk) [chunk addObject:object];
+			if (isPost) [post addObject:object];
+		}
 
-		[r appendFormat:@"%@%@", [r length] ? @"\u00B7" : @"", obj];
+		if (object == marker) {
+			isChunk = NO;
+			isPost = YES;
+		}
 	}
-	return r;
+
+	NSUInteger contextSize = 5;
+
+	if ([pre count] > contextSize) {
+		[pre removeObjectsInRange:NSMakeRange(0, [pre count] - contextSize)];
+	}
+
+	if ([post count] > contextSize) {
+		NSUInteger rest = [post count] - contextSize;
+		[post removeObjectsInRange:NSMakeRange([post count] - rest, rest)];
+	}
+
+	NSString *delim = @"\u00B7";
+	return [NSString stringWithFormat:@"%@\u3010%@\u3011%@", [pre componentsJoinedByString:delim], [chunk componentsJoinedByString:delim], [post componentsJoinedByString:delim]];
 }
 
 - (NSString *) stackToString:(BOOL)noPopped till:(id)marker {

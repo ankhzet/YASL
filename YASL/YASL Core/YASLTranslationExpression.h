@@ -27,6 +27,7 @@ typedef NS_ENUM(NSUInteger, YASLExpressionType) {
 	YASLExpressionTypeProperty,
 	YASLExpressionTypeStructure,
 	YASLExpressionTypeAssignment,
+	YASLExpressionTypeIterational,
 
 	YASLExpressionTypeJump,
 	YASLExpressionTypeReturn,
@@ -62,6 +63,11 @@ typedef NS_ENUM(NSUInteger, YASLExpressionOperator) {
 	YASLExpressionOperatorSHL,
 	YASLExpressionOperatorSHR,
 
+	YASLExpressionOperatorInv,
+	YASLExpressionOperatorNot,
+	YASLExpressionOperatorRef,
+	YASLExpressionOperatorUnref,
+
 	YASLExpressionOperatorMAX
 };
 
@@ -76,10 +82,6 @@ typedef NS_ENUM(NSUInteger, YASLExpressionOperator) {
 + (instancetype) expressionInScope:(YASLDeclarationScope *)scope withType:(YASLExpressionType)type;
 
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver;
-- (YASLTranslationExpression *) leftOperand;
-- (YASLTranslationExpression *) rigthOperand;
-- (YASLTranslationExpression *) thirdOperand;
-- (NSUInteger) operandsCount;
 
 + (YASLExpressionOperator) specifierToOperator:(NSString *)specifier;
 + (NSString *) operatorToSpecifier:(YASLExpressionOperator)operator;

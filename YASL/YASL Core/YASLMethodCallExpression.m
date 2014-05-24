@@ -28,13 +28,13 @@
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
 	int nonConstants = 0;
 	// first, try to fold operands
-	for (YASLTranslationExpression *operand in self.subnodes) {
+	for (YASLTranslationExpression *operand in [self nodesEnumerator:NO]) {
 		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
     [foldedOperands addObject:folded];
 		if (folded.expressionType != YASLExpressionTypeConstant)
 			nonConstants++;
 	}
-	self.subnodes = foldedOperands;
+	[self setSubNodes:foldedOperands];
 
 	self.methodAddress = [self.methodAddress foldConstantExpressionWithSolver:solver];
 	self.returnType = self.methodAddress.returnType;
@@ -43,7 +43,7 @@
 }
 
 - (NSString *) toString {
-	NSString *params = [self.subnodes componentsJoinedByString:self.specifier];
+	NSString *params = [[[self nodesEnumerator:NO] allObjects] componentsJoinedByString:self.specifier];
 	return [NSString stringWithFormat:@"%@(%@)", self.methodAddress, params];
 }
 
@@ -51,18 +51,21 @@
 
 @implementation YASLMethodCallExpression (Assembling)
 
-- (BOOL) assemble:(YASLAssembly *)assembly unPointer:(BOOL)unPointer {
-	for (YASLTranslationExpression *param in self.subnodes) {
-    if (![param assemble:assembly unPointer:NO])
-			return NO;
-
+- (void) assemble:(YASLAssembly *)assembly {
+	for (YASLTranslationExpression *param in [self nodesEnumerator:YES]) {
+		[param assemble:assembly unPointered:YES];
 		[assembly push:OPC_(PUSH, REG_(R0))];
 	}
-	if (![self.methodAddress assemble:assembly unPointer:NO])
-		return NO;
 
-	[assembly push:OPC_(CALL, REG_(R0))];
-	return YES;
+	NSString *functionIdentifier = self.methodAddress.specifier;
+//	YASLLocalDeclaration *function = [self.declarationScope localDeclarationByIdentifier:functionIdentifier];
+	YASLNativeFunction *native = [[YASLNativeFunctions sharedFunctions] findByName:functionIdentifier];
+	if (native) {
+		[assembly push:OPC_(NATIV, IMM_(@(native.GUID)))];
+	} else {
+		[self.methodAddress assemble:assembly];
+		[assembly push:OPC_(CALL, REG_(R0))];
+	}
 }
 
 @end

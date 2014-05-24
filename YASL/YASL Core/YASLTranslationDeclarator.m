@@ -14,7 +14,7 @@
 - (NSString *) toString {
 	NSString *pointer = [@"" stringByPaddingToLength:self.isPointer withString:@"*" startingAtIndex:0];
 	NSString *specifiers = self.declaratorSpecifiers ? [self.declaratorSpecifiers componentsJoinedByString:@""] : @"";
-	return [NSString stringWithFormat:@"(D:%@%@%@%@)", pointer, self.declaratorIdentifier, specifiers, [self.subnodes componentsJoinedByString:@" "]];
+	return [NSString stringWithFormat:@"(D:%@%@%@%@)", pointer, self.declaratorIdentifier, specifiers, [[[self nodesEnumerator:NO] allObjects] componentsJoinedByString:@" "]];
 }
 
 @end

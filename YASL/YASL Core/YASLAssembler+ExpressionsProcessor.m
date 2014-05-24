@@ -31,13 +31,8 @@
 	if ([operators notEmpty]) {
 		while ([operators notEmpty]) {
 			NSString *operator = [(YASLToken *)[operators pop] value];
-//			[YASLTranslationExpression ]
 			YASLTranslationExpression *right = [operands pop];
-			if (!right) {
-				right = left;
-				left = [YASLTranslationConstant constantInScope:self.declarationScope.currentScope withType:left.returnType andValue:@(0)];
-			}
-			YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:type andSpecifier:operator];
+			YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:[self scope] withType:type andSpecifier:operator];
 			[expression addSubNode:left];
 			[expression addSubNode:right];
 			left = expression;
@@ -113,7 +108,7 @@
 	YASLTranslationExpression *ifExpression = [a popTillChunkMarker];
 	if (ifExpression) {
 		YASLTranslationExpression *condition = [a pop];
-		YASLTranslationExpression *ternar = [YASLTernarExpression ternarExpressionInScope:self.declarationScope.currentScope];
+		YASLTranslationExpression *ternar = [YASLTernarExpression ternarExpressionInScope:[self scope]];
 		[ternar addSubNode:condition];
 		[ternar addSubNode:ifExpression];
 		[ternar addSubNode:elseExpression];
@@ -137,7 +132,7 @@
 - (void) processAssembly:(YASLAssembly *)a nodeTypeCast:(YASLGrammarNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	YASLDataType *castType = [a pop];
-	YASLTranslationExpression *castExpression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeTypecast andSpecifier:nil];
+	YASLTranslationExpression *castExpression = [YASLTranslationExpression expressionInScope:[self scope] withType:YASLExpressionTypeTypecast andSpecifier:nil];
 	castExpression.returnType = castType;
 	[castExpression addSubNode:expression];
 	[a push:castExpression];
@@ -145,30 +140,44 @@
 
 #pragma mark - Unary
 
+- (void) processAssembly:(YASLAssembly *)a nodeUnaryOperator:(YASLGrammarNode *)node {
+	YASLToken *operator = [a pop];
+	[a push:operator.value];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeUnaryIncrement:(YASLGrammarNode *)node {
+	[a push:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorIncrement]];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeUnaryDecrement:(YASLGrammarNode *)node {
+	[a push:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorDecrement]];
+}
+
 - (void) processAssembly:(YASLAssembly *)a nodeUnaryOperatorExpression:(YASLGrammarNode *)node {
 	YASLTranslationExpression *expression = [a pop];
-	YASLToken *operator = [a pop];
-//	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operator.value];
-	YASLTranslationExpression *unaryExpression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeUnary andSpecifier:operator.value];
+	NSString *operatorSymbol = [a pop];
+
+//	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorSymbol];
+	YASLUnaryExpression *unaryExpression = [YASLUnaryExpression expressionInScope:[self scope] withType:YASLExpressionTypeUnary andSpecifier:operatorSymbol];
 	[unaryExpression addSubNode:expression];
+	unaryExpression.prefix = YES;
 	[a push:unaryExpression];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeIncrementDecrementExpression:(YASLGrammarNode *)node {
-	YASLToken *operatorToken = [a pop];
 	YASLTranslationExpression *expression = [a pop];
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken.value];
-	YASLTranslationExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:self.declarationScope.currentScope withSpecifier:operator];
+	NSString *operatorToken = [a pop];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken];
+	YASLTranslationExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
 	[unaryExpression addSubNode:expression];
 	[a push:unaryExpression];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodePostfixIncrementDecrement:(YASLGrammarNode *)node {
-	[a pop];
-	YASLToken *operatorToken = [a pop];
+	NSString *operatorToken = [a pop];
 	YASLTranslationExpression *expression = [a pop];
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken.value];
-	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:self.declarationScope.currentScope withSpecifier:operator];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken];
+	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
 	[unaryExpression addSubNode:expression];
 	unaryExpression.postfix = YES;
 	[a push:unaryExpression];
@@ -180,9 +189,9 @@
 	YASLToken *variable = [a pop];
 	YASLLocalDeclaration *declaration = [self.declarationScope localDeclarationByIdentifier:variable.value];
 	if (!declaration) {
-		[YASLGrammarNode raiseMatch:a error:@"Variable \"%@\" undefined",variable.value];
+		[node raiseMatch:a error:@"Variable \"%@\" undefined",variable.value];
 	}
-	YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:self.declarationScope.currentScope withType:YASLExpressionTypeVariable andSpecifier:variable.value];
+	YASLTranslationExpression *expression = [YASLTranslationExpression expressionInScope:[self scope] withType:YASLExpressionTypeVariable andSpecifier:variable.value];
 	expression.returnType = declaration.dataType;
 	[a push:expression];
 }
@@ -218,7 +227,7 @@
 		default:
 			break;
 	}
-	YASLTranslationConstant *constant = [YASLTranslationConstant constantInScope:self.declarationScope.currentScope withType:dataType andValue:value];
+	YASLTranslationConstant *constant = [YASLTranslationConstant constantInScope:[self scope] withType:dataType andValue:value];
 	[a push:constant];
 }
 
@@ -247,7 +256,7 @@
 - (void) processAssembly:(YASLAssembly *)a nodeMethodCallExpr:(YASLGrammarNode *)node {
 	[self fetchArray:a];
 	NSArray *params = [a pop];
-	YASLMethodCallExpression *methodCall = [YASLMethodCallExpression methodCallInScope:self.declarationScope.currentScope];
+	YASLMethodCallExpression *methodCall = [YASLMethodCallExpression methodCallInScope:[self scope]];
 	for (YASLTranslationExpression *param in params) {
     [methodCall addSubNode:param];
 	}
