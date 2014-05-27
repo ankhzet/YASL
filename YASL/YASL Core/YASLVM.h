@@ -43,7 +43,7 @@
 
 @end
 
-@interface YASLVM : NSObject
+@interface YASLVM : YASLNativeInterface
 
 @property (nonatomic) YASLRAM *ram;
 @property (nonatomic) YASLStack *stack;

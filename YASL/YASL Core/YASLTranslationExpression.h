@@ -28,6 +28,7 @@ typedef NS_ENUM(NSUInteger, YASLExpressionType) {
 	YASLExpressionTypeStructure,
 	YASLExpressionTypeAssignment,
 	YASLExpressionTypeIterational,
+	YASLExpressionTypeUnreference,
 
 	YASLExpressionTypeJump,
 	YASLExpressionTypeReturn,

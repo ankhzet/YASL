@@ -36,7 +36,7 @@
 		definedType.name = newType.name;
 		newType = definedType;
 	}
-	newType.specifiers = declarator.declaratorSpecifiers;
+	newType.specifiers = [[declarator.declaratorSpecifiers enumerator:NO] allObjects];
 	newType.isPointer = declarator.isPointer;
 	newType.defined = YES;
 
@@ -47,8 +47,10 @@
 	YASLToken *token = [a pop];
 	NSString *typeName = token.value;
 	YASLDataType *type = [self.declarationScope typeByName:typeName];
-	if (!type)
-		type = [YASLDataType typeWithName:typeName];
+	if (!type) {
+		[self raiseError:@"Unknown data type \"%@\"", typeName];
+//		type = [YASLDataType typeWithName:typeName];
+	}
 
 	[a push:type];
 }

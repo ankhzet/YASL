@@ -9,7 +9,7 @@
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
 
-@class YASLCPU;
+@class YASLCPU, YASLCodeSource;
 @interface YASLDisassembler : NSObject
 
 @property (nonatomic) YASLCPU *cpu;
@@ -19,5 +19,8 @@
 - (NSString *) disassembleFrom:(YASLInt)startOffset to:(YASLInt)endOffset;
 
 - (void) setLabelsRefs:(NSArray *)labels;
+- (void) setCodeSource:(YASLCodeSource *)source;
+
+- (NSString *) sourceLine:(NSUInteger)lineNumber;
 
 @end

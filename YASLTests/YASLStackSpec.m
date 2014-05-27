@@ -19,7 +19,7 @@ describe(@"YASLStack", ^{
 		YASLStack *instance = [YASLStack stackForRAM:ram];
 		[[instance shouldNot] beNil];
 		[[instance should] beKindOfClass:[YASLStack class]];
-		[[theValue(instance.top) should] equal:theValue(0)];
+		[[theValue(*instance.top) should] equal:theValue(0)];
 	});
 
 	it(@"should properly push & pop", ^{

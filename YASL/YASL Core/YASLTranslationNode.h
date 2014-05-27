@@ -8,13 +8,13 @@
 
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
+#import "YASLExceptionStack.h"
 
 typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 	YASLTranslationNodeTypeNone = 0,
 
 	YASLTranslationNodeTypeRoot,
 
-	YASLTranslationNodeTypeConstant,
 	YASLTranslationNodeTypeExpression,
 	YASLTranslationNodeTypeInitializer,
 	YASLTranslationNodeTypeFunction,
@@ -24,7 +24,7 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 };
 
 @class YASLAssembly, YASLDeclarationScope;
-@interface YASLTranslationNode : NSObject
+@interface YASLTranslationNode : YASLExceptionStack
 
 @property (nonatomic) NSUInteger sourceLine;
 @property (nonatomic) YASLTranslationNodeType type;

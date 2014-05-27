@@ -69,7 +69,7 @@ describe(@"YASLVM", ^{
 					[vm.cpu thread:thread->handle terminate:0];
 
 			}
-			
+
 		});
 
 		it(@"should compile functions", ^{
@@ -102,7 +102,47 @@ describe(@"YASLVM", ^{
 					[vm.cpu thread:thread->handle terminate:0];
 
 			}
-			
+
+		});
+
+		it(@"should compile arrays", ^{
+			NSDictionary *sources =
+			@{
+				@"int a[10];\n\
+				for (int i = 0; i < 10; i++){\n\
+					a[9 - i] = i;\n\
+				};\n\
+				for (int i = 0; i < 10; i++){\n\
+					int r = a[i] * ((i % 2) ? 1 : -1);\n\
+				 	result += r;\n\
+				}": @(-5),
+				};
+			// -9 8 -7 6 -5 4 -3 2 -1 0
+			// - (9 7 5 3 1) = 25
+			//   (8 6 4 2 0) = 20
+
+
+			int i = 0;
+			for (NSString *src in [sources allKeys]) {
+				i++;
+				NSString *identifier = [NSString stringWithFormat:@"array%d", i];
+				NSString *code = [NSString stringWithFormat:@"script %@;\nnative void log(void *arg);\nint main(void *arg){\nint result = 0;\n%@\nreturn result;\n}", identifier, src];
+				NSNumber *value = sources[src];
+
+				YASLCompiledUnit *unit = [vm runScript:[YASLCodeSource codeSource:identifier fromString:code]];
+				[[unit shouldNot] beNil];
+				if (value == (id)[NSNull null]) {
+					[[theValue(unit.stage) shouldNot] equal:theValue(YASLUnitCompilationStageCompiled)];
+					continue;
+				}
+				[[theValue(unit.stage) should] equal:theValue(YASLUnitCompilationStageCompiled)];
+				[vm.cpu run];
+				[[theValue([vm.cpu regValue:YASLRegisterIR0]) should] equal:theValue([value integerValue])];
+				for (YASLThread *thread in [unit enumerateOwners])
+					[vm.cpu thread:thread->handle terminate:0];
+
+			}
+
 		});
 	});
 

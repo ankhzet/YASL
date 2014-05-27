@@ -186,7 +186,8 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 }
 
 - (BOOL) unPointer:(YASLAssembly *)outAssembly {
-	if (self.expressionType != YASLExpressionTypeVariable)
+	BOOL isVariable = self.expressionType == YASLExpressionTypeVariable;
+	if (!isVariable)
 		return NO;
 
 	[outAssembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];

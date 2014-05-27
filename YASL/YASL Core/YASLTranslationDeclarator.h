@@ -8,11 +8,20 @@
 
 #import "YASLTranslationNode.h"
 
+@interface YASLDeclaratorSpecifier : NSObject
+@property (nonatomic) YASLTranslationNodeType type;
+@property (nonatomic) NSInteger param;
+@property (nonatomic) NSArray *elements;
++ (instancetype) specifierWithType:(YASLTranslationNodeType)type param:(NSInteger)param andElems:(NSArray *)elems;
+@end
+
 @class YASLAssignmentExpression;
 @interface YASLTranslationDeclarator : YASLTranslationNode
 
 @property (nonatomic) NSString *declaratorIdentifier;
-@property (nonatomic) NSArray *declaratorSpecifiers;
+@property (nonatomic) YASLAssembly *declaratorSpecifiers;
 @property (nonatomic) NSUInteger isPointer;
+
+- (void) addSpecifier:(YASLDeclaratorSpecifier *)specifier;
 
 @end

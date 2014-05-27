@@ -25,25 +25,31 @@
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeDirectDeclarator:(YASLGrammarNode *)node {
-	[self fetchArray:a];
-	NSMutableArray *specificDeclarators = [a pop];
-
-	YASLToken *token = [specificDeclarators lastObject];
-	[specificDeclarators removeObject:token];
+	YASLAssembly *fetched = [self reverseFetch:a];
+	YASLToken *identifier = [fetched pop];
 
 	YASLTranslationDeclarator *declarator = [YASLTranslationDeclarator nodeInScope:[self scope] withType:YASLTranslationNodeTypeInitializer];
-	declarator.declaratorIdentifier = token.value;
-	declarator.declaratorSpecifiers = specificDeclarators;
+	declarator.declaratorIdentifier = identifier.value;
+
+	while ([fetched notEmpty]) {
+		YASLDeclaratorSpecifier *specifier = [fetched pop];
+		[declarator addSpecifier:specifier];
+	}
 	declarator.isPointer = 0;
 	[a push:declarator];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeArrayDeclarator:(YASLGrammarNode *)node {
+	NSUInteger elements = 0;
 	id top = [a popTill:a.chunkMarker];
 	if (top) {
+		if (![top isKindOfClass:[YASLTranslationExpression class]])
+			[self raiseError:@"Expression expected, \"%@\" found", [top class]];
 
+		elements = [(YASLTranslationConstant *)top toInteger];
 	}
-	id specifier = @{@0: @"array", @1: top ? top : [NSNull null]};
+
+	YASLDeclaratorSpecifier *specifier = [YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeArrayDeclarator param:elements andElems:@[]];
 	[a push:specifier];
 }
 

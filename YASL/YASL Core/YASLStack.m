@@ -24,6 +24,7 @@
 	_size = MIN(STACK_DEFAULT_SIZE, ram.size);
 	_ram = ram;
 	_top = &topDummy;
+	topDummy = 0;
 	return self;
 }
 

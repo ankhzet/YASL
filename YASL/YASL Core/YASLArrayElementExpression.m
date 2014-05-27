@@ -10,8 +10,26 @@
 #import "YASLCoreLangClasses.h"
 
 @implementation YASLArrayElementExpression {
-	YASLTranslationConstant *offsetConstant;
 	YASLTranslationExpression *elementAddress;
+	BOOL isFolded;
+}
+
+- (id)init {
+	if (!(self = [super init]))
+		return self;
+
+	isFolded = NO;
+	return self;
+}
+
+- (void) setNth:(NSUInteger)idx operand:(YASLTranslationNode *)operand {
+	[super setNth:idx operand:operand];
+	isFolded = NO;
+}
+
+- (void) setSubNodes:(NSArray *)array {
+	[super setSubNodes:array];
+	isFolded = NO;
 }
 
 + (instancetype) arrayElementInScope:(YASLDeclarationScope *)scope {
@@ -24,6 +42,9 @@
 }
 
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
+	if (isFolded)
+		return self;
+
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
 	int nonConstants = 0;
 	// first, try to fold operands
@@ -40,7 +61,7 @@
 	self.returnType = arrayAddres.returnType.parent;
 
 	NSUInteger offset = [self.returnType sizeOf];
-	offsetConstant = [YASLTranslationConstant constantInScope:self.declarationScope withType:[self.declarationScope.localDataTypesManager typeByName:YASLBuiltInTypeIdentifierInt] andValue:@(offset)];
+	YASLTranslationConstant *offsetConstant = [YASLTranslationConstant constantInScope:self.declarationScope withType:[self.declarationScope.localDataTypesManager typeByName:YASLBuiltInTypeIdentifierInt] andValue:@(offset)];
 
 	YASLTranslationExpression *indexAddress = [YASLTranslationExpression expressionInScope:self.declarationScope withType:YASLExpressionTypeBinary andSpecifier:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorMul]];
 
@@ -49,24 +70,34 @@
 
 	indexAddress = [indexAddress foldConstantExpressionWithSolver:solver];
 
-	BOOL isConstantIndexOffset = indexAddress.type != YASLTranslationNodeTypeConstant;
-	if ((!isConstantIndexOffset) || [((YASLTranslationConstant *)indexAddress).value intValue]) {
+	BOOL isConstantIndexOffset = indexAddress.expressionType == YASLExpressionTypeConstant;
+	if (isConstantIndexOffset && ![(YASLTranslationConstant *)indexAddress toInteger])
+		elementAddress = arrayAddres;
+	else {
 		elementAddress = [YASLTranslationExpression expressionInScope:self.declarationScope withType:YASLExpressionTypeBinary andSpecifier:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorAdd]];
 
-		[elementAddress addSubNode:arrayAddres];
+		YASLUnrefExpression *addrRef = [YASLUnrefExpression unrefExpressionInScope:self.declarationScope];
+		addrRef.isUnreference = NO; // &expression
+		[addrRef addSubNode:arrayAddres];
+		[elementAddress addSubNode:addrRef];
 		[elementAddress addSubNode:indexAddress];
 
 		elementAddress = [elementAddress foldConstantExpressionWithSolver:solver];
 		elementAddress.returnType = self.returnType;
-	} else
-		elementAddress = arrayAddres;
+	}
 
-	return elementAddress;
+	isFolded = YES;
+	return self;
 }
 
 @end
 
 @implementation YASLArrayElementExpression (Assembling)
+
+- (BOOL) unPointer:(YASLAssembly *)outAssembly {
+	[outAssembly push:OPC_(MOV, REG_(R0), [REG_(R0) asPointer])];
+	return YES;
+}
 
 - (void) assemble:(YASLAssembly *)assembly {
 	[elementAddress assemble:assembly];

@@ -119,13 +119,13 @@
 
 /*!@brief Build espression node for `constant` expression: (numeric | string | boolean) constant . */
 - (void) processAssembly:(YASLAssembly *)a nodeConstantExpression:(YASLGrammarNode *)node {
-	YASLTranslationExpression *expression = [a top];
+	YASLTranslationExpression *expression = [a pop];
 	//TODO: constantnes check here
 	YASLTranslationExpression *folded = [expression foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
-	if (folded != expression) {
-		[a pop];
-		[a push:folded];
-	}
+	if (folded.expressionType != YASLExpressionTypeConstant)
+		[self raiseError:@"Constant expression expected, \"%@\" found", [expression class]];
+
+	[a push:folded];
 }
 
 /*!@brief Build espression node for `typecast` expression: '(' data-type ')' operand . */
@@ -268,6 +268,15 @@
 	YASLTranslationExpression *address = [a pop];
 	methodCall.methodAddress = address;
 	[a push:methodCall];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixArrayAccess:(YASLGrammarNode *)node {
+	YASLTranslationExpression *index = [a pop];
+	YASLTranslationExpression *address = [a pop];
+	YASLArrayElementExpression *arrayElement = [YASLArrayElementExpression arrayElementInScope:[self scope]];
+	[arrayElement addSubNode:address];
+	[arrayElement addSubNode:index];
+	[a push:arrayElement];
 }
 
 @end

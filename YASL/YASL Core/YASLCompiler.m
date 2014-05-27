@@ -13,8 +13,6 @@
 #import "YASLVM.h"
 #import "YASLCodeOptimizer.h"
 
-#define DEFAULT_CODEOFFSET 1000
-
 NSString *const kCompilatorPrecompile = @"kCompilatorPrecompile";
 NSString *const kCompilatorCompile = @"kCompilatorCompile";
 NSString *const kCompilatorDropCaches = @"kCompilatorDropCaches";

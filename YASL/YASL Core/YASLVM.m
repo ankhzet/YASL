@@ -12,6 +12,8 @@
 
 #import "YASLDisassembler.h"
 
+#define _VERBOSE_COMPILATION
+
 @implementation YASLVM
 
 - (YASLCompiledUnit *)runScript:(YASLCodeSource *)source {
@@ -42,13 +44,15 @@
 		[thread setReg:YASLRegisterIBP value:stackOffset];
 		[unit usedByThread:thread];
 
-//		NSLog(@"Disassembling \"%@\":\n%@", source.identifier, [[self disassembly:source] componentsJoinedByString:@"\n"]);
+#ifdef VERBOSE_COMPILATION
+		NSLog(@"Disassembling \"%@\":\n%@", source.identifier, [[self disassembly:source] componentsJoinedByString:@"\n"]);
+#endif
 	}
 	return unit;
 }
 
 - (YASLInt) calcCodePlacement:(YASLInt)codeLength {
-	NSRange r = NSMakeRange(0, 0);
+	NSRange r = NSMakeRange(DEFAULT_CODEOFFSET, 0);
 	for (YASLCompiledUnit *unit in [self.compiler enumerateCompiledUnits]) {
 		if (unit.stage != YASLUnitCompilationStageCompiled)
 			continue;
@@ -76,8 +80,19 @@
 	YASLCompiledUnit *unit = [self scriptInStage:YASLUnitCompilationStagePrecompiled|YASLUnitCompilationStageCompiled bySource:source];
 	YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:self.cpu];
 	[disassembler setLabelsRefs:[self.compiler cache:source.identifier data:kCacheStaticLabels]];
+	[disassembler setCodeSource:source];
 	NSString *disasm = [disassembler disassembleFrom:unit.startOffset to:unit.startOffset + unit.codeLength];
 	return [disasm componentsSeparatedByString:@"\n"];
+}
+
+- (void) registerNativeFunctions {
+	[self registerNativeFunction:@"log" withParamCount:1 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
+}
+
+- (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase {
+	YASLInt i = [native intParam:1 atBase:paramsBase];
+	NSLog(@"Log: %d", i);
+	return 0;
 }
 
 @end

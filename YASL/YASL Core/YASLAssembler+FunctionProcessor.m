@@ -104,7 +104,8 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 - (void) processAssembly:(YASLAssembly *)a nodeMethodParamList:(YASLGrammarNode *)node {
 	[self fetchArray:a];
 	NSArray *params = [a pop];
-	[a push:[[params reverseObjectEnumerator] allObjects]];
+	YASLDeclaratorSpecifier *specifier = [YASLDeclaratorSpecifier specifierWithType:YASLTranslationNodeTypeFunction param:0 andElems:[[params reverseObjectEnumerator] allObjects]];
+	[a push:specifier];
 }
 
 @end

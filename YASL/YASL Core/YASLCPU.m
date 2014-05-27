@@ -257,10 +257,11 @@ YASLCPUSetOperandBlock simpleSetter = ^void(YASLThreadStruct *threadData, YASLIn
 					}
 					YASLInt returnValue = [function callOnParamsBase:[_ram dataAt:*_stack.top - sizeof(YASLInt)]];
 
-					[self setReg:YASLRegisterIR0 value:returnValue];
+					if (![function.returns isEqualToString:YASLBuiltInTypeIdentifierVoid])
+						[self setReg:YASLRegisterIR0 value:returnValue];
 
 					if (function.params)
-						[_stack popSpace:function.params];
+						[_stack popSpace:function.params * sizeof(YASLInt)];
 
 					break;
 				}

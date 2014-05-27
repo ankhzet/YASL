@@ -148,12 +148,12 @@ increment-decrement-expression = (unary-increment | unary-decrement) unary-expre
 
 sizeof-expression = 'sizeof'! (unary-expression | typedef-type);
 
-postfix-expression = postfix-increment-decrement | postfix-method-call | (primary-expression (array-access-expr
-																				 | prop-access-expr
+postfix-expression = postfix-increment-decrement | postfix-method-call | postfix-array-access | (primary-expression (prop-access-expr
 																				 | struct-access-expr)*);
 
 postfix-increment-decrement = primary-expression (unary-increment | unary-decrement);
 postfix-method-call = primary-expression method-call-expr;
+postfix-array-access = primary-expression array-access-expr;
 
 array-access-expr = '['! expression ']'!;
 method-call-expr = '('! expression? ')'!;

@@ -22,6 +22,7 @@ NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_MOV  ] = @"MOV",
   [OPC_INV  ] = @"INV",
   [OPC_NEG  ] = @"NEG",
+  [OPC_RST  ] = @"RST",
 
   [OPC_NOT  ] = @"NOT",
   [OPC_AND  ] = @"AND",

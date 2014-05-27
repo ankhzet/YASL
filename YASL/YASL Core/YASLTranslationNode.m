@@ -10,7 +10,6 @@
 #import "YASLCoreLangClasses.h"
 
 NSString *const YASLTranslationNodeTypeNames[] = {
-	[YASLTranslationNodeTypeConstant] = @"const",
 	[YASLTranslationNodeTypeExpression] = @"exp",
 	[YASLTranslationNodeTypeInitializer] = @"init",
 	[YASLTranslationNodeTypeFunction] = @"function",
