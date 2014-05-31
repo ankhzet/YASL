@@ -15,6 +15,7 @@ extern NSString *const YASLNativeStrings_strComp;
 
 
 extern NSString *const YASLNativeCPU_sqrt;
+extern NSString *const YASLNativeCPU_launchTime;
 extern NSString *const YASLNativeCPU_currentThread;
 
 extern NSString *const YASLNativeThreadsAPI_waitFor;

@@ -55,6 +55,20 @@
 		@(OPC_XOR):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
 		@(OPC_SHL):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
 		@(OPC_SHR):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		
+		// arithmetic fp
+		@(OPC_ADDF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		@(OPC_SUBF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		@(OPC_MULF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		@(OPC_DIVF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		@(OPC_INCF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeWriteFirst),
+		@(OPC_DECF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeWriteFirst),
+		@(OPC_NEGF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeWriteFirst),
+
+		// binary logic fp
+		@(OPC_NOTF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeWriteFirst),
+		@(OPC_ORF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
+		@(OPC_ANDF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond | YASLOperandAccessTypeWriteFirst),
 
 		// stack
 		@(OPC_PUSH):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsStack),
@@ -71,6 +85,7 @@
 		// branching
 		@(OPC_JMP):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsFlow),
 		@(OPC_TEST):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond),
+		@(OPC_TESTF):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeReadSecond),
 		@(OPC_JZ):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsFlow),
 		@(OPC_JNZ):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsFlow),
 		@(OPC_JGT):@(YASLOperandAccessTypeReadFirst | YASLOperandAccessTypeImpactsFlow),

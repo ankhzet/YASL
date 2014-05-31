@@ -8,7 +8,7 @@
 
 #import <Foundation/Foundation.h>
 
-@class YASLGrammarNode, YASLAssembly;
+@class YASLGrammarNode, YASLAssembly, YASLNonfatalException, YASLToken;
 typedef BOOL (^YASLGrammarNodeWalkBlock) (id userData, YASLGrammarNode *node);
 
 @interface YASLGrammarNode : NSObject <NSCopying>
@@ -30,8 +30,7 @@ typedef BOOL (^YASLGrammarNodeWalkBlock) (id userData, YASLGrammarNode *node);
 /*! Node-type relative matching. Reimplemented in subclasses. */
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly;
 
-- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ...;
-
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly;
 @end
 
 @interface YASLGrammarNode (StringRepresentation)

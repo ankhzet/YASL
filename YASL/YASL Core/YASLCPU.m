@@ -22,6 +22,7 @@
 @protected
 	YASLThreadStruct state;
 	__weak YASLNativeFunctions *nativeFunctions;
+	long long launchTime;
 }
 
 @end
@@ -55,16 +56,17 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 @synthesize paused = _paused;
 
 + (instancetype) cpu {
-	return [(YASLCPU *)[self alloc] init];
+	return [(YASLCPU *)[self alloc] initWithEventsManager:[YASLEventsAPI new]];
 }
 
 - (id)init {
-	if (!(self = [super initWithEventsManager:[YASLEventsAPI new]]))
+	if (!(self = [super init]))
 		return self;
 
 	nativeFunctions = [YASLNativeFunctions sharedFunctions];
 	nativeFunctions.attachedCPU = self;
 
+	launchTime = [NSDate timeIntervalSinceReferenceDate] * 1000;
 	return self;
 }
 
@@ -437,6 +439,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 
 	[self registerNativeFunction:YASLNativeCPU_sqrt withParamCount:1 returnType:YASLBuiltInTypeIdentifierFloat withSelector:@selector(n_sqrt:params:)];
 	[self registerNativeFunction:YASLNativeCPU_currentThread withParamCount:0 returnType:YASLAPITypeHandle withSelector:@selector(n_threadHandle:params:)];
+	[self registerNativeFunction:YASLNativeCPU_launchTime withParamCount:0 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_launchTime:params:)];
 }
 
 - (YASLInt) n_sqrt:(YASLNativeFunction *)native params:(void *)paramsBase {
@@ -447,6 +450,11 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 
 - (YASLInt) n_threadHandle:(YASLNativeFunction *)native params:(void *)paramsBase {
 	return self.activeThreadHandle;
+	launchTime = [NSDate timeIntervalSinceReferenceDate] * 1000;
+}
+
+- (YASLInt) n_launchTime:(YASLNativeFunction *)native params:(void *)paramsBase {
+	return ([NSDate timeIntervalSinceReferenceDate] * 1000) - launchTime;
 }
 
 @end

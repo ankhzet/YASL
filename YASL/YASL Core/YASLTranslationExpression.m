@@ -171,9 +171,24 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 
 + (YASLOpcodes) operationToOpcode:(YASLExpressionOperator)operator typed:(YASLBuiltInType)type {
 	switch (type) {
-		case YASLBuiltInTypeBool:
-		case YASLBuiltInTypeChar:
-		case YASLBuiltInTypeInt:
+		case YASLBuiltInTypeFloat:
+			switch (operator) {
+				case YASLExpressionOperatorAdd: return OPC_ADDF;
+				case YASLExpressionOperatorSub: return OPC_SUBF;
+				case YASLExpressionOperatorMul: return OPC_MULF;
+				case YASLExpressionOperatorDiv: return OPC_DIVF;
+
+				case YASLExpressionOperatorNot: return OPC_NOTF;
+				case YASLExpressionOperatorLogicOr: return OPC_ORF;
+				case YASLExpressionOperatorLogicAnd: return OPC_ANDF;
+
+				case YASLExpressionOperatorDecrement: return OPC_DECF;
+				case YASLExpressionOperatorIncrement: return OPC_INCF;
+				default:
+					break;
+			}
+			break;
+		default:
 			switch (operator) {
 				case YASLExpressionOperatorAdd: return OPC_ADD;
 				case YASLExpressionOperatorSub: return OPC_SUB;
@@ -205,26 +220,6 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 				default:
 					break;
 			}
-			break;
-		case YASLBuiltInTypeFloat:
-			switch (operator) {
-				case YASLExpressionOperatorAdd: return OPC_ADDF;
-				case YASLExpressionOperatorSub: return OPC_SUBF;
-				case YASLExpressionOperatorMul: return OPC_MULF;
-				case YASLExpressionOperatorDiv: return OPC_DIVF;
-
-				case YASLExpressionOperatorNot: return OPC_NOTF;
-				case YASLExpressionOperatorLogicOr: return OPC_ORF;
-				case YASLExpressionOperatorLogicAnd: return OPC_ANDF;
-
-				case YASLExpressionOperatorDecrement: return OPC_DECF;
-				case YASLExpressionOperatorIncrement: return OPC_INCF;
-				default:
-					break;
-			}
-			break;
-		default:
-			break;
 	}
 
 	return OPC_NOP;

@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
+#import "YASLNonfatalException.h"
 
-@class YASLNonfatalException;
 @interface YASLExceptionStack : NSObject
 
 - (void) raiseError:(NSString *)msg, ...;

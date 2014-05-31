@@ -69,6 +69,7 @@
 	YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:self.cpu];
 	[disassembler setLabelsRefs:[self.compiler cache:source.identifier data:kCacheStaticLabels]];
 	[disassembler setCodeSource:source];
+	[disassembler setStringsManager:self.stringManager];
 	return [disassembler disassembleFrom:unit.startOffset to:unit.startOffset + unit.codeLength];
 }
 
@@ -119,26 +120,31 @@ YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve 
 		return [native intParam:1 atBase:paramsBase];
 
 	YASLInt *paramList = [_ram dataAt:params];
-	const char *formatBuf = [string cStringUsingEncoding:NSASCIIStringEncoding];
+	char *formatBuf = malloc([string length]);
+	[string getCString:formatBuf maxLength:[string length] encoding:NSASCIIStringEncoding];
 	NSUInteger length = [string length];
 
-	char *nullStr = malloc(7 * sizeof(char));
-	[@"(null)" getCString:nullStr maxLength:7 encoding:NSASCIIStringEncoding];
-
+	__weak YASLMemoryManager *mm = _memManager;
+	__weak YASLRAM *ram = _ram;
+	char *nullStr = "(null)";
+	char *buff = malloc(1024);
 	YASLChar *formatted = _format(formatBuf, &length, paramList, ^char *(int strAddres) {
 		if (strAddres) {
-			YASLInt size = [_memManager isAllocated:strAddres];
+			YASLInt size = [mm isAllocated:strAddres];
 			if (size) {
-				YASLChar *raw = [_ram dataAt:strAddres];
+				YASLChar *raw = [ram dataAt:strAddres];
 				NSUInteger len = size / sizeof(YASLChar) - 1;
 
-				return [[NSString stringWithCharacters:raw length:len] cStringUsingEncoding:NSASCIIStringEncoding];
+				NSString *s = [NSString stringWithCharacters:raw length:len];
+				[s getCString:buff maxLength:1024 encoding:NSASCIIStringEncoding];
+				return buff;
 			}
 		}
 
 		return nullStr;
 	});
-	free(nullStr);
+	free(buff);
+	free(formatBuf);
 
 	NSLog(@"LOG: %@", [NSString stringWithCharacters:formatted length:length]);
 	return 0;
@@ -202,6 +208,8 @@ YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve 
 				*d = c;
 		}
 		d++;
+		if (d >= e)
+			_realloc();
 	}
 
 	*length = d - result;

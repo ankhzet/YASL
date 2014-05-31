@@ -52,7 +52,4 @@
 	return YES;
 }
 
-- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
-}
-
 @end

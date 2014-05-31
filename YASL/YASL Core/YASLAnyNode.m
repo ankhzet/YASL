@@ -20,8 +20,13 @@
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {
-	[match pop];
-	return YES;
+	return !![match pop];
+}
+
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly {
+	YASLNonfatalException *exception = [YASLNonfatalException exceptionWithMsg:@"Token expected"];
+	[assembly pushException:exception];
+	return exception;
 }
 
 @end

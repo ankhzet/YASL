@@ -11,6 +11,7 @@
 #import "YASLCodeAddressReference.h"
 #import "YASLNativeFunctions.h"
 #import "YASLNativeFunction.h"
+#import "YASLStrings.h"
 
 NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_NOP  ] = @"NOP",
@@ -89,6 +90,7 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 
 @implementation YASLInstruction {
 	NSArray *labelRefs;
+	YASLStrings *stringsManager;
 }
 
 + (instancetype) instruction:(YASLCodeInstruction *)i {
@@ -119,6 +121,10 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 	labelRefs = refs;
 }
 
+- (void) setStringsManager:(YASLStrings *)strings {
+	stringsManager = strings;
+}
+
 - (NSString *) associatedLabel:(YASLInt)ip {
 	NSMutableSet *result = [NSMutableSet set];
 	NSMutableDictionary *groups = [NSMutableDictionary dictionary];
@@ -141,7 +147,12 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
     [labels appendFormat:@"%@ %@", group, [[groups[group] allObjects] componentsJoinedByString:@","]];
 	}
 	[labels appendString:[[result allObjects] componentsJoinedByString:@""]];
-	return labels;
+	return [labels length] ? labels : nil;
+}
+
+- (NSString *) associatedString:(YASLInt)address {
+	NSString *string = [stringsManager stringAt:address];
+	return string ? [NSString stringWithFormat:@"\"%@\"", string] : nil;
 }
 
 - (YASLInt) immediateValue:(YASLInt)immediate {
@@ -154,8 +165,11 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 
 	YASLInt i = [self immediateValue:immediate];
 	NSString *label = [self associatedLabel:i];
+	if (!label)
+		label = [self associatedString:i];
+
 	NSString *immediateStr = [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
-	return [label length] ? [NSString stringWithFormat:@"%@(%@)",label,immediateStr] : immediateStr;
+	return label ? [NSString stringWithFormat:@"%@(%@)",label,immediateStr] : immediateStr;
 }
 
 - (NSString *) description {

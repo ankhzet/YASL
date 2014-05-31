@@ -17,6 +17,7 @@ NSString *const YASLNativeStrings_strComp = @"strComp";
 
 
 NSString *const YASLNativeCPU_sqrt = @"sqrt";
+NSString *const YASLNativeCPU_launchTime = @"launchTime";
 NSString *const YASLNativeCPU_currentThread = @"currentThread";
 
 NSString *const YASLNativeThreadsAPI_waitFor = @"waitFor";

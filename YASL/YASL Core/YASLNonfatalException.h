@@ -15,6 +15,7 @@
 @property (nonatomic) NSString *atToken;
 @property (nonatomic) NSUInteger stackGUID;
 
++ (instancetype) exceptionWithMsg:(NSString *)msg, ...;
 + (instancetype) exceptionAtLine:(NSUInteger)line andCollumn:(NSUInteger)collumn withMsg:(NSString *)msg, ...;
 
 @end

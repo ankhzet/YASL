@@ -16,19 +16,11 @@
 	return methodCall;
 }
 
-- (void) setMethodAddress:(YASLTranslationExpression *)methodAddress {
-	if (_methodAddress == methodAddress)
-		return;
-
-	_methodAddress = methodAddress;
-	self.returnType = methodAddress.returnType;
-}
-
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
 	NSMutableArray *foldedOperands = [[[self nodesEnumerator:NO] allObjects] mutableCopy];
+	[foldedOperands removeObjectAtIndex:0];
 
-	YASLTranslationExpression *method = [self.methodAddress foldConstantExpressionWithSolver:solver];
-  self.methodAddress = method;
+	YASLTranslationExpression *method = [[self leftOperand] foldConstantExpressionWithSolver:solver];
 	self.returnType = method.returnType;
 
 
@@ -60,14 +52,17 @@
 		}
 	}
 
-	[self setSubNodes:foldedOperands];
+	[self setSubNodes:[@[method] arrayByAddingObjectsFromArray:foldedOperands]];
 
 	return self;
 }
 
 - (NSString *) toString {
-	NSString *params = [[[self nodesEnumerator:YES] allObjects] componentsJoinedByString:self.specifier];
-	return [NSString stringWithFormat:@"%@(%@)", self.methodAddress, params];
+	NSMutableArray *operands = [[[self nodesEnumerator:YES] allObjects] mutableCopy];
+	YASLTranslationExpression *method = [operands lastObject];
+	[operands removeLastObject];
+	NSString *params = [operands componentsJoinedByString:self.specifier];
+	return [NSString stringWithFormat:@"%@(%@)", method, params];
 }
 
 @end
@@ -75,18 +70,21 @@
 @implementation YASLMethodCallExpression (Assembling)
 
 - (void) assemble:(YASLAssembly *)assembly {
-	for (YASLTranslationExpression *param in [self nodesEnumerator:YES]) {
+	YASLTranslationExpression *method = [self leftOperand];
+	for (YASLTranslationExpression *param in [self nodesEnumerator:YES])
+		if (param == method)
+			continue;
+	else {
 		[param assemble:assembly unPointered:YES];
 		[assembly push:OPC_(PUSH, REG_(R0))];
 	}
 
-	NSString *functionIdentifier = self.methodAddress.specifier;
-//	YASLLocalDeclaration *function = [self.declarationScope localDeclarationByIdentifier:functionIdentifier];
+	NSString *functionIdentifier = method.specifier;
 	YASLNativeFunction *native = [[YASLNativeFunctions sharedFunctions] findByName:functionIdentifier];
 	if (native) {
 		[assembly push:OPC_(NATIV, IMM_(@(native.GUID)))];
 	} else {
-		[self.methodAddress assemble:assembly unPointered:NO];
+		[method assemble:assembly unPointered:NO];
 		[assembly push:OPC_(CALL, REG_(R0))];
 	}
 }

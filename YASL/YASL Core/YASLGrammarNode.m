@@ -35,7 +35,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	id tokensMarker = [match top];
 
 	NSUInteger assemblyState = [assembly pushState];
-#ifdef VERBOSE_SYNTAX_ERRORS
+#ifndef VERBOSE_SYNTAX_ERRORS
 	NSUInteger errorState = [assembly pushExceptionStackState];
 #endif
 
@@ -56,7 +56,7 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 		}
 #endif
     if (matches) {
-#ifdef VERBOSE_SYNTAX_ERRORS
+#ifndef VERBOSE_SYNTAX_ERRORS
 			[assembly popExceptionStackState:errorState];
 #endif
 			if (self.discard) {
@@ -98,15 +98,15 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 			[assembly dropPopped];
 			[assembly push:an];
 			return YES;
-		} else
-			[self raiseMatch:match error:@"Failed to assemble %@ node", self.name ? self.name : [self nodeType]];
+		} else {
+			[match popState:state];
+			[self raiseAtAssembly:assembly match:match];
+		}
 	}
 	@catch (YASLNonfatalException *exception) {
-//		[match popException];
-		[assembly pushException:exception];
+
 	}
 
-	[match popState:state];
 	[assembly popState:assemblyState];
 	[assembly dropDiscardsAfterState:[match total] - state - 1];
 	[assembly dropPopped];
@@ -114,17 +114,13 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	return NO;
 }
 
-- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
-	va_list args;
-  va_start(args, msg);
-	NSString *formatted = [[NSString alloc] initWithFormat:msg arguments:args];
-  va_end(args);
-
+- (void) raiseAtAssembly:(YASLAssembly *)assembly match:(YASLAssembly *)match {
 	id token = [match top];
 	while (token && ![token isKindOfClass:[YASLToken class]]) {
 		token = [match pushBack];
 	}
-	YASLNonfatalException *exception = [match prepareExceptionObject:formatted];
+
+	YASLNonfatalException *exception = [self exceptionOnToken:token inAssembly:assembly];
 	if (token) {
 		exception.atLine = ((YASLToken *)token).line;
 		exception.atCollumn = ((YASLToken *)token).collumn;
@@ -132,6 +128,11 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	}
 
 	@throw exception;
+}
+
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly {
+	YASLNonfatalException *exception = [YASLNonfatalException exceptionWithMsg:@"Failed to assemble node"];
+	return exception;
 }
 
 - (BOOL) matches:(YASLAssembly *)match for:(YASLAssembly *)assembly {

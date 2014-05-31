@@ -97,3 +97,36 @@
 }
 
 @end
+
+@implementation YASLAssembler (StructTypeProcessor)
+
+- (void) processAssembly:(YASLAssembly *)a nodeStructMember:(YASLAssemblyNode *)node {
+	NSArray *declarators = [a pop];
+	YASLDataType *type= [a pop];
+	[a push:@{@0: type, @1: declarators}];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeStructMembersList:(YASLAssemblyNode *)node {
+	[a push:[self reverseFetch:a]];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeStructType:(YASLAssemblyNode *)node {
+	YASLAssembly *members = [a pop];
+	YASLStructDataType *structType = [YASLStructDataType typeWithName:@""];
+	while ([members notEmpty]) {
+		NSDictionary *structMember = [members pop];
+		YASLDataType *type = structMember[@0];
+		NSArray *declarators = structMember[@1];
+		for (YASLTranslationDeclarator *declarator in [declarators reverseObjectEnumerator]) {
+			NSString *identifier = declarator.declaratorIdentifier;
+			if ([structType hasProperty:identifier])
+				[self raiseError:@"Struct property duplicate: \"%@\"", identifier];
+			
+			[structType addProperty:identifier withType:[declarator declareSpecific:nil withDataType:type inScope:self.declarationScope]];
+		}
+
+	}
+	[a push:structType];
+}
+
+@end

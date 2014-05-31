@@ -14,6 +14,7 @@
 extern NSString *const OPCODE_NAMES[YASLOpcodesMAX];
 extern NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1];
 
+@class YASLStrings;
 @interface YASLInstruction : NSObject {
 	YASLCodeInstruction *instruction;
 	void *immediates;
@@ -28,6 +29,7 @@ extern NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1];
 - (YASLCodeInstruction *) instruction;
 - (void) setImmediatePtr:(void *)ptr;
 - (void) setLabelRefs:(NSArray *)refs;
+- (void) setStringsManager:(YASLStrings *)strings;
 
 - (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign;
 

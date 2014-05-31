@@ -31,7 +31,7 @@
 }
 
 - (NSString *) toString {
-	return [NSString stringWithFormat:@"%@%@", self.specifier, [[self leftOperand] toString]];
+	return [NSString stringWithFormat:@"(%@%@)", self.specifier, [[self leftOperand] toString]];
 }
 
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {

@@ -23,7 +23,7 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 	YASLTranslationNodeTypeMAX
 };
 
-@class YASLAssembly, YASLDeclarationScope;
+@class YASLAssembly, YASLDeclarationScope, YASLDataType;
 @interface YASLTranslationNode : YASLExceptionStack
 
 @property (nonatomic) NSUInteger sourceLine;
@@ -34,6 +34,9 @@ typedef NS_ENUM(NSUInteger, YASLTranslationNodeType) {
 // initialization
 + (instancetype) nodeInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type;
 - (id)initInScope:(YASLDeclarationScope *)scope withType:(YASLTranslationNodeType)type;
+
+- (YASLDataType *) typeByName:(NSString *)name;
+- (NSEnumerator *) enumTypes;
 
 @end
 

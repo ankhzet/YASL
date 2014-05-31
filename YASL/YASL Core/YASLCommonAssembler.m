@@ -238,8 +238,12 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 			outAssembly.chunkMarker = marker;
 			processed = [self performPre:NO processorSelectorForNode:node andTokensAssembly:outAssembly];
 		}
-		@catch (NSException *exception) {
-			NSLog(@"In node \"%@\", processing exception: %@\nIn assembly:\n%@\nOut assembly:\n%@\n", node.grammarNode.name, exception, inAssembly, outAssembly);
+		@catch (YASLNonfatalException *exception) {
+			YASLToken *breakToken = [inAssembly pushBack];
+			[inAssembly pop];
+			exception.atLine = breakToken.line;
+			exception.atCollumn = breakToken.collumn;
+			NSLog(@"In node \"%@\", processing exception: %@\nOut assembly:\n%@\n", node.grammarNode.name, exception, outAssembly);
 			return NO;
 		}
 		@finally {

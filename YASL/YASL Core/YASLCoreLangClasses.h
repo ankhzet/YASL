@@ -21,6 +21,7 @@
 #import "YASLDataType.h"
 #import "YASLArrayDataType.h"
 #import "YASLEnumDataType.h"
+#import "YASLStructDataType.h"
 
 #import "YASLBuiltInTypeVoidInstance.h"
 #import "YASLBuiltInTypeIntInstance.h"

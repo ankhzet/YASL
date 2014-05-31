@@ -28,7 +28,7 @@
 }
 @end
 
-@class YASLCPU, YASLCodeSource;
+@class YASLCPU, YASLCodeSource, YASLStrings;
 @interface YASLDisassembler : NSObject
 
 @property (nonatomic) YASLCPU *cpu;
@@ -39,6 +39,7 @@
 
 - (void) setLabelsRefs:(NSArray *)labels;
 - (void) setCodeSource:(YASLCodeSource *)source;
+- (void) setStringsManager:(YASLStrings *)strings;
 
 - (NSString *) sourceLine:(NSUInteger)lineNumber;
 

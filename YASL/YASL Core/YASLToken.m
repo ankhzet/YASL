@@ -10,13 +10,13 @@
 
 NSString *const YASLTokenKindNames[YASLTokenKindMAX] = {
 	[YASLTokenKindEOF]        = @"EOF",
-	[YASLTokenKindIdentifier] = @"YASLTokenKindIdentifier",
-	[YASLTokenKindString]     = @"YASLTokenKindString",
-	[YASLTokenKindInteger]    = @"YASLTokenKindInteger",
-	[YASLTokenKindFloat]      = @"YASLTokenKindFloat",
-	[YASLTokenKindBool]       = @"YASLTokenKindBool",
-	[YASLTokenKindSymbol]     = @"YASLTokenKindSymbol",
-	[YASLTokenKindComment]    = @"YASLTokenKindComment",
+	[YASLTokenKindIdentifier] = @"Identifier",
+	[YASLTokenKindString]     = @"String",
+	[YASLTokenKindInteger]    = @"Integer",
+	[YASLTokenKindFloat]      = @"Float",
+	[YASLTokenKindBool]       = @"Bool",
+	[YASLTokenKindSymbol]     = @"Symbol",
+	[YASLTokenKindComment]    = @"Comment",
 };
 
 @implementation YASLToken

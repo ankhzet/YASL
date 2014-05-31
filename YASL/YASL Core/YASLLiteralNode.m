@@ -25,4 +25,10 @@
 	return [token.value isEqualToString:self.literal];
 }
 
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly {
+	YASLNonfatalException *exception = [YASLNonfatalException exceptionWithMsg:@"\"%@\" expected, \"%@\" found", self.literal, token.value];
+	[assembly pushException:exception];
+	return exception;
+}
+
 @end

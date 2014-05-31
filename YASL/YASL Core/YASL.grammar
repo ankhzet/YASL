@@ -13,7 +13,7 @@ external-declaration = declaration ';'! | function-definition;
  */
 struct-type = struct '{'! struct-members-list '}'!;
 struct = 'struct'!;
-struct-members-list = struct-member (','! struct-member)* ','?;
+struct-members-list = struct-member (';'! struct-member)* ';'!?;
 struct-member = type-specifier declarator-list;
 declarator-list = declarator (','! declarator)*;
 
@@ -149,7 +149,7 @@ shift-expression = additive-expression (('<<' | '>>') additive-expression)*;
 additive-expression = multiplicative-expression (('+' | '-') multiplicative-expression)*;
 multiplicative-expression = cast-expression (('*' | '/' | '%') cast-expression)*;
 
-cast-expression = unary-expression | type-cast;
+cast-expression = type-cast | unary-expression;
 type-cast = '('! typedef-type ')'! cast-expression;
 
 unary-expression = postfix-expression
@@ -162,13 +162,15 @@ increment-decrement-expression = (unary-increment | unary-decrement) unary-expre
 
 sizeof-expression = 'sizeof'! (unary-expression | typedef-type);
 
-postfix-expression = postfix-increment-decrement | postfix-method-call | postfix-array-access | (primary-expression (prop-access-expr
-																				 | struct-access-expr)*);
+postfix-expression = primary-expression postfix-expressions;
 
-postfix-increment-decrement = primary-expression (unary-increment | unary-decrement);
-postfix-method-call = primary-expression method-call-expr;
-postfix-array-access = primary-expression array-access-expr;
-
+postfix-expressions = (  postfix-increment-decrement
+											 | method-call-expr
+											 | array-access-expr
+											 | prop-access-expr
+											 | struct-access-expr
+											)*;
+postfix-increment-decrement = unary-increment | unary-decrement;
 array-access-expr = '['! expression ']'!;
 method-call-expr = '('! expression? ')'!;
 prop-access-expr = '.'! Identifier;

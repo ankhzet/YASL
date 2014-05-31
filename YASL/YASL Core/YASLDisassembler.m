@@ -17,6 +17,7 @@
 	NSArray *labelRefs;
 	NSArray *codeLines;
 	YASLCodeSource *codeSource;
+	YASLStrings *stringsManager;
 	NSCharacterSet *newlines, *whitespace;
 }
 
@@ -42,6 +43,10 @@
 - (void) setCodeSource:(YASLCodeSource *)source {
 	codeSource = source;
 	codeLines = source ? [source.code componentsSeparatedByCharactersInSet:newlines] : nil;
+}
+
+- (void) setStringsManager:(YASLStrings *)strings {
+	stringsManager = strings;
 }
 
 - (NSString *) sourceLine:(NSUInteger)lineNumber {
@@ -76,6 +81,7 @@
 	YASLCodeInstruction *instr;
 	YASLInstruction *instruction = [YASLInstruction instruction:nil];
 	[instruction setLabelRefs:labelRefs];
+	[instruction setStringsManager:stringsManager];
 	YASLInt _opcode1 = 0, _opcode2 = 0;
 	YASLInt *opcode1 = &_opcode1, *opcode2 = &_opcode2;
 	YASLRAM *ram = self.cpu.ram;

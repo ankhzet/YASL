@@ -7,7 +7,6 @@
 //
 
 #import "YASLIdentifierNode.h"
-#import "YASLCompositeNode.h"
 #import "YASLToken.h"
 #import "YASLAssembly.h"
 
@@ -42,7 +41,11 @@
 	return [self.link match:match andAssembly:assembly];
 }
 
-- (void) raiseMatch:(YASLAssembly *)match error:(NSString *)msg, ... {
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly {
+	NSString *identifier = [self.link.name stringByReplacingOccurrencesOfString:@"-" withString:@" "];
+	YASLNonfatalException *exception = [YASLNonfatalException exceptionWithMsg:@"Failed to assemble \"%@\"", identifier];
+	[assembly pushException:exception];
+	return exception;
 }
 
 @end

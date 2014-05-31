@@ -38,6 +38,14 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 	return self;
 }
 
+- (YASLDataType *) typeByName:(NSString *)name {
+	return [[self.declarationScope localDataTypesManager] typeByName:name];
+}
+
+- (NSEnumerator *) enumTypes {
+	return [[self.declarationScope localDataTypesManager] enumTypes];
+}
+
 @end
 
 @implementation YASLTranslationNode (SubNodesManagement)

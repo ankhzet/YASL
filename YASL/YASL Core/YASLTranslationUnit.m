@@ -17,16 +17,8 @@
 	return unit;
 }
 
-- (YASLDataType *) typeByName:(NSString *)name {
-	return [[self.declarationScope localDataTypesManager] typeByName:name];
-}
-
 - (void) registerType:(YASLDataType *)type {
 	[[self.declarationScope localDataTypesManager] registerType:type];
-}
-
-- (NSEnumerator *) enumTypes {
-	return [[self.declarationScope localDataTypesManager] enumTypes];
 }
 
 @end

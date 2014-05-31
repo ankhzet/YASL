@@ -1,14 +1,16 @@
 script test;
 
 typedef enum {
+	STATE_FAIL = -1,
+	MAX_INT = 2147483647,
+} Constant;
+
+typedef enum {
 	EventStateClear   = 0,
 	EventStateSet     = 1,
 	EventStateFailed  = 2,
 	EventStateTimeout = 3,
 } EventState;
-
-int STATE_FAIL = -1;
-int MAX_INT = 2147483647;
 
 native handle createEvent(char *identifier; int initialState; bool autoreset);
 native handle signalEvent(handle event; int state);
@@ -28,6 +30,7 @@ native handle threadStart(int threadMethod, threadState, parameter);
 native bool   threadSuspend(handle thread; int msec);
 native bool   threadResume(handle thread);
 native bool   threadTerminate(handle thread; int returnCode);
+native int    launchTime();
 
 native int   strLen(char *string);
 native char *strConc(char *string1, *string2);
@@ -49,8 +52,6 @@ int min(int a, b) {
 int max(int a, b) {
 	return a > b ? a : b;
 }
-
-char *GAME_EVENT = "__event_game_event";
 
 typedef enum {
 	GameTriggerNone,
@@ -78,11 +79,25 @@ typedef struct {
 } GameTriggers;
 
 void triggerFire(GameTrigger *trigger) {
+	log("Fired trigger %s", trigger.specifier);
+	switch (trigger.type) {
+		case GameTriggerTypeSpawn:
+			break;
 
+		case GameTriggerTypeScript:
+			break;
+
+		default:
+			log("Unknown game trigger type %i", trigger.type);
+	}
 }
 
-int processTriggers() {
-	int launchedFor = gameLaunchTime();
+handle gameRegisterEventListener();
+GameEvent gameEventPop(handle listener);
+GameTriggers *gameLoadMapTriggers();
+
+int processTriggers(GameTriggers *triggers) {
+	int launchedFor = launchTime();
 	int nearestTrigger = MAX_INT;
 	for (int i = 0; i < triggers.count; i++) {
 		GameTrigger *trigger = &triggers.trigger[i];
@@ -94,7 +109,7 @@ int processTriggers() {
 			triggerFire(trigger);
 
 		trigger.nextLaunch = launchedFor + trigger.freq;
-		if ((trigger.frequency == GameTriggerTypeOnce) && !!next)
+		if ((trigger.frequency == GameTriggerTypeOnce) && (bool)next)
 			trigger.nextLaunch = STATE_FAIL;
 		else
 			nearestTrigger = min(nearestTrigger, trigger.nextLaunch);
@@ -104,22 +119,22 @@ int processTriggers() {
 }
 
 int triggerWorker(int *params) {
-	int breakEvent = params[0];
+	handle breakEvent = params[0];
 	GameTriggers *triggers = params[1];
 
 	int nextTrigger = 0;
-	int launchedFor = gameLaunchTime();
-	while (waitFor(breakEvent, launchedFor - nextTrigger, EventStateSet) != EventStateSet) {
+	int launchedFor = launchTime();
+	while (waitFor(breakEvent, launchedFor - nextTrigger, EventStateSet) == EventStateTimeout) {
 		nextTrigger = processTriggers(triggers);
 		if (nextTrigger == MAX_INT)
 			break;
 	}
 }
 
-int loadTriggers() {
+void loadTriggers(handle finisherEvent) {
 	GameTriggers *triggers = gameLoadMapTriggers();
 	if (triggers) {
-		int params[] = {};
+		int params[] = {finisherEvent, triggers};
 		closeEvent(threadStart(&triggerWorker, ThreadStateRunning, &params));
 	}
 }
@@ -142,8 +157,12 @@ int processEvent(int eventID) {
 }
 
 int main(int arg) {
+	char *GAME_EVENT = "__event_game_event";
+	
 	handle event = createEvent(GAME_EVENT, EventStateClear, true);
-	int listener = gameRegisterEventListener();
+	handle finisher = createEvent(nil, EventStateClear, true);
+	handle listener = gameRegisterEventListener();
+	loadTriggers(finisher);
 	while (true) {
 		switch (waitFor(event, 200, EventStateSet)) {
 			case EventStateFailed: {
@@ -160,18 +179,16 @@ int main(int arg) {
 		}
 		break;
 	}
-	int mapGUID = gameMapGUID();
-	void *triggers = gameLoadMapTriggers();
 
-	spawn *spawn = spawnEntity("object");
-	float spawnX = 10.0, spawnY = 12.0;
-	entityMove(spawn, spawnX, spawnY);
+	closeEvent(finisher);
 
-	char *str = "string #1";
-	int a = 123;
-	int b = 234;
-	int params[] = {1, str, a, b, a > b};
-	log("This is %i'st test: %s, and a > b = %i > %i = %b", &params);
+//	int mapGUID = gameMapGUID();
+//	void *triggers = gameLoadMapTriggers();
+//
+//	spawn *spawn = spawnEntity("object");
+//	float spawnX = 10.0, spawnY = 12.0;
+//	entityMove(spawn, spawnX, spawnY);
+
 	return 0;
 }
 /*

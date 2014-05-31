@@ -131,8 +131,7 @@
 - (void) processAssembly:(YASLAssembly *)a nodeTypeCast:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
 	YASLDataType *castType = [a pop];
-	YASLTranslationExpression *castExpression = [YASLTranslationExpression expressionInScope:[self scope] withType:YASLExpressionTypeTypecast andSpecifier:nil];
-	castExpression.returnType = castType;
+	YASLTypecastExpression *castExpression = [YASLTypecastExpression typecastInScope:[self scope] withType:castType];
 	[castExpression addSubNode:expression];
 	[a push:castExpression];
 }
@@ -168,16 +167,6 @@
 	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken unary:YES];
 	YASLTranslationExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
 	[unaryExpression addSubNode:expression];
-	[a push:unaryExpression];
-}
-
-- (void) processAssembly:(YASLAssembly *)a nodePostfixIncrementDecrement:(YASLAssemblyNode *)node {
-	NSString *operatorToken = [a pop];
-	YASLTranslationExpression *expression = [a pop];
-	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken unary:YES];
-	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
-	[unaryExpression addSubNode:expression];
-	unaryExpression.postfix = YES;
 	[a push:unaryExpression];
 }
 
@@ -234,16 +223,28 @@ typedef NS_ENUM(NSUInteger, YASLConstantType) {
 			dataType = [self.declarationScope typeByName:YASLBuiltInTypeIdentifierString];
 			break;
 		}
-		case YASLConstantTypeEnum: { // used for enums
-			NSString *enumIdentifier = token.value;
-			YASLEnumDataType *enumType = [YASLEnumDataType hasEnum:enumIdentifier inManager:[[self scope] localDataTypesManager]];
+		case YASLConstantTypeEnum: { // used for enums, variables, reserved consts
+			NSString *identifier = token.value;
+			if ([identifier isEqualToString:@"nil"]) {
+				value = @0;
+				dataType = [[[self scope] localDataTypesManager] typeByName:YASLBuiltInTypeIdentifierInt];
+				break;
+			}
+
+			if ([identifier isEqualToString:@"maxInt"]) {
+				value = @((YASLInt)(pow(2, 31) - 1));
+				dataType = [[[self scope] localDataTypesManager] typeByName:YASLBuiltInTypeIdentifierInt];
+				break;
+			}
+
+			YASLEnumDataType *enumType = [YASLEnumDataType hasEnum:identifier inManager:[[self scope] localDataTypesManager]];
 			if (!enumType) { // enum not found, is it a variable name?
 				[a push:token];
 				[self processAssembly:a nodeVariable:node];
 				return;
 			}
 
-			value = @([enumType enumValue:enumIdentifier]);
+			value = @([enumType enumValue:identifier]);
 			dataType = enumType.parent;
 			break;
 		}
@@ -279,7 +280,31 @@ typedef NS_ENUM(NSUInteger, YASLConstantType) {
 	[a push:@(YASLConstantTypeString)];
 }
 
-#pragma mark Methods
+#pragma mark Postfix expression
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixExpressions:(YASLAssemblyNode *)node {
+	[a push:[self reverseFetch:a]];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixExpression:(YASLAssemblyNode *)node {
+	YASLAssembly *postfixes = [a pop];
+	YASLTranslationExpression *expression = [a popTillChunkMarker];
+
+	YASLTranslationExpression *postfix;
+	while ((postfix = [postfixes pop])) {
+		[postfix setSubNodes:[@[expression] arrayByAddingObjectsFromArray:[[postfix nodesEnumerator:NO] allObjects]]];
+		expression = postfix;
+	}
+	[a push:expression];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePostfixIncrementDecrement:(YASLAssemblyNode *)node {
+	NSString *operatorToken = [a pop];
+	YASLExpressionOperator operator = [YASLTranslationExpression specifierToOperator:operatorToken unary:YES];
+	YASLAssignmentExpression *unaryExpression = [YASLAssignmentExpression assignmentInScope:[self scope] withSpecifier:operator];
+	unaryExpression.postfix = YES;
+	[a push:unaryExpression];
+}
 
 - (void) processAssembly:(YASLAssembly *)a nodeMethodCallExpr:(YASLAssemblyNode *)node {
 	[self fetchArray:a];
@@ -291,20 +316,17 @@ typedef NS_ENUM(NSUInteger, YASLConstantType) {
 	[a push:methodCall];
 }
 
-- (void) processAssembly:(YASLAssembly *)a nodePostfixMethodCall:(YASLAssemblyNode *)node {
-	YASLMethodCallExpression *methodCall = [a pop];
-	YASLTranslationExpression *address = [a pop];
-	methodCall.methodAddress = address;
-	[a push:methodCall];
-}
-
-- (void) processAssembly:(YASLAssembly *)a nodePostfixArrayAccess:(YASLAssemblyNode *)node {
+- (void) processAssembly:(YASLAssembly *)a nodeArrayAccessExpr:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *index = [a pop];
-	YASLTranslationExpression *address = [a pop];
 	YASLArrayElementExpression *arrayElement = [YASLArrayElementExpression arrayElementInScope:[self scope]];
-	[arrayElement addSubNode:address];
 	[arrayElement addSubNode:index];
 	[a push:arrayElement];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodePropAccessExpr:(YASLAssemblyNode *)node {
+	YASLToken *property = [a pop];
+	YASLStructPropertyExpression *structProperty = [YASLStructPropertyExpression structProperty:property.value inScope:[self scope]];
+	[a push:structProperty];
 }
 
 @end

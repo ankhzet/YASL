@@ -28,4 +28,10 @@
 	return token.kind == self.type;
 }
 
+- (YASLNonfatalException *) exceptionOnToken:(YASLToken *)token inAssembly:(YASLAssembly *)assembly {
+	YASLNonfatalException *exception = [YASLNonfatalException exceptionWithMsg:@"%@ expected, %@ found", [YASLToken tokenKindName:self.type], [YASLToken tokenKindName:token.kind]];
+	[assembly pushException:exception];
+	return exception;
+}
+
 @end

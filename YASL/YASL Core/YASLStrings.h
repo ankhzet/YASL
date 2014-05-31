@@ -17,5 +17,6 @@
 @property (nonatomic) id<YASLMemorymanagerDelegate> memManager;
 
 - (YASLInt) allocString:(NSString *)string;
+- (NSString *) stringAt:(YASLInt)address;
 
 @end

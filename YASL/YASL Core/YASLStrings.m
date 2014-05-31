@@ -16,6 +16,17 @@
 	NSMutableDictionary *allocations;
 }
 
+- (NSString *) stringAt:(YASLInt)address {
+	NSSet *strings = [allocations keysOfEntriesPassingTest:^BOOL(id key, NSNumber *offset, BOOL *stop) {
+		if ([offset intValue] == address)
+			return *stop = YES;
+
+		return NO;
+	}];
+
+	return [strings anyObject];
+}
+
 - (YASLInt) allocString:(NSString *)string {
 	NSNumber *allocated = allocations[string];
 	if (allocated) {
