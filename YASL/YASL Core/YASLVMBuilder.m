@@ -17,8 +17,6 @@
 
 - (BOOL) attachStack:(YASLVM *)vm {
 	vm.stack = [YASLStack stackForRAM:vm.ram];
-	vm.stack.size = DEFAULT_THREAD_STACK_SIZE;
-	*vm.stack.top = DEFAULT_STACK_BASE;
 	return !!vm.stack;
 }
 
@@ -26,12 +24,26 @@
 	vm.cpu = [YASLCPU cpu];
 	vm.cpu.ram = vm.ram;
 	vm.cpu.stack = vm.stack;
+	vm.cpu.memoryManager = vm.memManager;
 	return !!vm.cpu;
+}
+
+- (BOOL) attachMemoryManager:(YASLVM *)vm {
+	vm.memManager = [YASLMemoryManager memoryManagerForRAM:vm.ram];
+	return !!vm.memManager;
+}
+
+- (BOOL) attachStringManager:(YASLVM *)vm {
+	vm.stringManager = [YASLStrings new];
+	vm.stringManager.ram = vm.ram;
+	vm.stringManager.memManager = vm.memManager;
+	return !!vm.stringManager;
 }
 
 - (BOOL) attachCompiler:(YASLVM *)vm {
 	vm.compiler = [YASLCompiler new];
-	[vm.compiler setTargetRAM:vm.ram];
+	vm.compiler.targetRAM = vm.ram;
+	vm.compiler.stringsManager = vm.stringManager;
 	return !!vm.compiler;
 }
 

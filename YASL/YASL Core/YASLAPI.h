@@ -9,6 +9,7 @@
 #ifndef YASL_YASLAPI_h
 #define YASL_YASLAPI_h
 
+
 #define USECUSTOMLOGS 1
 
 //#define VERBOSE_COMPILATION
@@ -28,14 +29,15 @@ NSMutableString *formattedString = [[NSString stringWithFormat:format, ##__VA_AR
 writeData: [formattedString dataUsingEncoding: NSUTF8StringEncoding]];\
 }
 
-#define DEFAULT_CODEOFFSET 1000
+#define DEFAULT_CODEOFFSET (1024 * 64)
 
 #define THREAD_POOL_SIZE 100
 #define SCRIPT_POOL_SIZE 50
 #define DEFAULT_CODEFRAME 1024 * 64
 #define DEFAULT_THREAD_STACK_SIZE 1024 * 10
 #define DEFAULT_STACK_SIZE THREAD_POOL_SIZE * DEFAULT_THREAD_STACK_SIZE
-#define DEFAULT_RAM_SIZE SCRIPT_POOL_SIZE * DEFAULT_CODEFRAME + DEFAULT_STACK_SIZE
+#define DEFAULT_USERMEM_SIZE (1024 * 1024 * 16)
+#define DEFAULT_RAM_SIZE (DEFAULT_USERMEM_SIZE + (SCRIPT_POOL_SIZE * DEFAULT_CODEFRAME) + DEFAULT_STACK_SIZE)
 #define DEFAULT_STACK_BASE DEFAULT_RAM_SIZE - DEFAULT_STACK_SIZE
 
 #define _YASLBuiltInTypeIdentifierVoid @"void"
@@ -43,6 +45,7 @@ writeData: [formattedString dataUsingEncoding: NSUTF8StringEncoding]];\
 #define _YASLBuiltInTypeIdentifierFloat @"float"
 #define _YASLBuiltInTypeIdentifierBool @"bool"
 #define _YASLBuiltInTypeIdentifierChar @"char"
+#define _YASLBuiltInTypeIdentifierString @"string"
 #define _YASLAPITypeIdentifierHandle @"handle"
 
 typedef int YASLInt;
@@ -67,6 +70,7 @@ extern NSString *const YASLBuiltInTypeIdentifierInt;
 extern NSString *const YASLBuiltInTypeIdentifierFloat;
 extern NSString *const YASLBuiltInTypeIdentifierBool;
 extern NSString *const YASLBuiltInTypeIdentifierChar;
+extern NSString *const YASLBuiltInTypeIdentifierString;
 
 extern NSString *const YASLAPITypeHandle;
 

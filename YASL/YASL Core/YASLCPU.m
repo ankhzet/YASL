@@ -58,8 +58,6 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 	return [(YASLCPU *)[self alloc] init];
 }
 
-//TODO: move ram/stack/eventmanager creation outside of cpu class
-
 - (id)init {
 	if (!(self = [super initWithEventsManager:[YASLEventsAPI new]]))
 		return self;
@@ -111,6 +109,7 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 	_stack.top = &threadData->registers[YASLRegisterISP];
 	if (activeThread->firstRun) {
 		[_stack push:activeThread->param];
+		[_stack push:[activeThread regValue:YASLRegisterIIP]];
 		activeThread->firstRun = NO;
 	}
 }
@@ -132,12 +131,14 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 			_paused = self.halted || threadData->halt;
 		} while (!(_paused || (steps % 50 == 0)));
 
-		if (_delegate) {
+		if (_cpuDelegate) {
 			if (noop > 100)
-				[_delegate noOp:self forTicks:noop];
+				[_cpuDelegate noOp:self forTicks:noop];
 			else
-				[_delegate betweenCycles:self thread:self.activeThread];
-		}
+				[_cpuDelegate betweenCycles:self thread:self.activeThread];
+		} else
+			if (noop > 100)
+				break;
 	} while (!_paused);
 }
 

@@ -26,6 +26,10 @@
 #import "YASLNativeInterface.h"
 #import "YASLNativeFunction.h"
 #import "YASLNativeFunctions.h"
+
+#import "YASLMemoryManager.h"
+#import "YASLStrings.h"
+
 #import "YASLCompiler.h"
 #import "YASLCompiledUnit.h"
 #import "YASLCodeSource.h"
@@ -39,6 +43,8 @@
 - (BOOL) attachRAM:(YASLVM *)vm;
 - (BOOL) attachStack:(YASLVM *)vm;
 - (BOOL) attachCPU:(YASLVM *)vm;
+- (BOOL) attachMemoryManager:(YASLVM *)vm;
+- (BOOL) attachStringManager:(YASLVM *)vm;
 - (BOOL) attachCompiler:(YASLVM *)vm;
 
 @end
@@ -48,6 +54,8 @@
 @property (nonatomic) YASLRAM *ram;
 @property (nonatomic) YASLStack *stack;
 @property (nonatomic) YASLCPU *cpu;
+@property (nonatomic) YASLMemoryManager *memManager;
+@property (nonatomic) YASLStrings *stringManager;
 
 @property (nonatomic) YASLCompiler *compiler;
 

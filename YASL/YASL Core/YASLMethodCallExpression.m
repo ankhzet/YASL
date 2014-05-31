@@ -50,7 +50,7 @@
 
 		NSUInteger count = [foldedOperands count];
 		for (int i = 0; i < count; i++) {
-			YASLTranslationExpression *param = foldedOperands[i];
+			YASLTranslationExpression *param = [foldedOperands[i] foldConstantExpressionWithSolver:solver];
 			YASLDataType *expectedType = params[count - i - 1];
 			if (expectedType != param.returnType) {
 				YASLTypecastExpression *typecast = [YASLTypecastExpression typecastInScope:self.declarationScope withType:expectedType];
@@ -66,7 +66,7 @@
 }
 
 - (NSString *) toString {
-	NSString *params = [[[self nodesEnumerator:NO] allObjects] componentsJoinedByString:self.specifier];
+	NSString *params = [[[self nodesEnumerator:YES] allObjects] componentsJoinedByString:self.specifier];
 	return [NSString stringWithFormat:@"%@(%@)", self.methodAddress, params];
 }
 

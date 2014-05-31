@@ -9,5 +9,7 @@
 #import "YASLTokenParser.h"
 
 @interface YASLStringParser : YASLTokenParser
+@property (nonatomic) BOOL singleChar;
 
+- (id) singleCharMode;
 @end

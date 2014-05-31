@@ -117,7 +117,7 @@
 
 		newIP = [self.cpu disassemblyAtIP:ip instr:&instr opcode1:&opcode1 opcode2:&opcode2];
 		[instruction setInstruction:instr];
-		[instruction setImmediatePtr:[ram dataAt:ip + is]];
+		[instruction setImmediatePtr:[ram dataAt:(YASLInt)(ip + is)]];
 
 		NSMutableString *dump = [@"" mutableCopy];
 		NSUInteger delta = ((newIP - ip) - is) / os, offset = 0;
@@ -125,7 +125,7 @@
 		[dump appendFormat:@"%.4X %.2X", (i & 0xFFFF00) >> 8, i & 0xFF];
 
 		while (offset++ < delta) {
-			YASLInt i = *(YASLInt *)[ram dataAt:ip + is + (offset - 1) * os];
+			YASLInt i = *(YASLInt *)[ram dataAt:(YASLInt)(ip + is + (offset - 1) * os)];
 			[dump appendFormat:@" %.8X", i & 0xFFFFFFFF];
 		}
 		codeLine->codeDump = dump;

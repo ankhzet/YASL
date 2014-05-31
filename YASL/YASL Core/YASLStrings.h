@@ -8,10 +8,14 @@
 
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
+#import "YASLMemoryManagerDelegate.h"
+#import "YASLNativeInterface.h"
 
 @class YASLRAM;
-@interface YASLStrings : NSObject
+@interface YASLStrings : YASLNativeInterface
+@property (nonatomic) YASLRAM *ram;
+@property (nonatomic) id<YASLMemorymanagerDelegate> memManager;
 
-- (YASLInt) putStr:(NSString *)string onRam:(YASLRAM *)ram atOffset:(YASLInt)offset;
+- (YASLInt) allocString:(NSString *)string;
 
 @end

@@ -9,6 +9,8 @@
 #import "YASLInstruction.h"
 #import "YASLOpcodes.h"
 #import "YASLCodeAddressReference.h"
+#import "YASLNativeFunctions.h"
+#import "YASLNativeFunction.h"
 
 NSString *const OPCODE_NAMES[YASLOpcodesMAX] = {
   [OPC_NOP  ] = @"NOP",
@@ -142,11 +144,15 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 	return labels;
 }
 
+- (YASLInt) immediateValue:(YASLInt)immediate {
+	return *(YASLInt *)((char *)immediates + immediate * sizeof(YASLInt));
+}
+
 - (NSString *) immediateStr:(YASLInt)immediate withPlusSign:(BOOL)sign {
 	if (immediates == NULL)
 		return sign ? @"+###" : @"###";
 
-	YASLInt i = *(YASLInt *)((char *)immediates + immediate * sizeof(YASLInt));
+	YASLInt i = [self immediateValue:immediate];
 	NSString *label = [self associatedLabel:i];
 	NSString *immediateStr = [NSString stringWithFormat:@"%@%d", ((i >= 0) & sign) ? @"+" : @"", i];
 	return [label length] ? [NSString stringWithFormat:@"%@(%@)",label,immediateStr] : immediateStr;
@@ -178,15 +184,21 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 				operand2 = [NSString stringWithFormat:@", %@", operand2];
 			}
 			case YASLOperandCountUnary: {
-				YASLOperandType type = instruction->operand1 & (YASLOperandTypePointer ^ 0xFF);
-				BOOL isPointer = !!(instruction->operand1 & YASLOperandTypePointer);
-				BOOL isRegister = !!(type & YASLOperandTypeRegister);
-				BOOL isImmediate = !!(type & YASLOperandTypeImmediate);
+				if (instruction->opcode == OPC_NATIV) {
+					YASLNativeFunctions *natives = [YASLNativeFunctions sharedFunctions];
+					YASLNativeFunction *native = [natives findByGUID:[self immediateValue:0]];
+					operand1 = native.name;
+				} else {
+					YASLOperandType type = instruction->operand1 & (YASLOperandTypePointer ^ 0xFF);
+					BOOL isPointer = !!(instruction->operand1 & YASLOperandTypePointer);
+					BOOL isRegister = !!(type & YASLOperandTypeRegister);
+					BOOL isImmediate = !!(type & YASLOperandTypeImmediate);
 
-				NSString *r1 = isRegister ? REGISTER_NAMES[instruction->r1] : @"";
-				NSString *i1 = isImmediate ? [self immediateStr:operand++ withPlusSign:isRegister] : @"";
-				operand1 = [NSString stringWithFormat:@"%@%@", r1, i1];
-				if (isPointer) operand1 = [NSString stringWithFormat:@"[%@]", operand1];
+					NSString *r1 = isRegister ? REGISTER_NAMES[instruction->r1] : @"";
+					NSString *i1 = isImmediate ? [self immediateStr:operand++ withPlusSign:isRegister] : @"";
+					operand1 = [NSString stringWithFormat:@"%@%@", r1, i1];
+					if (isPointer) operand1 = [NSString stringWithFormat:@"[%@]", operand1];
+				}
 				break;
 			}
 			default:

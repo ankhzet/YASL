@@ -20,6 +20,7 @@
 	return @[
 					 [YASLIdentifierParser new],
 					 [YASLNumericParser new],
+					 [[YASLStringParser new] singleCharMode],
 					 [YASLStringParser new],
 					 [YASLCommentParser new],
 					 [YASLSymbolParser new],

@@ -9,17 +9,17 @@
 #import <Foundation/Foundation.h>
 #import "YASLCodeCommons.h"
 
-#define MEMORY_DEFAULT_SIZE (sizeof(YASLInt) * 1024 * 10)
+#define MEMORY_DEFAULT_SIZE (sizeof(YASLInt) * 1024)
 #define MEMORY_FIXED_UNIT sizeof(YASLInt)
 
 @interface YASLRAM : NSObject
 
-@property (nonatomic)  NSUInteger size;
+@property (nonatomic)  YASLInt size;
 
-+ (instancetype) ramWithSize:(NSUInteger)size;
++ (instancetype) ramWithSize:(YASLInt)size;
 
-- (void *) dataAt:(NSUInteger)offset;
-- (void) setInt:(YASLInt)value at:(NSUInteger)offset;
-- (YASLInt) intAt:(NSUInteger)offset;
+- (void *) dataAt:(YASLInt)offset;
+- (void) setInt:(YASLInt)value at:(YASLInt)offset;
+- (YASLInt) intAt:(YASLInt)offset;
 
 @end

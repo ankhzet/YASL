@@ -50,6 +50,7 @@ static id kRBraceTerm = @")";
 		@"Int"       : [[YASLTypedNode alloc] initWithType:YASLTokenKindInteger],
 		@"Float"     : [[YASLTypedNode alloc] initWithType:YASLTokenKindFloat],
 		@"String"    : [[YASLTypedNode alloc] initWithType:YASLTokenKindString],
+		@"Char"      : [[YASLTypedNode alloc] initWithType:YASLTokenKindChar],
 		@"Bool"      : [[YASLTypedNode alloc] initWithType:YASLTokenKindBool],
 		@"Symbol"    : [[YASLTypedNode alloc] initWithType:YASLTokenKindSymbol],
 		@"Any"       : [YASLAnyNode new],

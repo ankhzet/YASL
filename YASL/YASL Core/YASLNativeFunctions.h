@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "YASLNativesList.h"
+#import "YASLMemoryManagerDelegate.h"
 
 @class YASLNativeFunction, YASLRAM, YASLStack, YASLCPU;
 @interface YASLNativeFunctions : NSObject
@@ -16,6 +17,7 @@
 @property (nonatomic) YASLRAM *attachedRAM;
 @property (nonatomic) YASLCPU *attachedCPU;
 @property (nonatomic) YASLStack *attachedStack;
+@property (nonatomic) id<YASLMemorymanagerDelegate> attachedMM;
 
 /*! Returns shared manager instance (singleton). */
 + (instancetype) sharedFunctions;

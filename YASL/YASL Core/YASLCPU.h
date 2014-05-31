@@ -25,7 +25,7 @@
 
 @property (nonatomic) BOOL paused;
 
-@property (nonatomic) id<YASLCPUDelegate> delegate;
+@property (nonatomic) id<YASLCPUDelegate> cpuDelegate;
 
 + (instancetype) cpu;
 

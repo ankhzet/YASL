@@ -11,6 +11,11 @@
 NSString *const YASLNativeVM_log = @"log";
 NSString *const YASLNativeVM_unloadScriptAssociatedWith = @"unloadScriptAssociatedWith";
 
+NSString *const YASLNativeStrings_strLen  = @"strLen";
+NSString *const YASLNativeStrings_strConc = @"strConc";
+NSString *const YASLNativeStrings_strComp = @"strComp";
+
+
 NSString *const YASLNativeCPU_sqrt = @"sqrt";
 NSString *const YASLNativeCPU_currentThread = @"currentThread";
 

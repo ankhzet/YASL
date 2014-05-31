@@ -17,22 +17,32 @@
 	NSMutableArray *threads;
 	NSMutableArray *enumerable;
 	YASLThreadStruct dummyData;
+	NSMutableArray *pendingClose;
 }
 
 @end
 
 @implementation YASLThreadsAPI
 
--(id) initWithEventsManager:(YASLEventsAPI *)eventManager {
+- (id)init {
 	if (!(self = [super init]))
 		return self;
 
-	_eventsManager = eventManager;
+	pendingClose = [NSMutableArray arrayWithCapacity:[enumerable count]];
 	threads = [NSMutableArray array];
 	enumerable = [NSMutableArray array];
 	_activeThread = nil;
 	threadData = &dummyData;
 	_activeThreadHandle = 0;
+
+	return self;
+}
+
+-(id) initWithEventsManager:(YASLEventsAPI *)eventManager {
+	if (!(self = [self init]))
+		return self;
+
+	_eventsManager = eventManager;
 	return self;
 }
 
@@ -51,11 +61,24 @@
 	return (thread != (id)[NSNull null]) ? thread : nil;
 }
 
+- (NSArray *) hasChilds:(YASLInt)codeFrame {
+	NSMutableArray *childs = [NSMutableArray arrayWithCapacity:[enumerable count] / 10];
+	for (YASLThread *thread in enumerable)
+		if ((thread->parentCodeframe == codeFrame) && (thread.state != YASLThreadStateTerminated))
+			[childs addObject:thread];
+
+	return childs;
+}
+
 - (YASLThread *) threadCreateWithEntryAt:(YASLInt)entry andState:(YASLThreadState)state andInitParam:(YASLInt)param waitable:(BOOL)waitable {
 	YASLThread *thread = [YASLThread thread:waitable withEventManager:self.eventsManager];
-	thread->data.registers[YASLRegisterIIP] = entry;
 	thread->param = param;
+	thread->parentCodeframe = _activeThread ? _activeThread->parentCodeframe : entry;
 	thread.state = state;
+	YASLInt stack = [self.memoryManager allocMem:DEFAULT_THREAD_STACK_SIZE];
+	[thread setReg:YASLRegisterISP value:stack];
+	[thread setReg:YASLRegisterIBP value:stack];
+	[thread setReg:YASLRegisterIIP value:entry];
 	@synchronized(threads) {
 		NSUInteger c = [threads count];
 		while (++c <= thread->handle) {
@@ -209,7 +232,6 @@
 	YASLInt selected = YASL_INVALID_HANDLE;
 
 	//TODO: mark for optimization
-	NSMutableArray *pendingClose = [NSMutableArray arrayWithCapacity:[enumerable count]];
 	for (YASLThread *thread in enumerable) {
 		YASLThreadState state = thread.state;
 		//if not picked next thread yet - pick it
@@ -257,7 +279,7 @@
 
 - (YASLInt) n_threadStart:(YASLNativeFunction *)native params:(void *)paramsBase {
 	YASLInt threadStartIP = [native intParam:1 atBase:paramsBase];
-	YASLInt threadState = [native intParam:2 atBase:paramsBase];
+	YASLThreadState threadState = [native intParam:2 atBase:paramsBase];
 	YASLInt param = [native intParam:3 atBase:paramsBase];
 	YASLThread *thread = [self threadCreateWithEntryAt:threadStartIP andState:threadState andInitParam:param waitable:YES];
 	return thread ? thread->handle : YASL_INVALID_HANDLE;

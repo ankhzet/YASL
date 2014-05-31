@@ -8,8 +8,9 @@
 
 #import <Foundation/Foundation.h>
 #import "YASLCodeCommons.h"
+#import "YASLMemoryManagerDelegate.h"
 
-@class YASLNativeFunction, YASLRAM, YASLCPU, YASLStack;
+@class YASLNativeFunction, YASLRAM, YASLCPU, YASLStack, YASLMemoryManager;
 typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void *);
 
 @interface YASLNativeFunction : NSObject
@@ -30,6 +31,7 @@ typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void 
 
 @property (nonatomic) YASLRAM *ram;
 @property (nonatomic) YASLCPU *cpu;
+@property (nonatomic) id<YASLMemorymanagerDelegate> mm;
 @property (nonatomic) YASLStack	*stack;
 
 /*!

@@ -11,6 +11,7 @@ NSString *const YASLBuiltInTypeIdentifierInt = _YASLBuiltInTypeIdentifierInt;
 NSString *const YASLBuiltInTypeIdentifierFloat = _YASLBuiltInTypeIdentifierFloat;
 NSString *const YASLBuiltInTypeIdentifierBool = _YASLBuiltInTypeIdentifierBool;
 NSString *const YASLBuiltInTypeIdentifierChar = _YASLBuiltInTypeIdentifierChar;
+NSString *const YASLBuiltInTypeIdentifierString = _YASLBuiltInTypeIdentifierString;
 
 NSString *const YASLAPITypeHandle = _YASLAPITypeIdentifierHandle;
 

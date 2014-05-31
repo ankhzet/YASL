@@ -15,7 +15,7 @@
 	// thread related data, like registers state and sign/zero/halt flags
 	YASLThreadStruct data;
 	// thread-associated event handle. event and thread states synchronized (only created/terminated state)
-	YASLInt handle;
+	YASLInt handle, parentCodeframe;
 	// wait-related data
 	YASLInt waitFor, waitState;
 	long long startedAt, awakeWithin;

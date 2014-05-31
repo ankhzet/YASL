@@ -9,6 +9,11 @@
 extern NSString *const YASLNativeVM_log;
 extern NSString *const YASLNativeVM_unloadScriptAssociatedWith;
 
+extern NSString *const YASLNativeStrings_strLen;
+extern NSString *const YASLNativeStrings_strConc;
+extern NSString *const YASLNativeStrings_strComp;
+
+
 extern NSString *const YASLNativeCPU_sqrt;
 extern NSString *const YASLNativeCPU_currentThread;
 

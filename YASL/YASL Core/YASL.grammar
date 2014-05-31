@@ -177,20 +177,21 @@ struct-access-expr = '->'! Identifier;
 
 primary-expression = constant
 | variable
-| String
 | '('! expression ')'!;
 
 constant = integer-constant
 | character-constant
 | floating-constant
 | boolean-constant
-| enumeration-constant;
+| enumeration-constant
+| string-constant;
 
 integer-constant = Int;
-character-constant = String;
+character-constant = Char;
 floating-constant = Float;
 boolean-constant = Bool;
 enumeration-constant = Identifier;
+string-constant = String;
 
 variable = Identifier;
 

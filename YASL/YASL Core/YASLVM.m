@@ -37,11 +37,7 @@
 	}
 
 	if (unit.stage == YASLUnitCompilationStageCompiled) {
-		YASLInt stackOffset = (YASLInt)[self.cpu threadsCount] * DEFAULT_THREAD_STACK_SIZE + DEFAULT_STACK_BASE;
-
 		YASLThread *thread = [self.cpu threadCreateWithEntryAt:unit.startOffset andState:YASLThreadStateRunning andInitParam:0 waitable:NO];
-		[thread setReg:YASLRegisterISP value:stackOffset];
-		[thread setReg:YASLRegisterIBP value:stackOffset];
 		[unit usedByThread:thread];
 
 #ifdef VERBOSE_COMPILATION
@@ -52,15 +48,7 @@
 }
 
 - (YASLInt) calcCodePlacement:(YASLInt)codeLength {
-	NSRange r = NSMakeRange(DEFAULT_CODEOFFSET, 0);
-	for (YASLCompiledUnit *unit in [self.compiler enumerateCompiledUnits]) {
-		if (unit.stage != YASLUnitCompilationStageCompiled)
-			continue;
-
-		r = NSUnionRange(r, NSMakeRange(unit.startOffset, unit.codeLength));
-	}
-
-	return (YASLInt)(r.location + r.length);
+	return [self.memManager allocMem:codeLength];
 }
 
 - (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source {
@@ -85,14 +73,9 @@
 }
 
 - (void) registerNativeFunctions {
-	[self registerNativeFunction:YASLNativeVM_log withParamCount:1 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
-	[self registerNativeFunction:YASLNativeVM_unloadScriptAssociatedWith withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_unloadScriptAssociatedWith:params:)];
-}
+	[self registerNativeFunction:YASLNativeVM_log withParamCount:2 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
 
-- (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase {
-	YASLInt i = [native intParam:1 atBase:paramsBase];
-	NSLog(@"Log: %d", i);
-	return 0;
+	[self registerNativeFunction:YASLNativeVM_unloadScriptAssociatedWith withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_unloadScriptAssociatedWith:params:)];
 }
 
 - (YASLInt) n_unloadScriptAssociatedWith:(YASLNativeFunction *)native params:(void *)paramsBase {
@@ -108,15 +91,170 @@
 		if ([unit isUsedByThread:thread]) {
 			[unit notUsedByThread:thread];
 			BOOL used = [unit usedByThreads];
-			if (!used)
-				[self.compiler dropUnit:unit.source.identifier];
+			if (!used) {
+				NSArray *childThreads = [self.cpu hasChilds:thread->parentCodeframe];
+				if ([childThreads count]) {
+					for (YASLThread *thread in childThreads) {
+						[unit usedByThread:thread];
+					}
+				} else {
+					[self.memManager deallocMem:unit.startOffset];
+					[self.compiler dropUnit:unit.source.identifier];
+				}
+			}
 			return used;
 		}
 	}
 	return YASL_INVALID_HANDLE;
 }
 
+//TODO: freese this hell T_T
+typedef char *(^StrResolve)(int strAddres);
+YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve resolver);
+
+- (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase {
+	NSString *string = [native stringParam:1 atBase:paramsBase];
+	YASLInt params = [native intParam:2 atBase:paramsBase];
+	if (!params)
+		return [native intParam:1 atBase:paramsBase];
+
+	YASLInt *paramList = [_ram dataAt:params];
+	const char *formatBuf = [string cStringUsingEncoding:NSASCIIStringEncoding];
+	NSUInteger length = [string length];
+
+	char *nullStr = malloc(7 * sizeof(char));
+	[@"(null)" getCString:nullStr maxLength:7 encoding:NSASCIIStringEncoding];
+
+	YASLChar *formatted = _format(formatBuf, &length, paramList, ^char *(int strAddres) {
+		if (strAddres) {
+			YASLInt size = [_memManager isAllocated:strAddres];
+			if (size) {
+				YASLChar *raw = [_ram dataAt:strAddres];
+				NSUInteger len = size / sizeof(YASLChar) - 1;
+
+				return [[NSString stringWithCharacters:raw length:len] cStringUsingEncoding:NSASCIIStringEncoding];
+			}
+		}
+
+		return nullStr;
+	});
+	free(nullStr);
+
+	NSLog(@"LOG: %@", [NSString stringWithCharacters:formatted length:length]);
+	return 0;
+}
+
 @end
+
+char *_baseInt(int i, int base, int padding);
+YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve resolver) {
+	const size_t chrSize = sizeof(YASLChar);
+	char *ptr = source;
+	__block NSUInteger len = *length * chrSize;
+	__block YASLChar *result = malloc(len), *d = result, *e = result + len;
+
+	void(^_realloc)() = ^() {
+		long int offset = d - result;
+		long int done = ptr - source;
+
+		len += (*length - done) * chrSize;
+		result = realloc(result, len);
+		d = result + offset;
+		e = result + len;
+	};
+
+	char c;
+	while ((c = *ptr)) {
+		ptr++;
+		switch (c) {
+			case '%': {
+				char *converted;
+				switch ((c = *ptr)) {
+					case 's':
+						converted = resolver(*params);
+						break;
+					case 'i': {
+						converted = _baseInt(*params, 10, 0);
+						break;
+					}
+					case 'b': {
+						char *labels[] = {"false", "true"};
+						converted = labels[!!*params];
+						break;
+					}
+					case 0:
+					default:
+						*d = '%';
+						continue;
+				}
+				while ((*d = *converted)) {
+					d++;
+					converted++;
+					if (d >= e)
+						_realloc();
+				}
+				params++;
+				ptr++;
+				continue;
+			}
+
+			default:
+				*d = c;
+		}
+		d++;
+	}
+
+	*length = d - result;
+	return realloc(result, *length);
+}
+
+#define MIN_BASE 2
+#define MAX_BASE 36
+#define MAX_NUM_LEN 100
+char *_alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+char *_baseInt(int i, int base, int padding) {
+	base = MIN(MAX_BASE, MAX(MIN_BASE, base));
+	int maxLen = sizeof(char) * MAX(MAX_NUM_LEN, padding);
+	char *result = malloc(maxLen), *p = result + maxLen - 1;
+	*p = 0;
+	p--;
+	char *start = p;
+
+	bool baseTen = base == 10;
+	bool sign = false;
+	if (baseTen) {
+		sign = i < 0;
+		if (sign)
+			i = -i;
+	}
+	while (i > 0) {
+		int rest = i % base;
+		i /= base;
+		*p = *(_alphabet + rest);
+		p--;
+	}
+	int len = (int)(start - p);
+	if (!baseTen) {
+		int delta = padding - len;
+		if (delta > 0) {
+			len += delta;
+			while (delta-- > 0) {
+				*p = '0';
+				p--;
+			}
+		}
+	} else {
+		if (sign) {
+			*p = '-';
+			p--;
+		}
+	}
+	p++;
+	start = malloc(len + sizeof(char));
+	memmove(start, p, len + sizeof(char));
+	free(result);
+	return start;
+}
 
 @implementation YASLAbstractVMBuilder
 
@@ -136,6 +274,14 @@
 	return !!vm.cpu;
 }
 
+- (BOOL) attachMemoryManager:(YASLVM *)vm {
+	return !!vm.memManager;
+}
+
+- (BOOL) attachStringManager:(YASLVM *)vm {
+	return !!vm.stringManager;
+}
+
 - (BOOL) attachCompiler:(YASLVM *)vm {
 	return !!vm.compiler;
 }
@@ -144,6 +290,12 @@
 	YASLVM *vm = [self newVM];
 
 	if (![self attachRAM:vm])
+		return nil;
+
+	if (![self attachMemoryManager:vm])
+		return nil;
+
+	if (![self attachStringManager:vm])
 		return nil;
 
 	if (![self attachStack:vm])

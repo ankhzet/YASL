@@ -11,6 +11,8 @@
 
 #import "YASLCodeCommons.h"
 
+#import "YASLStrings.h"
+
 #import "YASLBaseAssemblingClasses.h"
 #import "YASLBaseTranslationClasses.h"
 

@@ -51,10 +51,14 @@
 - (NSString *) stringParam:(NSUInteger)paramNumber atBase:(void *)paramsBase {
 	YASLInt strPtr = *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase];
 	if (strPtr) {
-		char *raw = [_ram dataAt:strPtr];
-		return [NSString stringWithCString:raw encoding:NSUTF32StringEncoding];
-	} else
-		return nil;
+		YASLInt size = [_mm isAllocated:strPtr];
+		if (size) {
+			YASLChar *raw = [_ram dataAt:strPtr];
+			NSUInteger len = size / sizeof(YASLChar) - 1;
+			return [NSString stringWithCharacters:raw length:len];
+		}
+	}
+	return nil;
 }
 
 

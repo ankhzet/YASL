@@ -130,11 +130,8 @@ NSString *const YASLExpressionOperationSpecifiers[YASLExpressionOperatorMAX] = {
 		return self;
 	}
 
-	// try evaluate operands
-	//TODO: constant expressions evaluation
-	YASLTranslationExpression *result = [processor solveExpression:self];
-
-	return result;
+	// try evaluate expression, if constant
+	return [processor solveExpression:self];
 }
 
 + (BOOL) checkFolding:(YASLTranslationExpression **)operand withSolver:(YASLExpressionSolver *)solver {

@@ -17,7 +17,7 @@
 
 @implementation YASLRAM
 
-+ (instancetype) ramWithSize:(NSUInteger)size {
++ (instancetype) ramWithSize:(YASLInt)size {
 	return [(YASLRAM *)[self alloc] initWithSize:size];
 }
 
@@ -29,7 +29,7 @@
 	return self;
 }
 
-- (id)initWithSize:(NSUInteger)size {
+- (id)initWithSize:(YASLInt)size {
 	if (!(self = [super init]))
 		return self;
 
@@ -45,7 +45,7 @@
 
 #pragma mark - Common methods
 
-- (void) setSize:(NSUInteger)size {
+- (void) setSize:(YASLInt)size {
 	size = (1 + size / MEMORY_FIXED_UNIT) * MEMORY_FIXED_UNIT;
 	if (size == _size)
 		return;
@@ -58,15 +58,15 @@
 	}
 }
 
-- (void *) dataAt:(NSUInteger)offset {
+- (void *) dataAt:(YASLInt)offset {
 	return (void *)((char *)mem + offset);
 }
 
-- (void) setInt:(YASLInt)value at:(NSUInteger)offset {
+- (void) setInt:(YASLInt)value at:(YASLInt)offset {
 	*(YASLInt *)[self dataAt:offset] = value;
 }
 
-- (YASLInt) intAt:(NSUInteger)offset {
+- (YASLInt) intAt:(YASLInt)offset {
 	return *(YASLInt *)[self dataAt:offset];
 }
 

@@ -69,6 +69,7 @@ static void destruct_YASLNativeFunctions_Instance() {
 		function.ram = self.attachedRAM;
 		function.cpu = self.attachedCPU;
 		function.stack = self.attachedStack;
+		function.mm = self.attachedMM;
 		// register new function implementation
 		[functions setObject:function atIndexedSubscript:guid];
 		named[function.name] = function;
@@ -121,6 +122,19 @@ static void destruct_YASLNativeFunctions_Instance() {
 	for (YASLNativeFunction *function in functions) {
 		if (function != (id)[NSNull null]) {
 			function.stack = attachedStack;
+		}
+	}
+}
+
+- (void) setAttachedMM:(id<YASLMemorymanagerDelegate>)attachedMM {
+	if (_attachedMM == attachedMM) {
+		return;
+	}
+
+	_attachedMM = attachedMM;
+	for (YASLNativeFunction *function in functions) {
+		if (function != (id)[NSNull null]) {
+			function.mm = attachedMM;
 		}
 	}
 }

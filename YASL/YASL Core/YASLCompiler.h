@@ -17,14 +17,16 @@ extern NSString *const kCompilatorPlacementOffset;
 extern NSString *const kCompilatorOptimize;
 
 extern NSString *const kCacheStaticLabels;
-extern NSString *const kCachePrecompiledMachineCode;
+//extern NSString *const kCachePrecompiledMachineCode;
 
-@class YASLRAM, YASLLocalDeclarations, YASLDataTypesManager, YASLCompiledUnit, YASLCodeSource;
+@class YASLRAM, YASLLocalDeclarations, YASLDataTypesManager;
+@class YASLStrings, YASLCompiledUnit, YASLCodeSource;
 @interface YASLCompiler : NSObject
 
 @property (nonatomic) YASLRAM *targetRAM;
 @property (nonatomic) YASLLocalDeclarations *declarations;
 @property (nonatomic) YASLDataTypesManager *globalDatatypesManager;
+@property (nonatomic) YASLStrings *stringsManager;
 
 - (YASLCompiledUnit *) compilationPass:(YASLCodeSource *)source withOptions:(NSDictionary *)options;
 

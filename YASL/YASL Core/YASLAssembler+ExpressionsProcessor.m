@@ -120,7 +120,6 @@
 /*!@brief Build espression node for `constant` expression: (numeric | string | boolean) constant . */
 - (void) processAssembly:(YASLAssembly *)a nodeConstantExpression:(YASLAssemblyNode *)node {
 	YASLTranslationExpression *expression = [a pop];
-	//TODO: constantnes check here
 	YASLTranslationExpression *folded = [expression foldConstantExpressionWithSolver:self.declarationScope.expressionSolver];
 	if (folded.expressionType != YASLExpressionTypeConstant)
 		[self raiseError:@"Constant expression expected, \"%@\" found", [expression class]];
@@ -197,31 +196,48 @@
 
 #pragma mark - Constants
 
+typedef NS_ENUM(NSUInteger, YASLConstantType) {
+	YASLConstantTypeVoid = YASLBuiltInTypeVoid,
+	YASLConstantTypeInt = YASLBuiltInTypeInt,
+	YASLConstantTypeFloat= YASLBuiltInTypeFloat,
+	YASLConstantTypeBool = YASLBuiltInTypeBool,
+	YASLConstantTypeChar = YASLBuiltInTypeChar,
+	YASLConstantTypeEnum,
+	YASLConstantTypeString,
+};
+
+
 - (void) processAssembly:(YASLAssembly *)a nodeConstant:(YASLAssemblyNode *)node {
 	NSNumber *constantType = [a pop];
 	YASLToken *token = [a pop];
 
 	NSNumber *value;
 	YASLDataType *dataType;
-	YASLBuiltInType type = [constantType unsignedIntegerValue];
-	dataType = [self.declarationScope typeByName:[YASLDataType builtInTypeToTypeIdentifier:type]];
+	YASLConstantType type = [constantType unsignedIntegerValue];
+	dataType = [self.declarationScope typeByName:[YASLDataType builtInTypeToTypeIdentifier:(YASLBuiltInType)type]];
 	switch (type) {
-		case YASLBuiltInTypeInt:
+		case YASLConstantTypeInt:
 			value = @([token asInteger]);
 			break;
-		case YASLBuiltInTypeFloat:
+		case YASLConstantTypeFloat:
 			value = @([token asFloat]);
 			break;
-		case YASLBuiltInTypeBool:
+		case YASLConstantTypeBool:
 			value = @([token asBool]);
 			break;
-		case YASLBuiltInTypeChar:
+		case YASLConstantTypeChar:
 			value = @([[token asString] characterAtIndex:0]);
 			break;
-		case YASLBuiltInTypeMAX: { // used for enums
+		case YASLConstantTypeString: {
+			NSString *string = [token asString];
+			value = @([self.declarationScope.stringsManager allocString:string]);
+			dataType = [self.declarationScope typeByName:YASLBuiltInTypeIdentifierString];
+			break;
+		}
+		case YASLConstantTypeEnum: { // used for enums
 			NSString *enumIdentifier = token.value;
 			YASLEnumDataType *enumType = [YASLEnumDataType hasEnum:enumIdentifier inManager:[[self scope] localDataTypesManager]];
-			if (!enumType) {
+			if (!enumType) { // enum not found, is it a variable name?
 				[a push:token];
 				[self processAssembly:a nodeVariable:node];
 				return;
@@ -240,23 +256,27 @@
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeIntegerConstant:(YASLAssemblyNode *)node {
-	[a push:@(YASLBuiltInTypeInt)];
+	[a push:@(YASLConstantTypeInt)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeFloatConstant:(YASLAssemblyNode *)node {
-	[a push:@(YASLBuiltInTypeFloat)];
+	[a push:@(YASLConstantTypeFloat)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeBooleanConstant:(YASLAssemblyNode *)node {
-	[a push:@(YASLBuiltInTypeBool)];
+	[a push:@(YASLConstantTypeBool)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeCharacterConstant:(YASLAssemblyNode *)node {
-	[a push:@(YASLBuiltInTypeChar)];
+	[a push:@(YASLConstantTypeChar)];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeEnumerationConstant:(YASLAssemblyNode *)node {
-	[a push:@(YASLBuiltInTypeMAX)];
+	[a push:@(YASLConstantTypeEnum)];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeStringConstant:(YASLAssemblyNode *)node {
+	[a push:@(YASLConstantTypeString)];
 }
 
 #pragma mark Methods

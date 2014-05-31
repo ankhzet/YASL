@@ -15,7 +15,6 @@
 @interface YASLStack : NSObject
 
 @property (nonatomic) YASLRAM *ram;
-@property (nonatomic) YASLInt size;
 @property (nonatomic) YASLInt *top;
 
 + (instancetype) stackForRAM:(YASLRAM *)ram;

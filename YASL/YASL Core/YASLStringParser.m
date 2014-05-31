@@ -25,8 +25,15 @@
 	return self;
 }
 
+- (id) singleCharMode {
+	self.beginsWith = [NSCharacterSet characterSetWithCharactersInString:@"'"];
+	self.singleChar = YES;
+	return self;
+}
+
 - (YASLTokenKind) doParseWithUserData:(YASLTokenParseData *)data andBlock:(YASLTokenParseBlock)block {
-	YASLTokenKind kind = YASLTokenKindString;
+	BOOL single = self.singleChar;
+	YASLTokenKind kind = single ? YASLTokenKindChar : YASLTokenKindString;
 	unichar c = 0;
 	unichar quoteSymbol = block(self, data);
 	data->parsePos++;
@@ -34,7 +41,7 @@
 
 	while ((c = block(self, data))) {
 		data->parsePos++;
-		if (c == quoteSymbol)
+		if ((c == quoteSymbol) || single)
 			break;
 	}
 

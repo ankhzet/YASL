@@ -1,13 +1,14 @@
 script test;
 
-native void log(int x);
-
 typedef enum {
 	EventStateClear   = 0,
 	EventStateSet     = 1,
 	EventStateFailed  = 2,
 	EventStateTimeout = 3,
 } EventState;
+
+int STATE_FAIL = -1;
+int MAX_INT = 2147483647;
 
 native handle createEvent(char *identifier; int initialState; bool autoreset);
 native handle signalEvent(handle event; int state);
@@ -28,49 +29,207 @@ native bool   threadSuspend(handle thread; int msec);
 native bool   threadResume(handle thread);
 native bool   threadTerminate(handle thread; int returnCode);
 
+native int   strLen(char *string);
+native char *strConc(char *string1, *string2);
+native int   strComp(char *string1, *string2);
+
+native void unloadScriptAssociatedWith(handle thread);
+native void log(char *format; int x);
+
+typedef enum {
+	GameEventPause = 1,
+	GameEventResume = 2,
+	GameEventEnd = 3,
+} GameEvent;
+
+int min(int a, b) {
+	return a < b ? a : b;
+}
+
 int max(int a, b) {
 	return a > b ? a : b;
 }
 
-int dummyThread(int *param) {
-	handle self = currentThread();
-	log(self);
-	log(param);
+char *GAME_EVENT = "__event_game_event";
 
-	int event = (*param)[0];
-	int sleepFor = (*param)[1];
-	int delta = max(10, sleepFor / 10), i = 0;
-	while (true) {
-		threadSuspend(self, delta);
-		log(self);
-		log(i+=10);
-		if (i > sleepFor) {
-			signalEvent(event, EventStateSet);
-			break;
-		}
+typedef enum {
+	GameTriggerNone,
+
+	// type
+	GameTriggerTypeSpawn,
+	GameTriggerTypeScript,
+
+	// frequency
+	GameTriggerTypeOnce,
+	GameTriggerTypeEach,
+} GameTriggerType;
+
+typedef struct {
+	GameTriggerType type;
+	GameTriggerType frequency;
+	char *specifier;
+	int freq;
+	int nextLaunch;
+} GameTrigger;
+
+typedef struct {
+	int count;
+	GameTrigger *trigger[];
+} GameTriggers;
+
+void triggerFire(GameTrigger *trigger) {
+
+}
+
+int processTriggers() {
+	int launchedFor = gameLaunchTime();
+	int nearestTrigger = MAX_INT;
+	for (int i = 0; i < triggers.count; i++) {
+		GameTrigger *trigger = &triggers.trigger[i];
+		int next = trigger.nextLaunch;
+		if (next == STATE_FAIL)
+			continue;
+
+		if (next >= launchedFor)
+			triggerFire(trigger);
+
+		trigger.nextLaunch = launchedFor + trigger.freq;
+		if ((trigger.frequency == GameTriggerTypeOnce) && !!next)
+			trigger.nextLaunch = STATE_FAIL;
+		else
+			nearestTrigger = min(nearestTrigger, trigger.nextLaunch);
 	}
 
-	log(54321);
-	return 1;
+	return nearestTrigger;
+}
+
+int triggerWorker(int *params) {
+	int breakEvent = params[0];
+	GameTriggers *triggers = params[1];
+
+	int nextTrigger = 0;
+	int launchedFor = gameLaunchTime();
+	while (waitFor(breakEvent, launchedFor - nextTrigger, EventStateSet) != EventStateSet) {
+		nextTrigger = processTriggers(triggers);
+		if (nextTrigger == MAX_INT)
+			break;
+	}
+}
+
+int loadTriggers() {
+	GameTriggers *triggers = gameLoadMapTriggers();
+	if (triggers) {
+		int params[] = {};
+		closeEvent(threadStart(&triggerWorker, ThreadStateRunning, &params));
+	}
+}
+
+int processEvent(int eventID) {
+	switch (eventID) {
+		case GameEventPause:
+			break;
+
+		case GameEventResume:
+			break;
+
+		case GameEventEnd:
+			break;
+
+		default: {
+			log("Unknown game event ID %i", eventID);
+		}
+	}
 }
 
 int main(int arg) {
-	char eventName = 'a';
-	handle event = createEvent(&eventName, EventStateClear, true);
-
-	int params[] = {event, 12345};
-	handle notifier = threadStart(&dummyThread, ThreadStateRunning, &params);
-
-	int s = EventStateClear;
-	while ((s = waitFor(event, 1000, EventStateSet)) == EventStateTimeout) {
-		log(1000);
+	handle event = createEvent(GAME_EVENT, EventStateClear, true);
+	int listener = gameRegisterEventListener();
+	while (true) {
+		switch (waitFor(event, 200, EventStateSet)) {
+			case EventStateFailed: {
+				log("Failed game event wait in script thread %i", currentThread());
+				break;
+			}
+			case EventStateSet: {
+				processEvent(gameEventPop(listener));
+				break;
+			}
+			case EventStateTimeout:
+			default:
+				continue;
+		}
+		break;
 	}
+	int mapGUID = gameMapGUID();
+	void *triggers = gameLoadMapTriggers();
 
-	log(0);
-	log(0);
-	log(0);
-	log(s);
+	spawn *spawn = spawnEntity("object");
+	float spawnX = 10.0, spawnY = 12.0;
+	entityMove(spawn, spawnX, spawnY);
 
-	closeEvent(notifier);
+	char *str = "string #1";
+	int a = 123;
+	int b = 234;
+	int params[] = {1, str, a, b, a > b};
+	log("This is %i'st test: %s, and a > b = %i > %i = %b", &params);
+	return 0;
+}
+/*
+
+
+
+
+//
+//int max(int a, b) {
+//	return a > b ? a : b;
+//}
+//
+//int dummyThread(int *param) {
+//	handle self = currentThread();
+//	log('d', self);
+//
+//	int event = (*param)[0];
+//	int sleepFor = (*param)[1];
+//	int delta = max(10, sleepFor / 10), i = 0;
+//	while (true) {
+//		threadSuspend(self, delta);
+//		if (i > sleepFor) {
+//			signalEvent(event, EventStateSet);
+//			break;
+//		}
+//	}
+//
+//	log('e', 0);
+//	return 1;
+//}
+
+int saver(int param) {
+	while (waitFor(param, 1000, ThreadStateTerminated) == EventStateTimeout);
+	log(&'u', param);
+	unloadScriptAssociatedWith(param);
+	return 0;
+}
+
+int main(int arg) {
+	closeEvent(threadStart(&saver, ThreadStateRunning,  currentThread()));
+
+	int i = 10000;
+	while (i-- > 0);
+
+//	char eventName = 'a';
+//	handle event = createEvent(&eventName, EventStateClear, true);
+//
+//	int params[] = {event, 12345};
+//	handle notifier = threadStart(&dummyThread, ThreadStateRunning, &params);
+//
+//	int s = EventStateClear;
+//	while ((s = waitFor(event, 1000, EventStateSet)) == EventStateTimeout) {
+//		log('t', 1000);
+//	}
+//
+//	log('e', s);
+//
+//	closeEvent(notifier);
+
 	return 0;
 }

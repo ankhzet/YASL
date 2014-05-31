@@ -35,7 +35,9 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 	id tokensMarker = [match top];
 
 	NSUInteger assemblyState = [assembly pushState];
-//	NSUInteger errorState = [assembly pushExceptionStackState];
+#ifdef VERBOSE_SYNTAX_ERRORS
+	NSUInteger errorState = [assembly pushExceptionStackState];
+#endif
 
 	@try {
 #ifdef VERBOSE_SYNTAX
@@ -54,7 +56,9 @@ NSString *const kAssemblyDataTokensAssembly = @"kAssemblyDataTokensAssembly";
 		}
 #endif
     if (matches) {
-//			[assembly popExceptionStackState:errorState];
+#ifdef VERBOSE_SYNTAX_ERRORS
+			[assembly popExceptionStackState:errorState];
+#endif
 			if (self.discard) {
 				NSArray *tokensArray = [match objectsAbove:[match top] belove:tokensMarker];
 				if ([tokensArray count]) {

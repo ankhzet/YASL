@@ -10,6 +10,7 @@ typedef NS_ENUM(NSUInteger, YASLTokenKind) {
 	YASLTokenKindEOF = 0,
 	YASLTokenKindIdentifier,
 	YASLTokenKindString,
+	YASLTokenKindChar,
 	YASLTokenKindInteger,
 	YASLTokenKindFloat,
 	YASLTokenKindBool,

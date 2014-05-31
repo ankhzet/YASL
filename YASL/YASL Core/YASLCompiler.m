@@ -21,7 +21,7 @@ NSString *const kCompilatorPlacementOffset = @"kCompilatorPlacementOffset";
 NSString *const kCompilatorOptimize = @"kCompilatorOptimize";
 
 NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
-NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
+//NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 
 @implementation YASLCompiler {
 	NSMutableDictionary *caches;
@@ -32,19 +32,9 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 	if (!(self = [super init]))
 		return self;
 
-	_globalDatatypesManager = [YASLDataTypesManager datatypesManagerWithParentManager:nil];
-	[_globalDatatypesManager registerType:[YASLBuiltInTypeVoidInstance new]];
-	[_globalDatatypesManager registerType:[YASLBuiltInTypeIntInstance new]];
-	[_globalDatatypesManager registerType:[YASLBuiltInTypeFloatInstance new]];
-	[_globalDatatypesManager registerType:[YASLBuiltInTypeBoolInstance new]];
-	[_globalDatatypesManager registerType:[YASLBuiltInTypeCharInstance new]];
-	YASLDataType *handleType = [YASLBuiltInTypeIntInstance new];
-	handleType.name = YASLAPITypeHandle;
-	handleType.parent = [_globalDatatypesManager typeByName:YASLBuiltInTypeIdentifierInt];
-	[_globalDatatypesManager registerType:handleType];
-
 	caches = [NSMutableDictionary dictionary];
 	units = [NSMutableDictionary dictionary];
+	[self setupTypesManager];
 	return self;
 }
 
@@ -52,12 +42,38 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 	return [units objectEnumerator];
 }
 
+- (void) setupTypesManager {
+	_globalDatatypesManager = [YASLDataTypesManager datatypesManagerWithParentManager:nil];
+	[_globalDatatypesManager registerType:[YASLBuiltInTypeVoidInstance new]];
+	[_globalDatatypesManager registerType:[YASLBuiltInTypeIntInstance new]];
+	[_globalDatatypesManager registerType:[YASLBuiltInTypeFloatInstance new]];
+	[_globalDatatypesManager registerType:[YASLBuiltInTypeBoolInstance new]];
+	[_globalDatatypesManager registerType:[YASLBuiltInTypeCharInstance new]];
+
+	YASLDataType *handleType = [YASLBuiltInTypeIntInstance new];
+	handleType.name = YASLAPITypeHandle;
+	handleType.parent = [_globalDatatypesManager typeByName:YASLBuiltInTypeIdentifierInt];
+	[_globalDatatypesManager registerType:handleType];
+
+	YASLDataType *pcharType = [YASLBuiltInTypeCharInstance new];
+	pcharType.name = YASLBuiltInTypeIdentifierString;
+	pcharType.parent = [_globalDatatypesManager typeByName:YASLBuiltInTypeIdentifierChar];
+	pcharType.isPointer = 1;
+	[_globalDatatypesManager registerType:pcharType];
+
+}
+
 - (YASLCompiledUnit *) newUnit:(YASLCodeSource *)source {
 	YASLCompiledUnit *unit = units[source.identifier] = [YASLCompiledUnit new];
 	unit.source = source;
-	unit.declarations = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:self.globalDatatypesManager];
-	caches[source.identifier] = [NSMutableDictionary dictionary];
+	[self reinitUnit:unit];
 	return unit;
+}
+
+- (void) reinitUnit:(YASLCompiledUnit *)unit {
+	unit.declarations = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:self.globalDatatypesManager];
+	unit.declarations.stringsManager = self.stringsManager;
+	caches[unit.source.identifier] = [NSMutableDictionary dictionary];
 }
 
 - (YASLCompiledUnit *) compilationPass:(YASLCodeSource *)source withOptions:(NSDictionary *)options {
@@ -67,8 +83,7 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 	else {
 		if (options[kCompilatorDropCaches]) {
 			[self dropAssociatedCaches:source.identifier];
-			caches[source.identifier] = [NSMutableDictionary dictionary];
-			unit.declarations = [YASLLocalDeclarations declarationsManagerWithDataTypesManager:self.globalDatatypesManager];
+			[self reinitUnit:unit];
 		} else
 			if (options[kCompilatorPrecompile])
 				@throw [YASLNonfatalException exceptionAtLine:0 andCollumn:0 withMsg:@"Trying to precompile already compiled unit (\"%@\") without clearing cache",source.identifier];
@@ -97,14 +112,14 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 			if (!mainMethod)
 				NSLog(@"Failed to link \"main\" symbol");
 
-			YASLNativeFunction *currentThread = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeCPU_currentThread];
-			YASLNativeFunction *unloadScript = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeVM_unloadScriptAssociatedWith];
+//			YASLNativeFunction *currentThread = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeCPU_currentThread];
+//			YASLNativeFunction *unloadScript = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeVM_unloadScriptAssociatedWith];
 			[unit.codeAssembly push:entryRef];
-			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
-			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(currentThread.GUID)))];
-			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
-			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(unloadScript.GUID)))];
-			[unit.codeAssembly push:OPC_(POP, REG_(R0))];
+//			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
+//			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(currentThread.GUID)))];
+//			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
+//			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(unloadScript.GUID)))];
+//			[unit.codeAssembly push:OPC_(POP, REG_(R0))];
 			[unit.codeAssembly push:OPC_(HALT)];
 
 			unit.codeAssembly = [[YASLAssembly alloc] initReverseAssembly:unit.codeAssembly];
@@ -145,21 +160,22 @@ NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 			}
 
 			unit.codeLength = codePtr - frame + [globalScope scopeDataSize];
-			frame = realloc(frame, unit.codeLength);
+			free(frame);
+//			frame = realloc(frame, unit.codeLength);
 			cache[kCacheStaticLabels] = labels;
 
-			if (cache[kCachePrecompiledMachineCode]) {
-				NSValue *cachePtr = cache[kCachePrecompiledMachineCode];
-				if (cachePtr)
-					free([cachePtr pointerValue]);
-			}
-			cache[kCachePrecompiledMachineCode] = [NSValue valueWithPointer:frame];
+//			if (cache[kCachePrecompiledMachineCode]) {
+//				NSValue *cachePtr = cache[kCachePrecompiledMachineCode];
+//				if (cachePtr)
+//					free([cachePtr pointerValue]);
+//			}
+//			cache[kCachePrecompiledMachineCode] = [NSValue valueWithPointer:frame];
 			unit.stage = YASLUnitCompilationStagePrecompiled;
 		}
 
 		if (options[kCompilatorCompile]) {
 			NSNumber *placementOffset = (NSNumber *)options[kCompilatorPlacementOffset];
-			NSUInteger codeBase = placementOffset ? [placementOffset unsignedIntegerValue] : DEFAULT_CODEOFFSET;
+			YASLInt codeBase = placementOffset ? (YASLInt)[placementOffset unsignedIntegerValue] : DEFAULT_CODEOFFSET;
 
 			NSUInteger localsOffset = codeBase + unit.codeLength - [globalScope scopeDataSize];
 			[globalScope.placementManager offset:localsOffset scope:globalScope];
