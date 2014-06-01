@@ -11,7 +11,7 @@
 #import "YASLMemoryManagerDelegate.h"
 
 @class YASLNativeFunction, YASLRAM, YASLCPU, YASLStack, YASLMemoryManager;
-typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void *);
+typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void *, NSUInteger);
 
 @interface YASLNativeFunction : NSObject
 
@@ -19,10 +19,8 @@ typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void 
 @property (nonatomic) NSString *name;
 /*! Function GUID. Used by assembler to generate function calls. Genereted by native functions holder wher function registered. */
 @property (nonatomic) YASLInt GUID;
-/*! Function parameters count. */
-@property (nonatomic) NSUInteger params;
-/*! Function return type. Nil, if void. */
-@property (nonatomic) NSString *returns;
+/*! Function return type. NO, if void. */
+@property (nonatomic) BOOL isVoid;
 
 /*! Associated selector, that will be called when CPU processes native call instruction. */
 @property (nonatomic) SEL selector;
@@ -37,17 +35,17 @@ typedef YASLInt (*YASLNativeFunctionCallback)(id,SEL,YASLNativeFunction *, void 
 /*!
  @brief Create native function description object with specified parameters.
  */
-+ (instancetype) nativeWithName:(NSString *)name paramCount:(NSUInteger)params returnType:(NSString *)returns selector:(SEL)selector andReceiver:(id)receiver;
++ (instancetype) nativeWithName:(NSString *)name isVoid:(BOOL)isVoid selector:(SEL)selector andReceiver:(id)receiver;
 
 /*! Call callback implementation with specified parameters. */
-- (YASLInt) callOnParamsBase:(void *)paramsBase;
+- (YASLInt) callOnParamsBase:(void *)paramsBase withParamCount:(NSUInteger)params;
 
 /*!
  Resolve real address of param with specified index (1..n).
  */
-- (void *) ptrToParam:(NSUInteger)paramNumber atBase:(void *)paramsBase;
-- (YASLInt) intParam:(NSUInteger)paramNumber atBase:(void *)paramsBase;
-- (YASLFloat) floatParam:(NSUInteger)paramNumber atBase:(void *)paramsBase;
-- (NSString *) stringParam:(NSUInteger)paramNumber atBase:(void *)paramsBase;
+- (void *) ptrToParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params;
+- (YASLInt) intParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params;
+- (YASLFloat) floatParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params;
+- (NSString *) stringParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params;
 
 @end

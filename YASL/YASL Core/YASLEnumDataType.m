@@ -89,7 +89,7 @@
 	return nil;
 }
 
-+ (YASLEnumDataType *) hasEnum:(NSString *)identifier inManager:(YASLDataTypesManager *)manager {
++ (YASLEnumDataType *) hasEnum:(NSString *)identifier inManager:(id<YASLDataTypesManagerProtocol>)manager {
 	while (manager) {
 		for (YASLEnumDataType *dataType in [manager enumTypes]) {
 			if (![dataType isKindOfClass:[YASLEnumDataType class]])
@@ -98,7 +98,7 @@
 			if ([dataType hasEnum:identifier])
 				return dataType;
 		}
-		manager = manager.parentManager;
+		manager = [manager parentManager];
 	}
 	return nil;
 }

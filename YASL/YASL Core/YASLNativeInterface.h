@@ -8,6 +8,11 @@
 
 #import <Foundation/Foundation.h>
 
+/*
+ Selector signature for native function implementation
+ - (YASLInt) n_:(YASLNativeFunction *)native params:(void *)paramsBase;
+ */
+
 @interface YASLNativeInterface : NSObject
 
 /*!
@@ -16,6 +21,6 @@
 - (void) registerNativeFunctions;
 
 /*! Register native function with specified parameters. */
-- (NSUInteger) registerNativeFunction:(NSString *)name withParamCount:(NSUInteger)params returnType:(NSString *)returns withSelector:(SEL)selector;
+- (NSUInteger) registerNativeFunction:(NSString *)name isVoid:(BOOL)isVoid withSelector:(SEL)selector;
 
 @end

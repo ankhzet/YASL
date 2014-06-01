@@ -112,16 +112,6 @@ bp+00  00 00 p1
 
 @implementation YASLTranslationFunction (Assembling)
 
-- (void) assembleNativeFunction:(YASLAssembly *)assembly {
-	return;
-	YASLDeclarationScope *functionScope = self.declarationScope;
-	YASLLocalDeclaration *declaration = [functionScope localDeclarationByIdentifier:self.declaratorIdentifier];
-
-	[assembly push:OPC_(NOP)]; // mark function start
-	[assembly push:declaration.reference];
-	[assembly push:OPC_(NATIV, IMM_(@(self.native.GUID)))];
-}
-
 - (void) assembleFunction:(YASLAssembly *)assembly {
 	YASLDeclarationScope *functionScope = self.declarationScope;
 	YASLDeclarationScope *bodyScope = [functionScope.childs firstObject];
@@ -180,9 +170,7 @@ bp+00  00 00 p1
 }
 
 - (void) assemble:(YASLAssembly *)assembly {
-	if (self.native)
-		[self assembleNativeFunction:assembly];
-	else
+	if (!self.native)
 		[self assembleFunction:assembly];
 }
 

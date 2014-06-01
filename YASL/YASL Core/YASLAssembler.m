@@ -9,6 +9,9 @@
 #import "YASLAssembler.h"
 
 #import "YASLCoreLangClasses.h"
+#import "YASLCompiler.h"
+#import "YASLCompiledUnit.h"
+#import "YASLCodeSource.h"
 
 NSString *const YASLYASLGrammar = @"YASL";
 
@@ -16,10 +19,6 @@ NSString *const YASLYASLGrammar = @"YASL";
 
 - (NSString *) grammarIdentifier {
 	return YASLYASLGrammar;
-}
-
-- (YASLTranslationUnit *) assembleSource:(NSString *)source {
-	return [super assembleSource:source];
 }
 
 - (YASLDeclarationScope *) scope {
@@ -38,10 +37,18 @@ NSString *const YASLYASLGrammar = @"YASL";
 - (void) processAssembly:(YASLAssembly *)a nodeStart:(YASLAssemblyNode *)node {
 	YASLTranslationUnit *unit = [a top];
 	[self scope].name = unit ? unit.name : @"<anonymuous unit>";
-	YASLLocalDeclaration *mainMethod = [[self scope] localDeclarationByIdentifier:@"main"];
+	YASLDeclarationScope *unitScope = [self scope];
+	NSArray *declarations = [unitScope localDeclarations];
+	NSArray *typedefs = [[unitScope enumTypes] allObjects];
 	[self.declarationScope popScope];
-	if (mainMethod) {
-		[[self scope] addLocalDeclaration:mainMethod];
+	if ([self scope] && ([self scope] != unitScope)) {
+		for (YASLLocalDeclaration *declaration in declarations) {
+			[[self scope] addLocalDeclaration:declaration];
+			[unitScope removeDeclaration:declaration];
+		}
+		for (YASLDataType *type in typedefs) {
+			[[self scope] registerType:type];
+		}
 	}
 }
 
@@ -50,6 +57,20 @@ NSString *const YASLYASLGrammar = @"YASL";
 	YASLTranslationUnit *unit = [YASLTranslationUnit unitInScope:[self scope] withName:token.value];
 	[self scope].name = [NSString stringWithFormat:@"unit:%@", token.value];
 	[a push:unit];
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeUseScript:(YASLAssemblyNode *)node {
+	YASLToken *token = [a pop];
+	NSString *usesIdentifier = token.value;
+	YASLCodeSource *source = [YASLCodeSource codeSourceFromResource:usesIdentifier withExtension:@"yasl"];
+	if (!source)
+		[self raiseError:@"Script \"%@\" not found", usesIdentifier];
+
+	YASLCompiledUnit *usesUnit = [self.parentCompiler compileScript:source];
+	if (usesUnit.stage != YASLUnitCompilationStageCompiled)
+		[self raiseError:@"Failed to use \"%@\" script", usesIdentifier];
+
+	[[self scope].parentScope includeDeclarations:usesUnit.declarations];
 }
 
 - (void) processAssembly:(YASLAssembly *)a nodeExternalDeclarations:(YASLAssemblyNode *)node {

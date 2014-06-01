@@ -1,0 +1,20 @@
+script core;
+uses api, strings;
+
+typedef enum {
+	STATE_FAIL = -1,
+	MAX_INT = maxInt,
+} Constant;
+
+
+native void unloadScriptAssociatedWith(handle thread);
+native void log(char *format,...);
+
+int min(int a, b) {
+	return a < b ? a : b;
+}
+
+int max(int a, b) {
+	return a > b ? a : b;
+}
+

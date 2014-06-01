@@ -61,7 +61,6 @@
 
 - (YASLCompiledUnit *) runScript:(YASLCodeSource *)source;
 
-- (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source;
 - (NSArray *) disassembly:(YASLCodeSource *)source;
 
 @end

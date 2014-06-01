@@ -15,7 +15,8 @@ NSString *NATIVE_EVENT_OPEN = @"";
 @interface YASLEventsAPI () {
 	NSMutableArray *events;
 	NSMutableDictionary *namedEvents;
-	id null;
+	NSMutableDictionary *handledEvents;
+	YASLInt guid;
 }
 
 @end
@@ -26,27 +27,26 @@ NSString *NATIVE_EVENT_OPEN = @"";
 	if (!(self = [super init]))
 		return self;
 
-	events = [NSMutableArray arrayWithObject:[NSNull null]];
+	events = [NSMutableArray array];
 	namedEvents = [NSMutableDictionary dictionary];
+	handledEvents = [NSMutableDictionary dictionary];
 
-	null = [NSNull null];
+	guid = 0;
 	return self;
 }
 
 #pragma mark - Base functionality
 
 - (YASLInt) genGUID {
-	return (YASLInt)[events count];
+	return ++guid;
 }
 
 - (YASLEvent *) findByHandle:(YASLInt)handle {
-	YASLEvent *event = ((handle > 0) && (handle < [events count])) ? events[handle] : nil;
-	return (event != null) ? event : nil;
+	return handledEvents[@(handle)];
 }
 
 - (YASLEvent *) findByName:(NSString *)name {
-	YASLEvent *event = namedEvents[name];
-	return (event != null) ? event : nil;
+	return namedEvents[name];
 }
 
 - (YASLEvent *) createEventWithName:(NSString *)name initialState:(YASLInt)state autoreset:(BOOL)autoreset {
@@ -57,17 +57,17 @@ NSString *NATIVE_EVENT_OPEN = @"";
 	}
 
 	@synchronized (events) {
-		YASLInt guid = [self genGUID];
 		event = [YASLEvent eventWithEventManager:self];
 		event.name = name;
-		event.handle = guid;
+		event.handle = [self genGUID];
 		event.state = state;
 		event.autoreset = autoreset;
 		event.links = 1;
-		[events setObject:event atIndexedSubscript:guid];
+		[events addObject:event];
 		if (name) {
 			namedEvents[name] = event;
 		}
+		handledEvents[@(event.handle)] = event;
 	}
 
 	return event;
@@ -99,8 +99,10 @@ NSString *NATIVE_EVENT_OPEN = @"";
 }
 
 - (void) deleteEvent:(YASLEvent *)event {
-	[events replaceObjectAtIndex:event.handle withObject:[NSNull null]];
-	namedEvents[event.name] = [NSNull null];
+	[events removeObject:event];
+	if (event.name)
+		[namedEvents removeObjectForKey:event.name];
+	[handledEvents removeObjectForKey:@(event.handle)];
 }
 
 #pragma mark - Native functions implementation
@@ -108,29 +110,29 @@ NSString *NATIVE_EVENT_OPEN = @"";
 - (void) registerNativeFunctions {
 	[super registerNativeFunctions];
 
-	[self registerNativeFunction:@"createEvent" withParamCount:3 returnType:YASLAPITypeHandle withSelector:@selector(n_CreateEvent:params:)];
-	[self registerNativeFunction:@"signalEvent" withParamCount:2 returnType:YASLAPITypeHandle withSelector:@selector(n_SignalEvent:params:)];
-	[self registerNativeFunction:@"closeEvent" withParamCount:1 returnType:YASLBuiltInTypeIdentifierBool withSelector:@selector(n_CloseEvent:params:)];
+	[self registerNativeFunction:@"createEvent" isVoid:NO withSelector:@selector(n_CreateEvent:params:withParamCount:)];
+	[self registerNativeFunction:@"signalEvent" isVoid:NO withSelector:@selector(n_SignalEvent:params:withParamCount:)];
+	[self registerNativeFunction:@"closeEvent" isVoid:NO withSelector:@selector(n_CloseEvent:params:withParamCount:)];
 }
 
-- (YASLInt) n_CreateEvent:(YASLNativeFunction *)native params:(void *)paramsBase {
-	NSString *name = [native stringParam:1 atBase:paramsBase];
-	YASLInt state = [native intParam:2 atBase:paramsBase];
-	YASLInt autoreset = [native intParam:3 atBase:paramsBase];
+- (YASLInt) n_CreateEvent:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	NSString *name = [native stringParam:1 atBase:paramsBase withParamCount:params];
+	YASLInt state = [native intParam:2 atBase:paramsBase withParamCount:params];
+	YASLInt autoreset = [native intParam:3 atBase:paramsBase withParamCount:params];
 
 	YASLEvent *event = [self createEventWithName:name initialState:state autoreset:!!autoreset];
 
 	return event ? event.handle : YASL_INVALID_HANDLE;
 }
 
-- (YASLInt) n_SignalEvent:(YASLNativeFunction *)native params:(void *)paramsBase {
-	YASLInt handle = [native intParam:1 atBase:paramsBase];
-	YASLInt state = [native intParam:2 atBase:paramsBase];
+- (YASLInt) n_SignalEvent:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	YASLInt handle = [native intParam:1 atBase:paramsBase withParamCount:params];
+	YASLInt state = [native intParam:2 atBase:paramsBase withParamCount:params];
 	return [self signalEvent:handle withSignalState:state];
 }
 
-- (YASLInt) n_CloseEvent:(YASLNativeFunction *)native params:(void *)paramsBase {
-	return [self closeEvent:[native intParam:1 atBase:paramsBase]];
+- (YASLInt) n_CloseEvent:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	return [self closeEvent:[native intParam:1 atBase:paramsBase withParamCount:params]];
 }
 
 @end

@@ -16,4 +16,6 @@
 + (instancetype) codeSource:(NSString *)identifier fromString:(NSString *)sourceString;
 + (instancetype) codeSourceFromFile:(NSURL *)sourceFile;
 
++ (instancetype) codeSourceFromResource:(NSString *)resource withExtension:(NSString *)extension;
+
 @end

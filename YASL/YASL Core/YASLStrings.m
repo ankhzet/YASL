@@ -17,14 +17,27 @@
 }
 
 - (NSString *) stringAt:(YASLInt)address {
-	NSSet *strings = [allocations keysOfEntriesPassingTest:^BOOL(id key, NSNumber *offset, BOOL *stop) {
-		if ([offset intValue] == address)
-			return *stop = YES;
+	if (address) {
+		NSSet *strings = [allocations keysOfEntriesPassingTest:^BOOL(id key, NSNumber *offset, BOOL *stop) {
+			if ([offset intValue] == address)
+				return *stop = YES;
 
-		return NO;
-	}];
+			return NO;
+		}];
 
-	return [strings anyObject];
+		if (![strings anyObject])
+			return nil;
+
+		YASLInt size = [_memManager isAllocated:address];
+		if (size) {
+			YASLChar *raw = [_ram dataAt:address];
+			NSUInteger len = size / sizeof(YASLChar) - 1;
+			return [NSString stringWithCharacters:raw length:len];
+		}
+	}
+
+
+	return nil;
 }
 
 - (YASLInt) allocString:(NSString *)string {
@@ -53,13 +66,13 @@
 - (void) registerNativeFunctions {
 	[super registerNativeFunctions];
 
-	[self registerNativeFunction:YASLNativeStrings_strLen withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_strLen:params:)];
-	[self registerNativeFunction:YASLNativeStrings_strConc withParamCount:2 returnType:YASLBuiltInTypeIdentifierChar withSelector:@selector(n_strConc:params:)];
-	[self registerNativeFunction:YASLNativeStrings_strComp withParamCount:2 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_strComp:params:)];
+	[self registerNativeFunction:YASLNativeStrings_strLen isVoid:NO withSelector:@selector(n_strLen:params:withParamCount:)];
+	[self registerNativeFunction:YASLNativeStrings_strConc isVoid:NO withSelector:@selector(n_strConc:params:withParamCount:)];
+	[self registerNativeFunction:YASLNativeStrings_strComp isVoid:NO withSelector:@selector(n_strComp:params:withParamCount:)];
 }
 
-- (YASLInt) n_strLen:(YASLNativeFunction *)native params:(void *)paramsBase {
-	YASLInt str = [native intParam:1 atBase:paramsBase];
+- (YASLInt) n_strLen:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	YASLInt str = [native intParam:1 atBase:paramsBase withParamCount:params];
 	YASLInt size = [_memManager isAllocated:str];
 	if (!size)
 		return 0;
@@ -76,15 +89,15 @@
 	return len;
 }
 
-- (YASLInt) n_strComp:(YASLNativeFunction *)native params:(void *)paramsBase {
-	NSString *s1 = [native stringParam:1 atBase:paramsBase];
-	NSString *s2 = [native stringParam:2 atBase:paramsBase];
+- (YASLInt) n_strComp:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	NSString *s1 = [native stringParam:1 atBase:paramsBase withParamCount:params];
+	NSString *s2 = [native stringParam:2 atBase:paramsBase withParamCount:params];
 	return [s1 compare:s2];
 }
 
-- (YASLInt) n_strConc:(YASLNativeFunction *)native params:(void *)paramsBase {
-	NSString *s2 = [native stringParam:2 atBase:paramsBase];
-	NSString *string = [[native stringParam:1 atBase:paramsBase] stringByAppendingString:s2];
+- (YASLInt) n_strConc:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	NSString *s2 = [native stringParam:2 atBase:paramsBase withParamCount:params];
+	NSString *string = [[native stringParam:1 atBase:paramsBase withParamCount:params] stringByAppendingString:s2];
 	return [self allocString:string];
 }
 

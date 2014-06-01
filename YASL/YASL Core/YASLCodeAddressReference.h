@@ -23,5 +23,6 @@
 - (void) addressResolved:(YASLInt)referencedAddress;
 - (void) updateReferents;
 - (YASLInt) complexAddress;
+- (BOOL) hasReferents;
 
 @end

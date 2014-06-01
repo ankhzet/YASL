@@ -8,12 +8,11 @@
 
 #import "YASLCommonAssembler.h"
 
-@class YASLTranslationUnit, YASLLocalDeclarations, YASLDeclarationScope;
+@class YASLLocalDeclarations, YASLDeclarationScope, YASLCompiler;
 @interface YASLAssembler : YASLCommonAssembler
 
 @property (nonatomic) YASLLocalDeclarations *declarationScope;
-
-- (YASLTranslationUnit *) assembleSource:(NSString *)source;
+@property (nonatomic, weak) YASLCompiler *parentCompiler;
 
 - (YASLDeclarationScope *) scope;
 

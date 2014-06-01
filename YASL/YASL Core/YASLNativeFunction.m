@@ -11,19 +11,18 @@
 
 @implementation YASLNativeFunction
 
-+ (instancetype) nativeWithName:(NSString *)name paramCount:(NSUInteger)params returnType:(NSString *)returns selector:(SEL)selector andReceiver:(id)receiver {
++ (instancetype) nativeWithName:(NSString *)name isVoid:(BOOL)isVoid selector:(SEL)selector andReceiver:(id)receiver {
 	YASLNativeFunction *instance = [self new];
 	instance.name = name;
-	instance.params = params;
-	instance.returns = returns;
+	instance.isVoid = isVoid;
 	instance.selector = selector;
 	instance.receiver = receiver;
 	instance.callback = (YASLNativeFunctionCallback)[((NSObject *)receiver) methodForSelector:selector];
 	return instance;
 }
 
-- (YASLInt) callOnParamsBase:(void *)paramsBase {
-	return _callback(_receiver, _selector, self, paramsBase);
+- (YASLInt) callOnParamsBase:(void *)paramsBase withParamCount:(NSUInteger)params {
+	return _callback(_receiver, _selector, self, paramsBase, params);
 }
 
 /*
@@ -36,20 +35,20 @@
  p3 = 3 - 3 = 0
 
  */
-- (void *) ptrToParam:(NSUInteger)paramNumber atBase:(void *)paramsBase {
-	return (void *)((char *)paramsBase - (_params - paramNumber) * sizeof(YASLInt));
+- (void *) ptrToParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params {
+	return (void *)((char *)paramsBase - (params - paramNumber) * sizeof(YASLInt));
 }
 
-- (YASLInt) intParam:(NSUInteger)paramNumber atBase:(void *)paramsBase {
-	return *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase];
+- (YASLInt) intParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params {
+	return *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase withParamCount:params];
 }
 
-- (YASLFloat) floatParam:(NSUInteger)paramNumber atBase:(void *)paramsBase {
-	return *(YASLFloat *)[self ptrToParam:paramNumber atBase:paramsBase];
+- (YASLFloat) floatParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params {
+	return *(YASLFloat *)[self ptrToParam:paramNumber atBase:paramsBase withParamCount:params];
 }
 
-- (NSString *) stringParam:(NSUInteger)paramNumber atBase:(void *)paramsBase {
-	YASLInt strPtr = *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase];
+- (NSString *) stringParam:(NSUInteger)paramNumber atBase:(void *)paramsBase withParamCount:(NSUInteger)params {
+	YASLInt strPtr = *(YASLInt *)[self ptrToParam:paramNumber atBase:paramsBase withParamCount:params];
 	if (strPtr) {
 		YASLInt size = [_mm isAllocated:strPtr];
 		if (size) {

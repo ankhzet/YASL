@@ -44,6 +44,7 @@
 	vm.compiler = [YASLCompiler new];
 	vm.compiler.targetRAM = vm.ram;
 	vm.compiler.stringsManager = vm.stringManager;
+	vm.compiler.memoryManager = vm.memManager;
 	return !!vm.compiler;
 }
 

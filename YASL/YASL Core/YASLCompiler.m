@@ -21,7 +21,6 @@ NSString *const kCompilatorPlacementOffset = @"kCompilatorPlacementOffset";
 NSString *const kCompilatorOptimize = @"kCompilatorOptimize";
 
 NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
-//NSString *const kCachePrecompiledMachineCode = @"kCachePrecompiledMachineCode";
 
 @implementation YASLCompiler {
 	NSMutableDictionary *caches;
@@ -95,14 +94,17 @@ NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
 	Class opcodeClass = [YASLOpcode class];
 
 	@try {
-
 		if (options[kCompilatorPrecompile]) {
-			YASLAssembler *assembler = [YASLAssembler new];
-			assembler.declarationScope = unit.declarations;
+			YASLTranslationUnit *translated;
+			@autoreleasepool {
+				YASLAssembler *assembler = [YASLAssembler new];
+				assembler.parentCompiler = self;
+				assembler.declarationScope = unit.declarations;
 
-			YASLTranslationUnit *translated = [assembler assembleSource:source.code];
-			if (!translated)
-				return unit;
+				translated = [assembler assembleSource:source];
+				if (!translated)
+					return unit;
+			}
 
 			unit.codeAssembly = [YASLAssembly new];
 			[translated assemble:unit.codeAssembly];
@@ -112,14 +114,7 @@ NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
 			if (!mainMethod)
 				NSLog(@"Failed to link \"main\" symbol");
 
-//			YASLNativeFunction *currentThread = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeCPU_currentThread];
-//			YASLNativeFunction *unloadScript = [[YASLNativeFunctions sharedFunctions] findByName:YASLNativeVM_unloadScriptAssociatedWith];
 			[unit.codeAssembly push:entryRef];
-//			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
-//			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(currentThread.GUID)))];
-//			[unit.codeAssembly push:OPC_(PUSH, REG_(R0))];
-//			[unit.codeAssembly push:OPC_(NATIV, IMM_(@(unloadScript.GUID)))];
-//			[unit.codeAssembly push:OPC_(POP, REG_(R0))];
 			[unit.codeAssembly push:OPC_(HALT)];
 
 			unit.codeAssembly = [[YASLAssembly alloc] initReverseAssembly:unit.codeAssembly];
@@ -161,15 +156,8 @@ NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
 
 			unit.codeLength = codePtr - frame + [globalScope scopeDataSize];
 			free(frame);
-//			frame = realloc(frame, unit.codeLength);
 			cache[kCacheStaticLabels] = labels;
 
-//			if (cache[kCachePrecompiledMachineCode]) {
-//				NSValue *cachePtr = cache[kCachePrecompiledMachineCode];
-//				if (cachePtr)
-//					free([cachePtr pointerValue]);
-//			}
-//			cache[kCachePrecompiledMachineCode] = [NSValue valueWithPointer:frame];
 			unit.stage = YASLUnitCompilationStagePrecompiled;
 		}
 
@@ -192,6 +180,7 @@ NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
 			[unit.codeAssembly restoreFullStack];
 
 			void *frame = [self.targetRAM dataAt:codeBase], *codePtr = frame;
+//			NSLog(@"compile to %p, %d, %lu", self.targetRAM, codeBase, (unsigned long)frame);
 			memset(frame, 0, unit.codeLength);
 			while ([unit.codeAssembly notEmpty]) {
 				id top = [unit.codeAssembly pop];
@@ -205,10 +194,62 @@ NSString *const kCacheStaticLabels = @"kCacheStaticLabels";
 		}
 	}
 	@catch (NSException *exception) {
-    NSLog(@"Compilation exception: %@\n", [exception description]);
+    NSLog(@"Compilation exception: %@\nStack trace:\n%@", [exception description], [exception callStackSymbols]);
 	}
 
 	return unit;
+}
+
+- (YASLCompiledUnit *) compileScript:(YASLCodeSource *)source {
+	YASLCompiledUnit *unit = [self scriptInStage:YASLUnitCompilationStagePrecompiled|YASLUnitCompilationStageCompiled bySource:source strictMatch:NO];
+
+	if (!unit) {
+		unit = [self compilationPass:source
+															withOptions:@{
+																						kCompilatorPrecompile:@YES,
+																						kCompilatorOptimize: @YES,
+																						kCompilatorDropCaches: @YES,
+																						}];
+
+		if (unit.stage == YASLUnitCompilationStagePrecompiled) {
+			YASLInt codeOffset = [self calcCodePlacement:unit.codeLength];
+			[self compilationPass:source
+												 withOptions:@{
+																			 kCompilatorCompile:@YES,
+																			 kCompilatorPlacementOffset:@(codeOffset),
+																			 }];
+		}
+
+	}
+	
+	return unit;
+}
+
+- (YASLInt) calcCodePlacement:(YASLInt)codeLength {
+	return [self.memoryManager allocMem:codeLength];
+}
+
+- (NSRange) codeRange {
+	NSRange r = NSMakeRange(0, 0);
+	for (YASLCompiledUnit *compiledUnit in [self enumerateCompiledUnits]) {
+		if (compiledUnit.stage == YASLUnitCompilationStageCompiled)
+			r = NSUnionRange(r, NSMakeRange(compiledUnit.startOffset, compiledUnit.codeLength));
+	}
+	return r;
+}
+
+- (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source strictMatch:(BOOL)strictMatch {
+	NSEnumerator *compiled = [self enumerateCompiledUnits];
+	for (YASLCompiledUnit *compiledUnit in compiled) {
+		YASLUnitCompilationStage masked = compiledUnit.stage & stage;
+    if (!(strictMatch ? masked == stage : !!masked))
+			continue;
+
+		if (compiledUnit.source.identifier == source.identifier)
+			return compiledUnit;
+	}
+
+	return nil;
 }
 
 - (void) dropUnit:(NSString *)sourceIdentifier {

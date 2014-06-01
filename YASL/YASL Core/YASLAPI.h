@@ -16,6 +16,7 @@
 //#define VERBOSE_SYNTAX_ERRORS
 //#define VERBOSE_SYNTAX
 //#define VERBOSE_ASSEMBLY
+//#define VERBOSE_CPU_TRACE
 
 #ifdef USECUSTOMLOGS
 #define NSLog NSLogShort

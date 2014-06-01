@@ -54,6 +54,10 @@
 	}
 }
 
+- (BOOL) hasReferents {
+	return !![_references count];
+}
+
 - (NSString *) description {
 	NSString *offsets = self.address ? [NSString stringWithFormat:@"%@%d", self.address >= 0 ? @"+" : @"", self.address] : @"";
 	offsets = self.base ? [NSString stringWithFormat:@"%d%@", self.base, offsets] : offsets;

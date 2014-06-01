@@ -39,11 +39,19 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 }
 
 - (YASLDataType *) typeByName:(NSString *)name {
-	return [[self.declarationScope localDataTypesManager] typeByName:name];
+	return [self.declarationScope typeByName:name];
 }
 
 - (NSEnumerator *) enumTypes {
-	return [[self.declarationScope localDataTypesManager] enumTypes];
+	return [self.declarationScope enumTypes];
+}
+
+- (void) registerType:(YASLDataType *)type {
+	[self.declarationScope registerType:type];
+}
+
+- (id<YASLDataTypesManagerProtocol>) parentManager {
+	return [self.declarationScope parentManager];
 }
 
 @end
@@ -79,6 +87,9 @@ NSString *const YASLTranslationNodeTypeNames[] = {
 - (void) setNth:(NSUInteger)idx operand:(YASLTranslationExpression *)operand {
 	if (!operand)
 		operand = (id)[NSNull null];
+
+	if (operand != (id)[NSNull null])
+		operand.parent = self;
 
 	NSUInteger count = [subnodes count];
 	while (count < idx) {

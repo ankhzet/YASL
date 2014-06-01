@@ -7,7 +7,7 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "YASLAPI.h"
+#import "YASLCompiledUnit.h"
 
 extern NSString *const kCompilatorPrecompile;
 extern NSString *const kCompilatorCompile;
@@ -17,18 +17,23 @@ extern NSString *const kCompilatorPlacementOffset;
 extern NSString *const kCompilatorOptimize;
 
 extern NSString *const kCacheStaticLabels;
-//extern NSString *const kCachePrecompiledMachineCode;
 
 @class YASLRAM, YASLLocalDeclarations, YASLDataTypesManager;
 @class YASLStrings, YASLCompiledUnit, YASLCodeSource;
+@class YASLMemoryManager;
 @interface YASLCompiler : NSObject
 
 @property (nonatomic) YASLRAM *targetRAM;
-@property (nonatomic) YASLLocalDeclarations *declarations;
-@property (nonatomic) YASLDataTypesManager *globalDatatypesManager;
 @property (nonatomic) YASLStrings *stringsManager;
+@property (nonatomic) YASLMemoryManager *memoryManager;
 
+@property (nonatomic) YASLDataTypesManager *globalDatatypesManager;
+
+- (YASLCompiledUnit *) compileScript:(YASLCodeSource *)source;
+- (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source strictMatch:(BOOL)strictMatch;
 - (YASLCompiledUnit *) compilationPass:(YASLCodeSource *)source withOptions:(NSDictionary *)options;
+
+- (NSRange) codeRange;
 
 - (BOOL) dropAssociatedCaches:(NSString *)sourceIdentifier;
 - (id) cache:(NSString *)sourceIdentifier data:(NSString *)cacheIdentifier;

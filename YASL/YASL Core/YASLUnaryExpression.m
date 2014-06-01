@@ -31,7 +31,7 @@
 	YASLExpressionOperator operator = [self expressionOperator];
 	switch (operator) {
 		case YASLExpressionOperatorNot: {
-			self.returnType = [self.declarationScope.localDataTypesManager typeByName:YASLBuiltInTypeIdentifierBool];
+			self.returnType = [self.declarationScope typeByName:YASLBuiltInTypeIdentifierBool];
 			YASLTranslationExpression *castToBool = [YASLTypecastExpression typecastInScope:self.declarationScope withType:self.returnType];
 			[castToBool addSubNode:[self leftOperand]];
 			castToBool = [castToBool foldConstantExpressionWithSolver:solver];

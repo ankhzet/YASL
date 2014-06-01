@@ -1,0 +1,38 @@
+script game;
+uses core;
+
+typedef enum {
+	GameEventPause = 1,
+	GameEventResume = 2,
+	GameEventEnd = 3,
+} GameEvent;
+
+typedef enum {
+	GameTriggerNone,
+
+	// type
+	GameTriggerTypeSpawn,
+	GameTriggerTypeScript,
+
+	// frequency
+	GameTriggerTypeOnce,
+	GameTriggerTypeEach,
+} GameTriggerType;
+
+typedef struct {
+	GameTriggerType type;
+	GameTriggerType frequency;
+	char *specifier;
+	int freq;
+	int nextLaunch, prevLaunch;
+} GameTrigger;
+
+typedef struct {
+	int count;
+	GameTrigger *trigger[];
+} GameTriggers;
+
+handle gameRegisterEventListener();
+GameEvent gameEventPop(handle listener);
+GameTriggers *gameLoadMapTriggers();
+

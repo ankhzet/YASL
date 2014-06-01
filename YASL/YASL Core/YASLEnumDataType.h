@@ -13,7 +13,7 @@
 - (void) addEnum:(NSString *)identifier value:(NSUInteger)value;
 - (void) addEnum:(NSString *)identifier;
 
-+ (YASLEnumDataType *) hasEnum:(NSString *)identifier inManager:(YASLDataTypesManager *)manager;
++ (YASLEnumDataType *) hasEnum:(NSString *)identifier inManager:(id<YASLDataTypesManagerProtocol>)manager;
 - (BOOL) hasEnum:(NSString *)identifier;
 - (NSString *) hasValue:(NSUInteger)value;
 - (NSUInteger) enumValue:(NSString *)identifier;

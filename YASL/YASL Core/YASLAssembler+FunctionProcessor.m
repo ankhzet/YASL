@@ -56,10 +56,10 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 			if ([declaration.dataType baseType] != YASLBuiltInTypeVoid) {
 				YASLLocalDeclaration *result = [bodyScope newLocalDeclaration:[function returnVarIdentifier]];
 				result.dataType = declaration.dataType;
+				result.declarator = [YASLTranslationDeclarator nodeInScope:[self scope] withType:YASLTranslationNodeTypeInitializer];
 			}
 			YASLLocalDeclaration *extLabel = [outerScope newLocalDeclaration:[function exitLabelIdentifier]];
 			extLabel.dataType = nil;
-
 			[function addSubNode:body];
 		} else {
 			if ([specifiers containsObject:@(YASLFunctionSpecifierNative)]) {
@@ -111,14 +111,29 @@ typedef NS_ENUM(NSUInteger, YASLFunctionSpecifier) {
 	[a push:specifier];
 }
 
+- (void) processAssembly:(YASLAssembly *)a nodeMethodParamListSpecifier:(YASLAssemblyNode *)node {
+	BOOL vararg = [[a pop] boolValue];
+	YASLDeclaratorSpecifier *specifier = [a popTillChunkMarker];
+	if (specifier) {
+		specifier.param = vararg;
+		[a push:specifier];
+	}
+}
+
+- (void) processAssembly:(YASLAssembly *)a nodeMethodParamVararg:(YASLAssemblyNode *)node {
+	id top = [a popTillChunkMarker];
+	[a push:@(!!top)];
+}
+
 @end
 
 @implementation YASLAssembler (JumpStatementProcessor)
 
 - (void) processAssembly:(YASLAssembly *)a nodeJumpReturn:(YASLAssemblyNode *)node {
-	YASLTranslationExpression *expression = [a pop];
+	YASLTranslationExpression *expression = [a popTillChunkMarker];
 	YASLJumpExpression *returnExpression = [YASLJumpExpression expressionInScope:[self scope] withType:YASLExpressionTypeReturn];
-	[returnExpression addSubNode:expression];
+	if (expression)
+		[returnExpression addSubNode:expression];
 	[a push:returnExpression];
 }
 

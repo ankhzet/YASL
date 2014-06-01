@@ -7,6 +7,7 @@
 //
 
 #import "YASLAssembly.h"
+#import "YASLCodeSource.h"
 
 @class YASLGrammar;
 @interface YASLCommonAssembler : YASLAssembly
@@ -21,8 +22,7 @@
  @return Resulting assembly.
  */
 - (YASLAssembly *) assembleSource:(YASLAbstractTokenizer *)tokenized withGrammar:(YASLGrammar *)grammar;
-- (id) assembleSource:(NSString *)source;
-- (id) assembleFile:(NSString *)fileName;
+- (id) assembleSource:(YASLCodeSource *)source;
 
 @end
 

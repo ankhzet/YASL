@@ -17,6 +17,7 @@
 #import "YASLTypedNode.h"
 #import "YASLTranslationNode.h"
 #import "YASLNonfatalException.h"
+#import "YASLCodeSource.h"
 
 NSString *const kProcessorSelectorSignature = @"processAssembly:node%@:";
 NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
@@ -97,31 +98,10 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 	return nil;
 }
 
-- (id) assembleFile:(NSString *)fileName {
-	NSURL *sourceURL = [[NSBundle mainBundle] URLForResource:fileName withExtension:@""];
-	if (!sourceURL) {
-		NSLog(@"Invalid resource name: \"%@\"", fileName);
-		return nil;
-	}
-	if (![[NSFileManager defaultManager] fileExistsAtPath:[sourceURL path]]) {
-		NSLog(@"Resource \"%@\" doesn't exists", fileName);
-		return nil;
-	}
-
-	NSError *error = nil;
-	NSString *source = [NSString stringWithContentsOfURL:sourceURL encoding:NSUTF8StringEncoding error:&error];
-	if (!source) {
-		NSLog(@"Failed to load \"%@\": %@", fileName, [error localizedDescription]);
-		return nil;
-	}
-	
-	return [self assembleSource:source];
-}
-
-- (id) assembleSource:(NSString *)source {
+- (id) assembleSource:(YASLCodeSource *)source {
 	id result = nil;
 	@try {
-		YASLAbstractTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source];
+		YASLAbstractTokenizer *tokenizer = [[YASLTokenizer alloc] initWithSource:source.code];
 		[tokenizer tokenizeAll];
 
 		if (![tokenizer hasTokens])
@@ -139,8 +119,8 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 
 		result = [outAssembly pop];
 	}
-	@catch (YASLNonfatalException *exception) {
-		NSLog(@"Assemble process halted: %@", exception);
+	@catch (NSException *exception) {
+		NSLog(@"Assemble \"%@\"\nAssembling halted: %@\nStack trace:\n%@", source.identifier, exception, [exception callStackSymbols]);
 	}
 	@finally {
 		return result;
@@ -174,16 +154,13 @@ NSString *const kPreProcessorSelectorSignature = @"preProcessAssembly:node%@:";
 		return outAssembly;
 	} else {
 		YASLNonfatalException *e = [self popException], *top = e;
-		if (top) {
-//			NSLog(@"Stack trace:\n%@\n", [top callStackSymbols]);
-		}
+		if (!top)
+			top = [YASLNonfatalException exceptionWithMsg:@"unknown exception"];
+
 		do {
 			NSLog(@"Syntax check exception: %@", e);
 		} while ((e = [self popException]));
-
-		if (top) {
-			@throw top;
-		}
+		@throw top;
 	}
 
 	return nil;

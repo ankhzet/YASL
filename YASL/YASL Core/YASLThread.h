@@ -22,7 +22,7 @@
 	// thread execution steps count
 	NSUInteger steps;
 	// was thread runned, or terminated straight after creation without wakeup
-	YASLInt param;
+	YASLInt param, entry, stack;
 	BOOL runned, firstRun;
 }
 

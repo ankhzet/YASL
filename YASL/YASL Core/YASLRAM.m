@@ -30,7 +30,7 @@
 }
 
 - (id)initWithSize:(YASLInt)size {
-	if (!(self = [super init]))
+	if (!(self = [self init]))
 		return self;
 
 	[self setSize:size];

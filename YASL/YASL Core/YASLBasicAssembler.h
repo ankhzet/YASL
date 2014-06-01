@@ -12,3 +12,5 @@
 #import "YASLAssembler+TypeDeclarationProcessor.h"
 #import "YASLAssembler+VarDeclarationProcessor.h"
 #import "YASLAssembler+DeclaratorProcessor.h"
+
+#import "YASLCodeSource.h"

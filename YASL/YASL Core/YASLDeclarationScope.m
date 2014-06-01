@@ -10,7 +10,8 @@
 #import "YASLCoreLangClasses.h"
 
 @implementation YASLDeclarationScope {
-	NSMutableDictionary *declarations;
+	NSMutableDictionary *localDeclarations;
+	NSMutableArray *includedDeclarations;
 }
 
 + (instancetype) scopeWithParentScope:(YASLDeclarationScope *)parent {
@@ -38,7 +39,7 @@
 		return;
 
 	_parentScope = parentScope;
-	self.localDataTypesManager = [YASLDataTypesManager datatypesManagerWithParentManager:parentScope.localDataTypesManager];
+	localDataTypesManager = [YASLDataTypesManager datatypesManagerWithParentManager:parentScope->localDataTypesManager];
 	self.placementManager = parentScope.placementManager;
 	[parentScope addChildScope:self];
 }
@@ -49,7 +50,32 @@
 	[(NSMutableArray *)_childs addObject:child];
 }
 
+- (void) includeDeclarations:(id<YASLDeclarationScopeProtocol>)declarations {
+	if (!includedDeclarations)
+		includedDeclarations = [NSMutableArray array];
+
+	[includedDeclarations addObject:declarations];
+}
+
 #pragma mark - Declaration scope interface implementation
+
+- (YASLLocalDeclaration *) includedLocalDeclarationByIdentifier:(NSString *)identifier {
+	for (YASLLocalDeclarations *declarations in includedDeclarations) {
+    YASLLocalDeclaration *declaration = [declarations localDeclarationByIdentifier:identifier];
+		if (declaration)
+			return declaration;
+	}
+	return nil;
+}
+
+- (BOOL) isDeclaredInIncludes:(NSString *)identifier {
+	for (YASLLocalDeclarations *declarations in includedDeclarations) {
+    if ([declarations isDeclared:identifier inLocalScope:NO])
+			return YES;
+	}
+
+	return NO;
+}
 
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {
 	YASLLocalDeclaration *declaration = [YASLLocalDeclaration localDeclarationWithIdentifier:identifier];
@@ -57,37 +83,82 @@
 }
 
 - (YASLLocalDeclaration *) addLocalDeclaration:(YASLLocalDeclaration *)declaration {
-	if (!declarations)
-		declarations = [NSMutableDictionary dictionary];
+	if (!localDeclarations)
+		localDeclarations = [NSMutableDictionary dictionary];
 
 	declaration.parentScope = self;
-	declaration.index = [declarations count];
-	return declarations[declaration.identifier] = declaration;
+	declaration.index = [localDeclarations count];
+	return localDeclarations[declaration.identifier] = declaration;
+}
+
+- (void) removeDeclaration:(YASLLocalDeclaration *)declaration {
+	[localDeclarations removeObjectForKey:declaration.identifier];
 }
 
 - (YASLLocalDeclaration *) localDeclarationByIdentifier:(NSString *)identifier {
-	YASLLocalDeclaration *declaration = declarations[identifier];
+	YASLLocalDeclaration *declaration = localDeclarations[identifier];
 	if ((!declaration) && self.parentScope)
 		declaration = [self.parentScope localDeclarationByIdentifier:identifier];
 
-	return declaration;
+	return declaration ? declaration : [self includedLocalDeclarationByIdentifier:identifier];
 }
 
 - (BOOL) isDeclared:(NSString *)identifier inLocalScope:(BOOL)localScope {
 	YASLLocalDeclaration *declaration = [self localDeclarationByIdentifier:identifier];
-	return declaration && ((!localScope) || (declaration.parentScope == self));
+	BOOL declared = declaration && ((!localScope) || (declaration.parentScope == self));
+	return declared ? YES : localScope ? NO : [self isDeclaredInIncludes:identifier];
 }
 
 - (NSDictionary *) declarations {
-	return declarations;
+	return localDeclarations;
 }
 
 - (NSArray *) localDeclarations {
-	return declarations ? [[declarations allValues] sortedArrayUsingComparator:^NSComparisonResult(YASLLocalDeclaration *d1, YASLLocalDeclaration *d2) {
+	return localDeclarations ? [[localDeclarations allValues] sortedArrayUsingComparator:^NSComparisonResult(YASLLocalDeclaration *d1, YASLLocalDeclaration *d2) {
 		NSInteger delta = (d1.index - d2.index);
 		return delta ? delta / ABS(delta) : 0;
 	}] : @[];
 }
+
+#pragma mark - Types manager protocol implementation
+
+- (YASLDataType *) includedTypeByName:(NSString *)name {
+	for (YASLLocalDeclarations *declarations in includedDeclarations) {
+    YASLDataType *type = [declarations typeByName:name];
+		if (type)
+			return type;
+	}
+	return nil;
+}
+
+- (NSEnumerator *) enumIncludedTypes {
+	NSMutableArray *types = [NSMutableArray array];
+	for (YASLLocalDeclarations *declarations in includedDeclarations) {
+    [types addObjectsFromArray:[[declarations enumTypes] allObjects]];
+	}
+	return [types objectEnumerator];
+}
+
+- (YASLDataType *) typeByName:(NSString *)name {
+	YASLDataType *type = [localDataTypesManager typeByName:name];
+	return type ? type : [self includedTypeByName:name];
+}
+
+- (NSEnumerator *)enumTypes {
+	NSEnumerator *local = [localDataTypesManager enumTypes];
+	NSEnumerator *included = [self enumIncludedTypes];
+	return [[[local allObjects] arrayByAddingObjectsFromArray:[included allObjects]] objectEnumerator];
+}
+
+- (void) registerType:(YASLDataType *)type {
+	[localDataTypesManager registerType:type];
+}
+
+- (id<YASLDataTypesManagerProtocol>) parentManager {
+	return [localDataTypesManager parentManager];
+}
+
+#pragma mark - Declarations placement resolve
 
 /*
  
@@ -138,8 +209,12 @@
 
 - (NSUInteger) localDeclarationsDataSize {
 	NSUInteger size = 0;
-	for (YASLLocalDeclaration *declaration in [self.declarations allValues]) {
-    size += [declaration sizeOf];
+	for (YASLLocalDeclaration *declaration in [localDeclarations allValues]) {
+		BOOL takesSpace = ![declaration.declarator isSpecific:YASLTranslationNodeTypeFunction];
+		if (takesSpace)
+	    size += [declaration sizeOf];
+//		else
+//			NSLog(@"Zero space: %@, %d", declaration, (int)[declaration sizeOf]);
 	}
 	return size;
 }
@@ -159,7 +234,7 @@
 }
 
 - (void) propagateReferences {
-	for (YASLLocalDeclaration *declaration in [self.declarations allValues]) {
+	for (YASLLocalDeclaration *declaration in [localDeclarations allValues]) {
 		[declaration.reference updateReferents];
 	}
 

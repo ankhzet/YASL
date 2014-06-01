@@ -17,8 +17,8 @@
 	return unit;
 }
 
-- (void) registerType:(YASLDataType *)type {
-	[[self.declarationScope localDataTypesManager] registerType:type];
+- (NSString *) toString {
+	return [NSString stringWithFormat:@"[unit %@]", self.name];
 }
 
 @end

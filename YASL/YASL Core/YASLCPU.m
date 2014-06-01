@@ -14,6 +14,7 @@
 #import "YASLNativeFunction.h"
 #import "YASLEventsAPI.h"
 #import "YASLThread.h"
+#import "YASLInstruction.h"
 
 @interface YASLCPU () {
 @public
@@ -165,6 +166,8 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 	YASLInt *ip = &threadData->registers[YASLRegisterIIP];
 
 	YASLCodeInstruction *instr = [_ram dataAt:*ip];
+//	NSLog(@"Execute at %p, %d, %lu", _ram, *ip, (unsigned long)instr);
+
 	*ip += sizeof(YASLCodeInstruction);
 	YASLOpcodes opcode = instr->opcode;
 
@@ -185,6 +188,10 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 		default:
 			break;
 	}
+
+#ifdef VERBOSE_CPU_TRACE
+	NSLog(@"[%.5d] %@ %d[%X], %d[%X]", (int)self.activeThread->steps, OPCODE_NAMES[opcode], *op1, (uint)op1, *op2, (uint)op2);
+#endif
 
 	switch (opcode) {
 		case OPC_MOV: {
@@ -337,6 +344,11 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 			switch (opcode) {
 					// routins
 				case OPC_CALL: {
+					if (!*op1) {
+						YASLInt prevIP = *ip - 8;
+						NSLog(@"Call zero address at 0x%x (%d)", prevIP, prevIP);
+						threadData->halt = true;
+					}
 					[_stack push:*ip];
 					*ip = *op1;
 					break;
@@ -356,13 +368,13 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 						//TODO: unknown native function instruction handling
 						return;
 					}
-					YASLInt returnValue = [function callOnParamsBase:[_ram dataAt:*_stack.top - sizeof(YASLInt)]];
+					YASLInt returnValue = [function callOnParamsBase:[_ram dataAt:*_stack.top - sizeof(YASLInt)/*ret address*/] withParamCount:*op2];
 
-					if (![function.returns isEqualToString:YASLBuiltInTypeIdentifierVoid])
+					if (!function.isVoid)
 						[self setReg:YASLRegisterIR0 value:returnValue];
 
-					if (function.params)
-						[_stack popSpace:(YASLInt)(function.params * sizeof(YASLInt))];
+					if (*op2)
+						[_stack popSpace:(YASLInt)(*op2 * sizeof(YASLInt))];
 
 					break;
 				}
@@ -437,23 +449,22 @@ YASLGetOperandBlock SimpleGetOperandBlock = ^YASLInt*(YASLCPU *cpu, YASLInt *ip,
 - (void) registerNativeFunctions {
 	[super registerNativeFunctions];
 
-	[self registerNativeFunction:YASLNativeCPU_sqrt withParamCount:1 returnType:YASLBuiltInTypeIdentifierFloat withSelector:@selector(n_sqrt:params:)];
-	[self registerNativeFunction:YASLNativeCPU_currentThread withParamCount:0 returnType:YASLAPITypeHandle withSelector:@selector(n_threadHandle:params:)];
-	[self registerNativeFunction:YASLNativeCPU_launchTime withParamCount:0 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_launchTime:params:)];
+	[self registerNativeFunction:YASLNativeCPU_sqrt isVoid:NO withSelector:@selector(n_sqrt:params:withParamCount:)];
+	[self registerNativeFunction:YASLNativeCPU_currentThread isVoid:NO withSelector:@selector(n_threadHandle:params:withParamCount:)];
+	[self registerNativeFunction:YASLNativeCPU_launchTime isVoid:NO withSelector:@selector(n_launchTime:params:withParamCount:)];
 }
 
-- (YASLInt) n_sqrt:(YASLNativeFunction *)native params:(void *)paramsBase {
-	YASLFloat p1 = [native floatParam:1 atBase:paramsBase];
+- (YASLInt) n_sqrt:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	YASLFloat p1 = [native floatParam:1 atBase:paramsBase withParamCount:params];
 	p1 = sqrt(p1);
 	return *((YASLInt *)(&p1));
 }
 
-- (YASLInt) n_threadHandle:(YASLNativeFunction *)native params:(void *)paramsBase {
+- (YASLInt) n_threadHandle:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
 	return self.activeThreadHandle;
-	launchTime = [NSDate timeIntervalSinceReferenceDate] * 1000;
 }
 
-- (YASLInt) n_launchTime:(YASLNativeFunction *)native params:(void *)paramsBase {
+- (YASLInt) n_launchTime:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
 	return ([NSDate timeIntervalSinceReferenceDate] * 1000) - launchTime;
 }
 

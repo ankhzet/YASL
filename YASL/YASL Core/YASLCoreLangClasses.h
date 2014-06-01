@@ -17,7 +17,9 @@
 #import "YASLBaseTranslationClasses.h"
 
 #import "YASLLocalDeclarations.h"
+#import "YASLDeclarationScope.h"
 #import "YASLLocalDeclaration.h"
+#import "YASLDataTypesManager.h"
 #import "YASLDataType.h"
 #import "YASLArrayDataType.h"
 #import "YASLEnumDataType.h"

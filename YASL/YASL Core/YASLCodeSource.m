@@ -19,8 +19,10 @@
 
 + (instancetype) codeSourceFromFile:(NSURL *)sourceFile {
 	NSString *path = [sourceFile path];
-	if (![[NSFileManager defaultManager] fileExistsAtPath:path])
+	if (![[NSFileManager defaultManager] fileExistsAtPath:path]) {
+		NSLog(@"Source file \"%@\" not exists.", [sourceFile lastPathComponent]);
 		return nil;
+	}
 
 	NSError *error = nil;
 	NSString *sourceString = [NSString stringWithContentsOfURL:sourceFile encoding:NSUTF8StringEncoding error:&error];
@@ -37,6 +39,11 @@
 
 - (NSString *) description {
 	return self.code;
+}
+
++ (instancetype) codeSourceFromResource:(NSString *)resource withExtension:(NSString *)extension {
+	NSURL *url = [[NSBundle mainBundle] URLForResource:resource withExtension:extension];
+	return [self codeSourceFromFile:url];
 }
 
 @end

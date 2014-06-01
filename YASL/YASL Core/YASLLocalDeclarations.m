@@ -10,6 +10,8 @@
 #import "YASLDeclarationScope.h"
 #import "YASLLocalDeclaration.h"
 
+#import "YASLDataTypesManager.h"
+
 #import "YASLDeclarationPlacement.h"
 #import "YASLPlacementInCode.h"
 #import "YASLPlacementOnStack.h"
@@ -54,14 +56,13 @@
 	}
 	_globalTypesManager = globalTypesManager;
 	YASLDeclarationScope *globalScope = [self pushScope];
-	globalScope.localDataTypesManager = globalTypesManager;
+	globalScope->localDataTypesManager = globalTypesManager;
 
 	self.expressionSolver = [YASLExpressionSolver solverInDeclarationScope:self];
 }
 
 - (YASLDeclarationScope *) pushScope {
-	YASLDeclarationScope *newScope = [YASLDeclarationScope scopeWithParentScope:self.currentScope];
-	return self.currentScope = newScope;
+	return self.currentScope = [YASLDeclarationScope scopeWithParentScope:self.currentScope];
 }
 
 - (YASLDeclarationScope *) popScope {
@@ -74,15 +75,19 @@
 #pragma mark - DataTypesManager interface implementation
 
 - (void) registerType:(YASLDataType *)type {
-	[self.currentScope.localDataTypesManager registerType:type];
+	[self.currentScope registerType:type];
 }
 
 - (YASLDataType *) typeByName:(NSString *)name {
-	return 	[self.currentScope.localDataTypesManager typeByName:name];
+	return [self.currentScope typeByName:name];
 }
 
 - (NSEnumerator *)enumTypes {
-	return [self.currentScope.localDataTypesManager enumTypes];
+	return [self.currentScope enumTypes];
+}
+
+- (id<YASLDataTypesManagerProtocol>) parentManager {
+	return [self.currentScope parentManager];
 }
 
 #pragma mark - Declaration scope interface implementation
@@ -93,6 +98,10 @@
 
 - (YASLLocalDeclaration *) newLocalDeclaration:(NSString *)identifier {
 	return [self.currentScope newLocalDeclaration:identifier];
+}
+
+- (void) removeDeclaration:(YASLLocalDeclaration *)declaration {
+	[self.currentScope removeDeclaration:declaration];
 }
 
 - (YASLLocalDeclaration *) localDeclarationByIdentifier:(NSString *)identifier {

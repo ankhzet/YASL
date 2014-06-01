@@ -7,14 +7,14 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "YASLDataTypesManager.h"
-#import "YASLDeclarationScope.h"
+#import "YASLDataTypesManagerProtocol.h"
+#import "YASLDeclarationScopeProtocol.h"
 #import "YASLDeclarationPlacement.h"
 
 @class YASLDeclarationScope, YASLDataTypesManager, YASLExpressionSolver, YASLStrings;
-@interface YASLLocalDeclarations : NSObject <YASLDataTypesManagerProtocol, YASLDeclarationScopeProtocol>
+@interface YASLLocalDeclarations : NSObject <YASLDeclarationScopeProtocol>
 
-@property (nonatomic) YASLDataTypesManager *globalTypesManager;
+@property (nonatomic) id<YASLDataTypesManagerProtocol> globalTypesManager;
 @property (nonatomic) YASLStrings *stringsManager;
 @property (nonatomic) YASLExpressionSolver *expressionSolver;
 @property (nonatomic) YASLDeclarationScope *currentScope;

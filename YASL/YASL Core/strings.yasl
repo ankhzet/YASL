@@ -1,0 +1,5 @@
+script strings;
+
+native int   strLen(char *string);
+native char *strConc(char *string1, *string2);
+native int   strComp(char *string1, *string2);

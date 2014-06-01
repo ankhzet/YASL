@@ -227,17 +227,17 @@ typedef NS_ENUM(NSUInteger, YASLConstantType) {
 			NSString *identifier = token.value;
 			if ([identifier isEqualToString:@"nil"]) {
 				value = @0;
-				dataType = [[[self scope] localDataTypesManager] typeByName:YASLBuiltInTypeIdentifierInt];
+				dataType = [[self scope] typeByName:YASLBuiltInTypeIdentifierInt];
 				break;
 			}
 
 			if ([identifier isEqualToString:@"maxInt"]) {
 				value = @((YASLInt)(pow(2, 31) - 1));
-				dataType = [[[self scope] localDataTypesManager] typeByName:YASLBuiltInTypeIdentifierInt];
+				dataType = [[self scope] typeByName:YASLBuiltInTypeIdentifierInt];
 				break;
 			}
 
-			YASLEnumDataType *enumType = [YASLEnumDataType hasEnum:identifier inManager:[[self scope] localDataTypesManager]];
+			YASLEnumDataType *enumType = [YASLEnumDataType hasEnum:identifier inManager:[self scope]];
 			if (!enumType) { // enum not found, is it a variable name?
 				[a push:token];
 				[self processAssembly:a nodeVariable:node];

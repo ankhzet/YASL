@@ -15,29 +15,12 @@
 @implementation YASLVM
 
 - (YASLCompiledUnit *)runScript:(YASLCodeSource *)source {
-	YASLCompiledUnit *unit = [self scriptInStage:YASLUnitCompilationStagePrecompiled|YASLUnitCompilationStageCompiled bySource:source];
-
-	if (!unit) {
-		unit = [self.compiler compilationPass:source
-															withOptions:@{
-																						kCompilatorPrecompile:@YES,
-																						kCompilatorOptimize: @YES,
-																						kCompilatorDropCaches: @YES,
-																						}];
-
-		if (unit.stage == YASLUnitCompilationStagePrecompiled) {
-			YASLInt threadOffset = [self calcCodePlacement:unit.codeLength];
-			[self.compiler compilationPass:source
-												 withOptions:@{
-																			 kCompilatorCompile:@YES,
-																			 kCompilatorPlacementOffset:@(threadOffset),
-																			 }];
-		}
-
-	}
-
+	YASLCompiledUnit *unit = [self.compiler compileScript:source];
 	if (unit.stage == YASLUnitCompilationStageCompiled) {
-		YASLThread *thread = [self.cpu threadCreateWithEntryAt:unit.startOffset andState:YASLThreadStateRunning andInitParam:0 waitable:NO];
+		YASLThread *thread = [self.cpu threadCreateWithEntryAt:unit.startOffset
+																									andState:YASLThreadStateRunning
+																							andInitParam:0
+																									waitable:NO];
 		[unit usedByThread:thread];
 
 #ifdef VERBOSE_COMPILATION
@@ -47,25 +30,8 @@
 	return unit;
 }
 
-- (YASLInt) calcCodePlacement:(YASLInt)codeLength {
-	return [self.memManager allocMem:codeLength];
-}
-
-- (YASLCompiledUnit *) scriptInStage:(YASLUnitCompilationStage)stage bySource:(YASLCodeSource *)source {
-	NSEnumerator *compiled = [self.compiler enumerateCompiledUnits];
-	for (YASLCompiledUnit *compiledUnit in compiled) {
-    if (!(compiledUnit.stage & stage))
-			continue;
-
-		if (compiledUnit.source.identifier == source.identifier)
-			return compiledUnit;
-	}
-
-	return nil;
-}
-
 - (NSArray *) disassembly:(YASLCodeSource *)source {
-	YASLCompiledUnit *unit = [self scriptInStage:YASLUnitCompilationStagePrecompiled|YASLUnitCompilationStageCompiled bySource:source];
+	YASLCompiledUnit *unit = [self.compiler scriptInStage:YASLUnitCompilationStagePrecompiled|YASLUnitCompilationStageCompiled bySource:source strictMatch:NO];
 	YASLDisassembler *disassembler = [YASLDisassembler disassemblerForCPU:self.cpu];
 	[disassembler setLabelsRefs:[self.compiler cache:source.identifier data:kCacheStaticLabels]];
 	[disassembler setCodeSource:source];
@@ -74,13 +40,17 @@
 }
 
 - (void) registerNativeFunctions {
-	[self registerNativeFunction:YASLNativeVM_log withParamCount:2 returnType:YASLBuiltInTypeIdentifierVoid withSelector:@selector(n_log:params:)];
+	[self registerNativeFunction:YASLNativeVM_log
+												isVoid:YES
+									withSelector:@selector(n_log:params:withParamCount:)];
 
-	[self registerNativeFunction:YASLNativeVM_unloadScriptAssociatedWith withParamCount:1 returnType:YASLBuiltInTypeIdentifierInt withSelector:@selector(n_unloadScriptAssociatedWith:params:)];
+	[self registerNativeFunction:YASLNativeVM_unloadScriptAssociatedWith
+												isVoid:NO
+									withSelector:@selector(n_unloadScriptAssociatedWith:params:withParamCount:)];
 }
 
-- (YASLInt) n_unloadScriptAssociatedWith:(YASLNativeFunction *)native params:(void *)paramsBase {
-	YASLInt threadHandle = [native intParam:1 atBase:paramsBase];
+- (YASLInt) n_unloadScriptAssociatedWith:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	YASLInt threadHandle = [native intParam:1 atBase:paramsBase withParamCount:params];
 	if (!threadHandle)
 		return YASL_INVALID_HANDLE;
 
@@ -113,40 +83,40 @@
 typedef char *(^StrResolve)(int strAddres);
 YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve resolver);
 
-- (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase {
-	NSString *string = [native stringParam:1 atBase:paramsBase];
-	YASLInt params = [native intParam:2 atBase:paramsBase];
-	if (!params)
-		return [native intParam:1 atBase:paramsBase];
+- (YASLInt) n_log:(YASLNativeFunction *)native params:(void *)paramsBase withParamCount:(NSUInteger)params {
+	NSString *string = [native stringParam:1 atBase:paramsBase withParamCount:params];
+	if (params > 1) {
+		YASLInt *paramList = [native ptrToParam:2 atBase:paramsBase withParamCount:params];
 
-	YASLInt *paramList = [_ram dataAt:params];
-	char *formatBuf = malloc([string length]);
-	[string getCString:formatBuf maxLength:[string length] encoding:NSASCIIStringEncoding];
-	NSUInteger length = [string length];
+		char *formatBuf = malloc([string length] + 1);
+		[string getCString:formatBuf maxLength:[string length] + 1 encoding:NSASCIIStringEncoding];
+		NSUInteger length = [string length];
 
-	__weak YASLMemoryManager *mm = _memManager;
-	__weak YASLRAM *ram = _ram;
-	char *nullStr = "(null)";
-	char *buff = malloc(1024);
-	YASLChar *formatted = _format(formatBuf, &length, paramList, ^char *(int strAddres) {
-		if (strAddres) {
-			YASLInt size = [mm isAllocated:strAddres];
-			if (size) {
-				YASLChar *raw = [ram dataAt:strAddres];
-				NSUInteger len = size / sizeof(YASLChar) - 1;
+		__weak YASLMemoryManager *mm = _memManager;
+		__weak YASLRAM *ram = _ram;
+		char *nullStr = "(null)";
+		char *buff = malloc(1024);
+		YASLChar *formatted = _format(formatBuf, &length, paramList, ^char *(int strAddres) {
+			if (strAddres) {
+				YASLInt size = [mm isAllocated:strAddres];
+				if (size) {
+					YASLChar *raw = [ram dataAt:strAddres];
+					NSUInteger len = size / sizeof(YASLChar) - 1;
 
-				NSString *s = [NSString stringWithCharacters:raw length:len];
-				[s getCString:buff maxLength:1024 encoding:NSASCIIStringEncoding];
-				return buff;
+					NSString *s = [NSString stringWithCharacters:raw length:len];
+					[s getCString:buff maxLength:1024 encoding:NSASCIIStringEncoding];
+					return buff;
+				}
 			}
-		}
 
-		return nullStr;
-	});
-	free(buff);
-	free(formatBuf);
+			return nullStr;
+		});
+		free(buff);
+		free(formatBuf);
+		string = [NSString stringWithCharacters:formatted length:length];
+	}
 
-	NSLog(@"LOG: %@", [NSString stringWithCharacters:formatted length:length]);
+	NSLog(@"LOG: %@", string);
 	return 0;
 }
 
@@ -176,13 +146,10 @@ YASLChar *_format(char *source, NSUInteger *length, YASLInt *params, StrResolve 
 			case '%': {
 				char *converted;
 				switch ((c = *ptr)) {
-					case 's':
-						converted = resolver(*params);
-						break;
-					case 'i': {
-						converted = _baseInt(*params, 10, 0);
-						break;
-					}
+					case 's': converted = resolver(*params); break;
+					case 'i': converted = _baseInt(*params, 10, 0); break;
+					case 'x': converted = _baseInt(*params, 16, 0); break;
+					case 'n': converted = _baseInt(*params, 2, 0); break;
 					case 'b': {
 						char *labels[] = {"false", "true"};
 						converted = labels[!!*params];

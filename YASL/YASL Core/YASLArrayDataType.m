@@ -15,7 +15,7 @@
 		return self;
 
 	_elements = 0;
-	self.isPointer++;
+	self.isPointer = 0;
 	return self;
 }
 

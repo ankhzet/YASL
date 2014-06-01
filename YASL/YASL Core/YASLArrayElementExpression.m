@@ -61,19 +61,18 @@
 	YASLArrayDataType *arrayType = (id)arrayAddres.returnType;
 	BOOL isArray = [arrayType isKindOfClass:[YASLArrayDataType class]];
 	BOOL isPointer = !!arrayType.isPointer;
-	if (isPointer)
-		if (arrayType.isPointer) {
-			YASLUnrefExpression *unref = [YASLUnrefExpression unrefExpressionInScope:self.declarationScope];
-			[unref addSubNode:arrayAddres];
-			unref.isUnreference = YES; // *array + idx * elementSize
-			[self setSubNodes:@[unref, arrayIndex]];
-			return [self foldConstantExpressionWithSolver:solver];
-		}
+	if (isPointer) {
+		YASLUnrefExpression *unref = [YASLUnrefExpression unrefExpressionInScope:self.declarationScope];
+		[unref addSubNode:arrayAddres];
+		unref.isUnreference = YES; // *array + idx * elementSize
+		[self setSubNodes:@[unref, arrayIndex]];
+		return [self foldConstantExpressionWithSolver:solver];
+	}
 
 	self.returnType = (isArray || isPointer) ? arrayType.parent : arrayType;
 
 	NSUInteger offset = [self.returnType sizeOf];
-	YASLTranslationConstant *offsetConstant = [YASLTranslationConstant constantInScope:self.declarationScope withType:[self.declarationScope.localDataTypesManager typeByName:YASLBuiltInTypeIdentifierInt] andValue:@(offset)];
+	YASLTranslationConstant *offsetConstant = [YASLTranslationConstant constantInScope:self.declarationScope withType:[self.declarationScope typeByName:YASLBuiltInTypeIdentifierInt] andValue:@(offset)];
 
 	YASLTranslationExpression *indexAddress = [YASLTranslationExpression expressionInScope:self.declarationScope withType:YASLExpressionTypeBinary andSpecifier:[YASLTranslationExpression operatorToSpecifier:YASLExpressionOperatorMul]];
 

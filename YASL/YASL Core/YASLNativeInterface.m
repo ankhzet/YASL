@@ -24,10 +24,9 @@
 
 }
 
-- (NSUInteger) registerNativeFunction:(NSString *)name withParamCount:(NSUInteger)params returnType:(NSString *)returns withSelector:(SEL)selector {
+- (NSUInteger) registerNativeFunction:(NSString *)name isVoid:(BOOL)isVoid withSelector:(SEL)selector {
 	YASLNativeFunction *function = [YASLNativeFunction nativeWithName:name
-																												 paramCount:params
-																												 returnType:returns
+																														 isVoid:isVoid
 																													 selector:selector
 																												andReceiver:self];
 

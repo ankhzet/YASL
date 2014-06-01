@@ -18,7 +18,7 @@
 }
 
 - (id)initForRAM:(YASLRAM *)ram {
-	if (!(self = [super init]))
+	if (!(self = [self init]))
 		return self;
 
 	_ram = ram;

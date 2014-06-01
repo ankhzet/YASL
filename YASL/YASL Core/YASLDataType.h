@@ -8,11 +8,11 @@
 
 #import <Foundation/Foundation.h>
 #import "YASLAPI.h"
+#import "YASLDataTypesManagerProtocol.h"
 
-@class YASLDataTypesManager;
 @interface YASLDataType : NSObject <NSCopying> {
 @protected
-	YASLDataTypesManager *_manager;
+	id <YASLDataTypesManagerProtocol> _manager;
 }
 
 @property (nonatomic) NSString *name;
@@ -20,7 +20,7 @@
 @property (nonatomic) YASLDataType *parent;
 @property (nonatomic) NSArray *specifiers;
 @property (nonatomic) NSUInteger isPointer;
-@property (nonatomic) YASLDataTypesManager *manager;
+@property (nonatomic) id<YASLDataTypesManagerProtocol> manager;
 
 + (instancetype) typeWithName:(NSString *)name;
 - (id)initWithName:(NSString *)name;

@@ -9,6 +9,7 @@
 #import <Foundation/Foundation.h>
 
 #import "YASLTranslationExpression.h"
+#import "YASLDataTypesManagerProtocol.h"
 
 #define PREFIX_OPERATION(_symbolic, _right) (_symbolic right)
 #define POSTFIX_OPERATION(_left, _symbolic) (left _symbolic)
@@ -66,15 +67,15 @@ break;\
 
 
 
-@class YASLDataType, YASLExpressionSolver, YASLDataTypesManager, YASLTranslationConstant;
+@class YASLDataType, YASLExpressionSolver, YASLTranslationConstant;
 @interface YASLExpressionProcessor : NSObject
 
 @property (nonatomic, readonly) YASLExpressionSolver *solver;
 @property (nonatomic) YASLDataType *returnType;
 @property (nonatomic, readonly) YASLDataType *castType;
 
-- (id)initWithDataTypesManager:(YASLDataTypesManager *)manager;
-- (id) initWithDataTypesManager:(YASLDataTypesManager *)manager forSolver:(YASLExpressionSolver *)solver withCastType:(YASLDataType *)castType;
+- (id)initWithDataTypesManager:(id<YASLDataTypesManagerProtocol>)manager;
+- (id) initWithDataTypesManager:(id<YASLDataTypesManagerProtocol>)manager forSolver:(YASLExpressionSolver *)solver withCastType:(YASLDataType *)castType;
 
 - (YASLTranslationExpression *) solveExpression:(YASLTranslationExpression *)expression;
 

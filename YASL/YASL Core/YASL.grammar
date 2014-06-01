@@ -1,7 +1,10 @@
 @start = translation-unit;
 
-translation-unit = script-declaration external-declarations;
+translation-unit = script-declaration uses? external-declarations;
 script-declaration = 'script'! Identifier ';'!;
+uses = 'uses'! uses-list ';'!;
+uses-list = use-script (','! use-script)*;
+use-script = Identifier;
 
 external-declarations = external-declaration*;
 external-declaration = declaration ';'! | function-definition;
@@ -74,7 +77,8 @@ typedef-type = Identifier;
 
 /* ***** Function definition ***** */
 
-method-param-list-specifier = '('! method-param-list* ')'!;
+method-param-list-specifier = '('! method-param-list? method-param-vararg ')'!;
+method-param-vararg = (','!'.'!'.'!'.')?;
 method-param-list = method-param-group (';'! method-param-group)*;
 method-param-group = type-specifier declarator-list;
 

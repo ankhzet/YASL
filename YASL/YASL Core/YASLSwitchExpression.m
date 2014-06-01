@@ -22,13 +22,9 @@
 /*! Try to fold switch expression. */
 - (YASLTranslationExpression *) foldConstantExpressionWithSolver:(YASLExpressionSolver *)solver {
 	NSMutableArray *foldedOperands = [@[] mutableCopy];
-	int nonConstants = 0;
-	// first, try to fold operands
 	for (YASLTranslationExpression *operand in [self nodesEnumerator:NO]) {
 		YASLTranslationExpression *folded = [operand foldConstantExpressionWithSolver:solver];
     [foldedOperands addObject:folded];
-		if (folded.expressionType != YASLExpressionTypeConstant)
-			nonConstants++;
 	}
 
 	[self setSubNodes:foldedOperands];
@@ -63,6 +59,7 @@
 	}
 
 	YASLCompoundExpression *defaultStatement = [YASLCompoundExpression compoundExpressionInScope:self.declarationScope];
+	defaultStatement.parent = self;
 	[defaultStatement addSubNode:defaults];
 	cases[[NSNull null]] = defaultStatement;
 

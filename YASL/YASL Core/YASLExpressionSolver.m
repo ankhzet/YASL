@@ -16,6 +16,8 @@
 #import "YASLBoolExpressionProcessor.h"
 #import "YASLCharExpressionProcessor.h"
 
+#import "YASLCodeSource.h"
+
 NSString *const kProductionResultType = @"kProductionResultType";
 NSString *const kProductionCastType = @"kProductionCastType";
 
@@ -54,7 +56,9 @@ NSString *const kProductionCastType = @"kProductionCastType";
 }
 
 -(void) loadOperationsProductionMatrix {
-	NSArray *operationProductions = [[YASLOperationProductionsAssembler new] assembleFile:@"YASLOperationsProduction.opr"];
+	YASLOperationProductionsAssembler * assembler = [YASLOperationProductionsAssembler new];
+	NSArray *operationProductions = [assembler assembleSource:[YASLCodeSource codeSourceFromResource:@"YASLOperationsProduction"
+																																										 withExtension:@"opr"]];
 	//	NSLog(@"%@", operationProductions);
 	for (NSDictionary *production in operationProductions) {
 		NSArray *operations = production[kProductionOperations];

@@ -177,7 +177,7 @@
 					, [labels length] ? [labels stringByAppendingString:@"\n"] : @""
 					, [sourceCode length] ? [sourceCode stringByAppendingString:@"\n"] : @""
 					, startIP
-					, [codeDump stringByPaddingToLength:20 withString:@" " startingAtIndex:0]
+					, [codeDump stringByPaddingToLength:25 withString:@" " startingAtIndex:0]
 					, instructionDisassembly
 					];
 }

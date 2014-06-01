@@ -9,7 +9,9 @@
 #import "YASLMethodCallExpression.h"
 #import "YASLCoreLangClasses.h"
 
-@implementation YASLMethodCallExpression
+@implementation YASLMethodCallExpression {
+	NSUInteger passedParams, requiredParams;
+}
 
 + (instancetype) methodCallInScope:(YASLDeclarationScope *)scope {
 	YASLMethodCallExpression *methodCall = [YASLMethodCallExpression expressionInScope:scope withType:YASLExpressionTypeCall andSpecifier:@", "];
@@ -23,8 +25,9 @@
 	YASLTranslationExpression *method = [[self leftOperand] foldConstantExpressionWithSolver:solver];
 	self.returnType = method.returnType;
 
-
+	passedParams = 0;
 	if (method.expressionType == YASLExpressionTypeVariable) {
+		BOOL vararg = NO;
 		YASLLocalDeclaration *functionPrototype = [method.declarationScope localDeclarationByIdentifier:method.specifier];
 		YASLAssembly *specifiers = functionPrototype.declarator.declaratorSpecifiers;
 		NSMutableArray *params = [NSMutableArray array];
@@ -32,18 +35,23 @@
 		while ([specifiersCopy notEmpty]) {
 			YASLDeclaratorSpecifier *specifier = [specifiersCopy pop];
 			if (specifier.type == YASLTranslationNodeTypeFunction) {
+				vararg = !!specifier.param;
 				for (YASLLocalDeclaration *param in specifier.elements) {
 					[params addObject:param.dataType];
 				}
 			}
 		}
-		if ([params count] != [foldedOperands count])
-			[self raiseError:@"Method parameters count mismatch, %lu expected, %lu provided", [params count], [foldedOperands count]];
+		requiredParams = [params count];
+		passedParams = [foldedOperands count];
+		if (!(vararg || (requiredParams <= passedParams)))
+			[self raiseError:@"Method parameters count mismatch, at least %lu expected, %lu passed", requiredParams, passedParams];
 
-		NSUInteger count = [foldedOperands count];
+		NSUInteger count = passedParams;
 		for (int i = 0; i < count; i++) {
 			YASLTranslationExpression *param = [foldedOperands[i] foldConstantExpressionWithSolver:solver];
-			YASLDataType *expectedType = params[count - i - 1];
+			if (i >= requiredParams) continue;
+
+			YASLDataType *expectedType = params[requiredParams - i - 1];
 			if (expectedType != param.returnType) {
 				YASLTypecastExpression *typecast = [YASLTypecastExpression typecastInScope:self.declarationScope withType:expectedType];
 				[typecast addSubNode:param];
@@ -82,10 +90,12 @@
 	NSString *functionIdentifier = method.specifier;
 	YASLNativeFunction *native = [[YASLNativeFunctions sharedFunctions] findByName:functionIdentifier];
 	if (native) {
-		[assembly push:OPC_(NATIV, IMM_(@(native.GUID)))];
+		[assembly push:OPC_(NATIV, IMM_(@(native.GUID)), IMM_(@(passedParams)))];
 	} else {
 		[method assemble:assembly unPointered:NO];
 		[assembly push:OPC_(CALL, REG_(R0))];
+		if (passedParams > requiredParams)
+			[assembly push:OPC_(SUB, REG_(SP), IMM_(@((passedParams - requiredParams) * sizeof(YASLInt))))];
 	}
 }
 

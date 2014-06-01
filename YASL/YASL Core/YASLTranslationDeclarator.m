@@ -39,6 +39,18 @@
 
 @implementation YASLTranslationDeclarator
 
+- (BOOL) isSpecific:(YASLTranslationNodeType)specifier {
+	if ([_declaratorSpecifiers notEmpty]) {
+		YASLAssembly *specifiers = [_declaratorSpecifiers copy];
+		YASLDeclaratorSpecifier *s;
+		while ((s = [specifiers pop]))
+			if (s.type == specifier)
+				return YES;
+	}
+
+	return NO;
+}
+
 - (YASLDataType *) declareSpecific:(YASLTranslationExpression *)variable withDataType:(YASLDataType *)declarationDataType inScope:(YASLLocalDeclarations *)scope {
 
 	NSUInteger pointer = self.isPointer;

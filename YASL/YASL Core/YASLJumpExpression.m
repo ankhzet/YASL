@@ -45,6 +45,7 @@
 	while (f && (f.type != YASLTranslationNodeTypeFunction)) {
 		f = f.parent;
 	}
+
 	YASLTranslationFunction *function = (YASLTranslationFunction *)f;
 	YASLDeclarationScope *functionBodyScope = [f.declarationScope.childs firstObject];
 

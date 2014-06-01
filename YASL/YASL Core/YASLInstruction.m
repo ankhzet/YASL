@@ -200,8 +200,10 @@ NSString *const REGISTER_NAMES[YASLRegisterIMAX + 1] = {
 			case YASLOperandCountUnary: {
 				if (instruction->opcode == OPC_NATIV) {
 					YASLNativeFunctions *natives = [YASLNativeFunctions sharedFunctions];
-					YASLNativeFunction *native = [natives findByGUID:[self immediateValue:0]];
+					YASLNativeFunction *native = [natives findByGUID:[self immediateValue:1]];
 					operand1 = native.name;
+					YASLInt params = [self immediateValue:0];
+					operand2 = params ? [NSString stringWithFormat:@"(params x %d)", params] : @"()";
 				} else {
 					YASLOperandType type = instruction->operand1 & (YASLOperandTypePointer ^ 0xFF);
 					BOOL isPointer = !!(instruction->operand1 & YASLOperandTypePointer);

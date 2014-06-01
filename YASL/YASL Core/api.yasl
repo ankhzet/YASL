@@ -1,0 +1,28 @@
+script api;
+
+typedef enum {
+	EventStateClear   = 0,
+	EventStateSet     = 1,
+	EventStateFailed  = 2,
+	EventStateTimeout = 3,
+} EventState;
+
+native handle createEvent(char *identifier; int initialState; bool autoreset);
+native handle signalEvent(handle event; int state);
+native bool   closeEvent(handle event);
+
+native int waitFor(handle event; int msec; int state);
+
+typedef enum {
+	ThreadStateNotReady   = 1 << 0,
+	ThreadStateRunning    = 1 << 1,
+	ThreadStateSleep      = 1 << 2,
+	ThreadStateTerminated = 1 << 3,
+} ThreadState;
+
+native handle currentThread();
+native handle threadStart(int threadMethod, threadState, parameter);
+native bool   threadSuspend(handle thread; int msec);
+native bool   threadResume(handle thread);
+native bool   threadTerminate(handle thread; int returnCode);
+native int    launchTime();
